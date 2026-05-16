@@ -1,0 +1,24 @@
+{
+    "name": "@gradiaqo/nestjs-database",
+    "type": "module",
+    "dependencies": {
+        "@gradiaqo/nestjs-shared": "workspace:^",
+        "typeorm": "^0.3.27",
+        "ulid": "^3.0.1"
+    },
+    "exports": {
+        "./entities": {
+            "types": "./dist/entities.d.ts",
+            "import": "./dist/entities.js",
+            "default": "./dist/entities.cjs"
+        }
+    },
+    "scripts": {
+        "dev": "yarn build --watch",
+        "build": "tsup",
+        "clean": "rimraf ./dist"
+    },
+    "devDependencies": {
+        "@swc/core": "^1.14.0"
+    }
+}
