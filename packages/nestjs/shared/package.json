@@ -1,0 +1,21 @@
+{
+    "name": "@gradiaqo/nestjs-shared",
+    "version": "0.1.0",
+    "private": true,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "default": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "dev": "yarn build --watch",
+        "build": "tsup",
+        "clean": "rimraf ./dist"
+    },
+    "devDependencies": {
+        "@swc/core": "^1.14.0",
+        "tsup": "^8.5.1"
+    }
+}
