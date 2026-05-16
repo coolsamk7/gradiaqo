@@ -1,8 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { pascalCase, snakeCase } from 'change-case';
 
 export const setupSwagger = async ( app: INestApplication ) => {
-    const { pascalCase, snakeCase } = await import( 'change-case' );
     const env = process.env;
     const builder = new DocumentBuilder();
 
