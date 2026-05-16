@@ -1,0 +1,7 @@
+{
+    "extends": "@gradiaqo/tsconfig/nestjs.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "baseUrl": "./"
+    }
+}
