@@ -1,0 +1,30 @@
+{
+    "name": "@gradiaqo/nestjs-keycloak-admin",
+    "version": "0.1.0",
+    "private": true,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "default": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "dev": "yarn build --watch",
+        "build": "tsup",
+        "clean": "rimraf ./dist"
+    },
+    "devDependencies": {
+        "@swc/core": "^1.14.0",
+        "@types/node": "^22.10.2",
+        "tsup": "^8.5.1"
+    },
+    "peerDependencies": {
+        "@nestjs/common": "*",
+        "reflect-metadata": "*"
+    },
+    "dependencies": {
+        "@keycloak/keycloak-admin-client": "^26.6.1",
+        "keycloak-connect": "^26.1.1"
+    }
+}
