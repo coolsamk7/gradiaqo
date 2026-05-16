@@ -1,6 +1,6 @@
 {
   "name": "@gradiaqo/apis",
-  "version": "0.0.0",
+  "version": "0.0.0.1",
   "private": true,
   "scripts": {
     "dev": "nest start --watch",
@@ -15,7 +15,9 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
   },
   "dependencies": {
-    "@keycloak/keycloak-admin-client": "^26.6.1",
+    "@gradiaqo/nestjs-inngest": "workspace:^",
+    "@gradiaqo/nestjs-keycloak-admin": "workspace:^",
+    "@gradiaqo/nestjs-shared": "workspace:^",
     "@nestjs/common": "^11.1.21",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.21",
@@ -25,8 +27,6 @@
     "add": "^2.0.6",
     "change-case": "^5.4.4",
     "escape-html": "^1.0.3",
-    "keycloak-connect": "^26.1.1",
-    "nest-keycloak-connect": "^1.10.1",
     "nestjs-pino": "^4.6.1",
     "pino-http": "^11.0.0",
     "pino-pretty": "^13.1.3",
