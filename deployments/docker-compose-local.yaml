@@ -31,5 +31,21 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
 
+  inngest:
+    image: inngest/inngest:latest
+    container_name: inngest
+    command:
+      - inngest
+      - start
+      - --event-key=superdupersecretkey
+      - --signing-key=0123456789abcdef0123456789abcdef
+      - -u
+      - http://host.docker.internal:3200/api/inngest
+    ports:
+      - "8288:8288"
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   postgres_data:
