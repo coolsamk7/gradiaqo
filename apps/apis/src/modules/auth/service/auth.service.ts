@@ -7,7 +7,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { Static } from 'typebox';
 import { DataSource } from 'typeorm';
-import { SignupRequest } from '../dtos';
+import { SignupRequest, SignupResponse } from '../dtos';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
         private readonly keycloakUserService: KeycloakUserService
     ) {}
 
-    async signup( signupDto: Static<typeof SignupRequest> ) {
+    async signup( signupDto: Static<typeof SignupRequest> ): Promise<Static<typeof SignupResponse>> {
         const userRepository = this.datasource.getRepository( UserEntity );
         const existingUser = await userRepository.existsBy( {
             email: signupDto.email,
@@ -62,8 +62,8 @@ export class AuthService {
         return {
             id: user.id,
             email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
+            firstName: user.firstName ?? signupDto.firstName,
+            lastName: user.lastName ?? signupDto.lastName,
             authStatus: user.authStatus,
         };
     }
