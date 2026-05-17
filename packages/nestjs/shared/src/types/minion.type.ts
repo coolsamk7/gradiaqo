@@ -5,7 +5,7 @@ export const MinionEvents = new EventSchemas().fromRecord<{
     'users/user.created': {
         data: {
             id: string;
-            email?: string;
+            email: string;
             mobilenumber?: string;
             roles?: string[];
         };
