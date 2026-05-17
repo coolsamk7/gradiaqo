@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { KeycloakModule } from "@gradiaqo/nestjs-keycloak-admin";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthController } from "./controller";
+import { AuthService } from "./service";
 
 @Module( {
     imports: [
@@ -19,7 +20,7 @@ import { AuthController } from "./controller";
     controllers:[
         AuthController
     ],
-    providers: []
+    providers: [ AuthService ]
 } )
 export class AuthModule {
 
