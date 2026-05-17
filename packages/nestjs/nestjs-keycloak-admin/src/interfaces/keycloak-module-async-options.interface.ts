@@ -17,5 +17,5 @@ export interface KeyclaokModuleAsyncOptions
     ) => 
         | Promise<KeycloakModuleOptions>
         | KeycloakModuleOptions;
-    inject: []
+    inject?: any[]
 }

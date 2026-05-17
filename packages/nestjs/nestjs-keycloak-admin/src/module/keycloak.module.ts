@@ -3,9 +3,14 @@ import { KeycloakModuleOptions } from "../interfaces/keycloak-module-options.int
 import { KeyclaokModuleAsyncOptions, KeycloakModuleFactory  } from '../interfaces/keycloak-module-async-options.interface.js'
 import { KEYCLOAK_MODULE_OPTIONS } from "../constants/keycloak.constants.js";
 import { keycloakProvider } from "../providers/keycloak.provider.js";
+import { KeycloakUserService } from "../services/keycloak-user.service.js";
 
 @Module( {} )
 export class KeycloakModule {
+    private static readonly baseProviders = [
+        keycloakProvider,
+        KeycloakUserService,
+    ];
 
     static forRoot(
         options: KeycloakModuleOptions
@@ -17,9 +22,9 @@ export class KeycloakModule {
                     provide: KEYCLOAK_MODULE_OPTIONS,
                     useValue: options
                 },
-                keycloakProvider
+                ...this.baseProviders
             ],
-            exports: [ KEYCLOAK_MODULE_OPTIONS, keycloakProvider ]
+            exports: [ KEYCLOAK_MODULE_OPTIONS, ...this.baseProviders ]
         } 
     }
     static forRootAsync(
@@ -29,8 +34,10 @@ export class KeycloakModule {
             module: KeycloakModule,
             imports: options.imports || [],
             providers: [
-                ...this.createAsyncProviders( options )
-            ]
+                ...this.createAsyncProviders( options ),
+                ...this.baseProviders
+            ],
+            exports: [ KEYCLOAK_MODULE_OPTIONS, ...this.baseProviders ]
         }
     }
 

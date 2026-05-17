@@ -1,5 +1,6 @@
 import { Column, Entity, Index } from 'typeorm'
 import { IdTimestamppedEntity } from './id-timestampped.entity.js'
+import { UserAuthStatus } from '@gradiaqo/nestjs-shared'
 
 @Entity( 'users' )
 export class UserEntity extends IdTimestamppedEntity {
@@ -22,4 +23,11 @@ export class UserEntity extends IdTimestamppedEntity {
         nullable: false
     } )
     isActive: boolean;
+
+    @Column( {
+        type: 'enum',
+        enum: UserAuthStatus,
+        default: UserAuthStatus.PENDING,
+    } )
+    authStatus: UserAuthStatus;
 }
