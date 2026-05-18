@@ -62,4 +62,18 @@ export class KeycloakUserService {
             id: userId,
         } );
     }
+
+    async verifyEmail( userId: string ) {
+        await this.authenticate();
+
+        await this.kc.users.update(
+            {
+                id: userId,
+            },
+            {
+                emailVerified: true,
+                enabled: true,
+            },
+        );
+    }
 }

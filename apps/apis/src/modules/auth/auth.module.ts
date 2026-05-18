@@ -1,4 +1,4 @@
-import { UserEntity } from "@gradiaqo/nestjs-database/entities";
+import { UserEmailOtpEntity, UserEntity } from "@gradiaqo/nestjs-database/entities";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { KeycloakModule } from "@gradiaqo/nestjs-keycloak-admin";
@@ -8,7 +8,7 @@ import { AuthService } from "./service";
 
 @Module( {
     imports: [
-        TypeOrmModule.forFeature( [ UserEntity ] ),
+        TypeOrmModule.forFeature( [ UserEntity, UserEmailOtpEntity ] ),
         KeycloakModule.forRootAsync( {
             imports: [ ConfigModule ],
             inject: [ ConfigService ],
