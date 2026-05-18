@@ -2,7 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ResendOtpRequest, SignupRequest, SignupResponse, VerifyOtpRequest, VerifyOtpResponse } from '../dtos';
 import type { Static } from 'typebox';
-import { TypeApiBody, TypeApiResponse } from 'src/decorators';
+import { OtpRateLimit, TypeApiBody, TypeApiResponse } from 'src/decorators';
 import { Public } from 'src/guards/public.guard';
 import { AuthService } from '../service';
 
@@ -12,6 +12,7 @@ export class AuthController {
     constructor( private readonly authService: AuthService ) {}
 
     @Post( 'sigup' )
+    @OtpRateLimit()
     @TypeApiBody( { schema: SignupRequest } )
     @Public()
     @TypeApiResponse( { schema: SignupResponse, status: 200 } )
@@ -20,6 +21,7 @@ export class AuthController {
     }
 
     @Post( 'resend-otp' )
+    @OtpRateLimit()
     @TypeApiBody( { schema: ResendOtpRequest } )
     @Public()
     @TypeApiResponse( { schema: SignupResponse, status: 200 } )
@@ -28,6 +30,7 @@ export class AuthController {
     }
 
     @Post( 'verify-otp' )
+    @OtpRateLimit()
     @TypeApiBody( { schema: VerifyOtpRequest } )
     @Public()
     @TypeApiResponse( { schema: VerifyOtpResponse, status: 200 } )
