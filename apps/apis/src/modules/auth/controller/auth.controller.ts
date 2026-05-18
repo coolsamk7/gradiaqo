@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { SignupRequest, SignupResponse, VerifyOtpRequest, VerifyOtpResponse } from '../dtos';
+import { ResendOtpRequest, SignupRequest, SignupResponse, VerifyOtpRequest, VerifyOtpResponse } from '../dtos';
 import type { Static } from 'typebox';
 import { TypeApiBody, TypeApiResponse } from 'src/decorators';
 import { Public } from 'src/guards/public.guard';
@@ -17,6 +17,14 @@ export class AuthController {
     @TypeApiResponse( { schema: SignupResponse, status: 200 } )
     async singup( @Body() signupDto: Static<typeof SignupRequest> ): Promise<Static<typeof SignupResponse>> {
         return this.authService.signup( signupDto );
+    }
+
+    @Post( 'resend-otp' )
+    @TypeApiBody( { schema: ResendOtpRequest } )
+    @Public()
+    @TypeApiResponse( { schema: SignupResponse, status: 200 } )
+    async resendOtp( @Body() resendOtpDto: Static<typeof ResendOtpRequest> ): Promise<Static<typeof SignupResponse>> {
+        return this.authService.resendOtp( resendOtpDto );
     }
 
     @Post( 'verify-otp' )

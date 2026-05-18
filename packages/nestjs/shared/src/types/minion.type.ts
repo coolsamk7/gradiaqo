@@ -10,6 +10,12 @@ export const MinionEvents = new EventSchemas().fromRecord<{
             roles?: string[];
         };
     };
+    'users/user.otp-resend-requested': {
+        data: {
+            id: string;
+            email: string;
+        };
+    };
 }>();
 export type MinionInngestClientOpts = {
     id: 'minion/app';
