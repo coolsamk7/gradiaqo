@@ -1,5 +1,6 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
+  "globalEnv": ["NODE_ENV", "AUTH_OTP_RATE_LIMIT_LIMIT", "AUTH_OTP_RATE_LIMIT_TTL_MS"],
   "globalDependencies": ["**/.env.*local"],
   "tasks": {
     "dev": {

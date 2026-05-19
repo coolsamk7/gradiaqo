@@ -8,7 +8,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { createHash, timingSafeEqual } from 'crypto';
 import type { Static } from 'typebox';
 import { DataSource } from 'typeorm';
-import { SignupRequest, SignupResponse, VerifyOtpRequest, VerifyOtpResponse } from '../dtos';
+import { ResendOtpRequest, ResendOtpResponse, SignupRequest, SignupResponse, VerifyOtpRequest, VerifyOtpResponse } from '../dtos';
 
 @Injectable()
 export class AuthService {
@@ -112,6 +112,32 @@ export class AuthService {
         await userEmailOtpRepository.delete( { userId: verifyOtpDto.userId } );
 
         return this.toAuthResponse( user );
+    }
+
+    async resendOtp( resendOtpDto: Static<typeof ResendOtpRequest> ): Promise<Static<typeof ResendOtpResponse>> {
+        const userRepository = this.datasource.getRepository( UserEntity );
+        const user = await userRepository.findOneBy( {
+            id: resendOtpDto.userId,
+        } );
+
+        const emailMatches = user?.email.toLowerCase() === resendOtpDto.email.toLowerCase();
+        const shouldResendOtp = Boolean( user )
+            && emailMatches
+            && user.authStatus !== UserAuthStatus.ACTIVE;
+
+        if ( shouldResendOtp ) {
+            await this.inngestService.send( {
+                name: 'users/user.otp-resend-requested',
+                data: {
+                    id: user.id,
+                    email: user.email,
+                },
+            } );
+        }
+
+        return {
+            accepted: true,
+        };
     }
 
     private toAuthResponse(

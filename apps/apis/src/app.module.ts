@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { loggerConfig, inngestConfig, databaseConfig, keycloakConfig } from './config';
+import { loggerConfig, inngestConfig, databaseConfig, keycloakConfig, otpThrottlerConfig } from './config';
 import { LoggerModule } from 'nestjs-pino';
 import { NestjsInngestModule } from '@gradiaqo/nestjs-inngest';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,7 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
         ConfigModule.forRoot( {
             isGlobal: true,
             envFilePath: [ '.env' ],
-            load: [ loggerConfig, inngestConfig, databaseConfig, keycloakConfig ]
+            load: [ loggerConfig, inngestConfig, databaseConfig, keycloakConfig, otpThrottlerConfig ]
         } ),
         LoggerModule.forRootAsync( {
             imports: [ ConfigModule ],
