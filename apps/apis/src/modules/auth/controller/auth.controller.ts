@@ -1,6 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { ResendOtpRequest, SignupRequest, SignupResponse, VerifyOtpRequest, VerifyOtpResponse } from '../dtos';
+import { ResendOtpRequest, ResendOtpResponse, SignupRequest, SignupResponse, VerifyOtpRequest, VerifyOtpResponse } from '../dtos';
 import type { Static } from 'typebox';
 import { OtpRateLimit, TypeApiBody, TypeApiResponse } from 'src/decorators';
 import { Public } from 'src/guards/public.guard';
@@ -12,7 +12,7 @@ export class AuthController {
     constructor( private readonly authService: AuthService ) {}
 
     @Post( 'sigup' )
-    @OtpRateLimit()
+    @OtpRateLimit( 'signup' )
     @TypeApiBody( { schema: SignupRequest } )
     @Public()
     @TypeApiResponse( { schema: SignupResponse, status: 200 } )
@@ -21,16 +21,17 @@ export class AuthController {
     }
 
     @Post( 'resend-otp' )
-    @OtpRateLimit()
+    @HttpCode( 202 )
+    @OtpRateLimit( 'resend' )
     @TypeApiBody( { schema: ResendOtpRequest } )
     @Public()
-    @TypeApiResponse( { schema: SignupResponse, status: 200 } )
-    async resendOtp( @Body() resendOtpDto: Static<typeof ResendOtpRequest> ): Promise<Static<typeof SignupResponse>> {
+    @TypeApiResponse( { schema: ResendOtpResponse, status: 202 } )
+    async resendOtp( @Body() resendOtpDto: Static<typeof ResendOtpRequest> ): Promise<Static<typeof ResendOtpResponse>> {
         return this.authService.resendOtp( resendOtpDto );
     }
 
     @Post( 'verify-otp' )
-    @OtpRateLimit()
+    @OtpRateLimit( 'verify' )
     @TypeApiBody( { schema: VerifyOtpRequest } )
     @Public()
     @TypeApiResponse( { schema: VerifyOtpResponse, status: 200 } )
