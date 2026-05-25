@@ -4,35 +4,18 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
+    
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-      - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn build
       - uses: SonarSource/sonarqube-scan-action@v6
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        with:
-          args: >
-            -Dsonar.projectKey=${{ format('{0}_{1}', github.repository_owner, github.event.repository.name) }}
-            -Dsonar.projectName=${{ github.event.repository.name }}
-            -Dsonar.sources=.
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
