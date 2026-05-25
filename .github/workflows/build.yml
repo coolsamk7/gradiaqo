@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 
 jobs:
@@ -24,6 +27,7 @@ jobs:
       - run: yarn install --immutable
       - run: yarn build
       - uses: SonarSource/sonarqube-scan-action@v6
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         with:
           args: >
             -Dsonar.projectKey=${{ format('{0}_{1}', github.repository_owner, github.event.repository.name) }}
