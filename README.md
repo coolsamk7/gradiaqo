@@ -1,4 +1,4 @@
-# Gradiqo
+# Gradiqo :D
 
 Gradiqo is a modern learning operating system designed for students, developers, professionals, and lifelong learners to manage structured learning, study consistency, deep work, problem solving, and long-term skill growth.
 
