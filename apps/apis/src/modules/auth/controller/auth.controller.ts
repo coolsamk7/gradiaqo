@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { ResendOtpRequest, ResendOtpResponse, SignupRequest, SignupResponse, VerifyOtpRequest, VerifyOtpResponse } from '../dtos';
 import type { Static } from 'typebox';
 import { OtpRateLimit, TypeApiBody, TypeApiResponse } from 'src/decorators';
@@ -11,12 +11,22 @@ import { AuthService } from '../service';
 export class AuthController {
     constructor( private readonly authService: AuthService ) {}
 
-    @Post( 'sigup' )
+    @Post( 'signup' )
     @OtpRateLimit( 'signup' )
     @TypeApiBody( { schema: SignupRequest } )
     @Public()
     @TypeApiResponse( { schema: SignupResponse, status: 200 } )
-    async singup( @Body() signupDto: Static<typeof SignupRequest> ): Promise<Static<typeof SignupResponse>> {
+    async signup( @Body() signupDto: Static<typeof SignupRequest> ): Promise<Static<typeof SignupResponse>> {
+        return this.authService.signup( signupDto );
+    }
+
+    @Post( 'sigup' )
+    @ApiExcludeEndpoint()
+    @OtpRateLimit( 'signup' )
+    @TypeApiBody( { schema: SignupRequest } )
+    @Public()
+    @TypeApiResponse( { schema: SignupResponse, status: 200 } )
+    async legacySignup( @Body() signupDto: Static<typeof SignupRequest> ): Promise<Static<typeof SignupResponse>> {
         return this.authService.signup( signupDto );
     }
 

@@ -45,11 +45,13 @@ function closeObjectSchemas<T extends TSchema>( schema: T ): T {
     return nextSchema as T;
 }
 
-export function transformTypeboxResponse<T extends TSchema>( schema: T, response: unknown ): Static<T> {
+export function transformTypeboxValue<T extends TSchema>( schema: T, value: unknown ): Static<T> {
     const normalizedSchema = closeObjectSchemas( schema );
-    const transformedResponse = Convert( normalizedSchema, Clone( response ) );
+    const transformedResponse = Convert( normalizedSchema, Clone( value ) );
 
     Assert( normalizedSchema, transformedResponse );
 
     return transformedResponse as Static<T>;
 }
+
+export const transformTypeboxResponse = transformTypeboxValue;

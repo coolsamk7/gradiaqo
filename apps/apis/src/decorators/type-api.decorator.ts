@@ -1,16 +1,41 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, UseInterceptors, applyDecorators } from '@nestjs/common';
+import { ArgumentMetadata, BadRequestException, CallHandler, ExecutionContext, Injectable, NestInterceptor, PipeTransform, UseInterceptors, UsePipes, applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiBodyOptions, ApiQuery, ApiQueryOptions, ApiResponse, ApiResponseOptions } from '@nestjs/swagger';
 import type { Observable } from 'rxjs';
 import { map } from 'rxjs';
 import { TSchema } from 'typebox';
-import { transformTypeboxResponse } from 'src/utils';
+import { transformTypeboxValue } from 'src/utils';
 
 export type TypeApiBodyOptions = ApiBodyOptions & {
     schema?: TSchema;
 };
 
+function createTypeApiBodyPipe<T extends TSchema>( schema: T ) {
+    @Injectable()
+    class TypeApiBodyPipe implements PipeTransform {
+        transform( value: unknown, metadata: ArgumentMetadata ): unknown {
+            if ( metadata.type !== 'body' ) {
+                return value;
+            }
+
+            try {
+                return transformTypeboxValue( schema, value );
+            } catch {
+                throw new BadRequestException( 'Request body does not match the expected schema.' );
+            }
+        }
+    }
+
+    return new TypeApiBodyPipe();
+}
+
 export function TypeApiBody( { schema, ...rest }: TypeApiBodyOptions ) {
-    return applyDecorators( ApiBody( { schema, ...rest } ) );
+    const decorators = [ ApiBody( { schema, ...rest } ) ];
+
+    if ( schema ) {
+        decorators.push( UsePipes( createTypeApiBodyPipe( schema ) ) );
+    }
+
+    return applyDecorators( ...decorators );
 }
 
 export type TypeApiQueryOptions = ApiQueryOptions & {
@@ -30,7 +55,7 @@ function createTypeApiResponseInterceptor<T extends TSchema>( schema: T ) {
     class TypeApiResponseInterceptor implements NestInterceptor {
         intercept( _context: ExecutionContext, next: CallHandler ): Observable<unknown> {
             return next.handle().pipe(
-                map( ( response ) => transformTypeboxResponse( schema, response ) )
+                map( ( response ) => transformTypeboxValue( schema, response ) )
             );
         }
     }

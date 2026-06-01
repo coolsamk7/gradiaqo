@@ -17,7 +17,6 @@ export class IdTimestamppedEntity {
     @BeforeInsert()
     setId() {
         if ( !this.id ) {
-            console.log( this.id, ulid() )
             this.id = ulid()
         }
     }
