@@ -22,7 +22,6 @@ export class UserCreatedFunction {
         if ( !email ) {
             throw new Error( 'users/user.created event is missing email.' );
         }
-        console.log( 'function triggered' )
         return issueSignupOtp( {
             step,
             userId: event.data.id,

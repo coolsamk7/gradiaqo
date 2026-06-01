@@ -5,6 +5,8 @@ import { LoggerModule } from 'nestjs-pino';
 import { NestjsInngestModule } from '@gradiaqo/nestjs-inngest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { PublicGuard } from './guards';
 
 @Module( {
     imports: [
@@ -34,6 +36,11 @@ import { AuthModule } from './modules/auth/auth.module';
         AuthModule
     ],
     controllers: [],
-    providers: [],
+    providers: [
+        {
+            provide: APP_GUARD,
+            useClass: PublicGuard,
+        },
+    ],
 } )
 export class AppModule {}

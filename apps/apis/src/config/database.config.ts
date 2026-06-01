@@ -1,9 +1,12 @@
-import * as entities from '@gradiaqo/nestjs-database/entities';
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export const databaseConfig = registerAs( 'database.config', (): TypeOrmModuleOptions => {
     const env = process.env;
+    const synchronize = env.DATABASE_SYNCHRONIZE
+        ? env.DATABASE_SYNCHRONIZE === 'true'
+        : env.NODE_ENV !== 'production';
+
     return {
         type: 'postgres',
         database: env.DATABASE_NAME,
@@ -12,8 +15,7 @@ export const databaseConfig = registerAs( 'database.config', (): TypeOrmModuleOp
         username: env.DATABASE_USERNAME,
         password: env.DATABASE_PASSWORD,
         autoLoadEntities: true,
-        synchronize: true,
-        logging: false, // Enable logging to see what's happening
+        synchronize,
+        logging: false,
     };
 } );
-

@@ -3,6 +3,9 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export const databaseConfig = registerAs( 'database.config', (): TypeOrmModuleOptions => {
     const env = process.env;
+    const synchronize = env.DATABASE_SYNCHRONIZE
+        ? env.DATABASE_SYNCHRONIZE === 'true'
+        : env.NODE_ENV !== 'production';
 
     return {
         type: 'postgres',
@@ -12,7 +15,7 @@ export const databaseConfig = registerAs( 'database.config', (): TypeOrmModuleOp
         username: env.DATABASE_USERNAME,
         password: env.DATABASE_PASSWORD,
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize,
         logging: false,
     };
 } );
