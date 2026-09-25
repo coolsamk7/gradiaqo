@@ -1,0 +1,47 @@
+{
+  "name": "@studylog/casl",
+  "version": "0.0.0",
+  "private": true,
+  "description": "StudyLog authorization: CASL permission rules per role, plus NestJS guards and decorators",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "eslint . --fix",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@studylog/database": "workspace:*"
+  },
+  "peerDependencies": {
+    "@casl/ability": "^7.0.1",
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/core": "^12.0.1"
+  },
+  "devDependencies": {
+    "@casl/ability": "^7.0.1",
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/core": "^12.0.1",
+    "@studylog/common": "workspace:*",
+    "@types/node": "^24.0.0",
+    "eslint": "^10.11.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "typeorm": "^1.1.1",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  }
+}
