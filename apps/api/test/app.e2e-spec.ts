@@ -6,7 +6,8 @@ import type { App } from 'supertest/types';
 
 import { AppModule } from './../src/app.module.js';
 
-describe( 'AppController (e2e)', () => {
+// Needs the database from `yarn db:up` and apps/api/.env.
+describe( 'Health (e2e)', () => {
     let app: INestApplication<App>;
 
     beforeEach( async () => {
@@ -18,9 +19,9 @@ describe( 'AppController (e2e)', () => {
         await app.init();
     } );
 
-    it( '/ (GET)', () => {
-        return request( app.getHttpServer() ).get( '/' ).expect( 200 )
-            .expect( 'Hello World!' );
+    it( 'GET /health reports the API and database as up', () => {
+        return request( app.getHttpServer() ).get( '/health' ).expect( 200 )
+            .expect( { status: 'ok', database: 'up' } );
     } );
 
     afterEach( async () => {

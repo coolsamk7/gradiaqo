@@ -30,7 +30,7 @@ export class SessionsService {
         @InjectRepository( Session ) private readonly sessions: Repository<Session>,
         config: ConfigService,
     ) {
-        this.ttlMs = Number( config.get( 'REFRESH_TOKEN_TTL_DAYS', 180 ) ) * DAY_MS;
+        this.ttlMs = config.getOrThrow<number>( 'REFRESH_TOKEN_TTL_DAYS' ) * DAY_MS;
     }
 
     /** Starts a new session and returns its refresh token. */

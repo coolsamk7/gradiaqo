@@ -23,7 +23,7 @@ import { SessionsService } from './sessions.service.js';
             useFactory: ( config: ConfigService ) => ( {
                 secret: config.getOrThrow<string>( 'JWT_SECRET' ),
                 signOptions: {
-                    expiresIn: Number( config.get( 'JWT_EXPIRES_IN_SECONDS', 900 ) ),
+                    expiresIn: config.getOrThrow<number>( 'JWT_EXPIRES_IN_SECONDS' ),
                 },
             } ),
         } ),

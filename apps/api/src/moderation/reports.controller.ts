@@ -21,6 +21,7 @@ import type {
 import { CurrentUser } from '../auth/auth.guard.js';
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import { PlatformAuth } from '../auth/platform-auth.decorator.js';
+import { RateLimit } from '../rate-limits.js';
 import { ReportsService } from './reports.service.js';
 
 @ApiTags( 'catalog' )
@@ -30,6 +31,7 @@ export class PathReportsController {
     constructor( private readonly reportsService: ReportsService ) {}
 
     @Post()
+    @RateLimit( 'report' )
     @ApiOperation( { summary: 'Report a public path shared by another user (spam, inappropriate, copyright, other)' } )
     @TypeboxResponse( Responses.Report, { status: 201 } )
     @ApiBadRequestResponse( { description: 'Invalid input, not a user-shared public path, or your own path' } )

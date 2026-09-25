@@ -72,6 +72,21 @@ export default nodeConfig( { tsconfigRootDir: import.meta.dirname } );
 cp apps/api/.env.example apps/api/.env   # then set JWT_SECRET: openssl rand -base64 48
 ```
 
+Settings are checked at startup (`apps/api/src/config/env.ts`): a missing or invalid value stops the API with a
+list of every problem. `JWT_SECRET` must be at least 32 characters, and `NODE_ENV=production` requires
+`COOKIE_SECURE=true`.
+
+### Protection
+
+- **Rate limits** per client IP (`apps/api/src/rate-limits.ts`): 300 requests/minute by default; tighter on login
+  (10/min), signup (10/hour), refresh (60/min), change password and delete account (5 per 15 min), invitations
+  (30/hour) and reports (10/hour). Over the limit: `429` with `Retry-After`. Counters are in memory, so each API
+  instance counts separately; use a shared store (e.g. Redis) before running several.
+- Behind a load balancer or CDN, set `TRUST_PROXY` to the number of proxies so limits and logs use the real client IP.
+- **Security headers** via helmet (CSP, HSTS, no sniffing, no framing).
+- **`GET /health`** returns `{ status, database }`: 200 when the database answers, 503 when it doesn't. Not rate
+  limited or logged; use it for load balancer and uptime checks.
+
 ### CORS (browser apps)
 
 Set `CORS_ORIGINS` in `apps/api/.env` to the exact origins of your web apps, comma-separated, e.g.

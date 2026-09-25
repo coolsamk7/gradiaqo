@@ -15,6 +15,7 @@ import type { CreateInvitationRequest, Invitation, MyInvitation, MyOrganization 
 
 import { CurrentUser } from '../auth/auth.guard.js';
 import { Authenticated } from '../auth/authenticated.decorator.js';
+import { RateLimit } from '../rate-limits.js';
 import { UsersService } from '../users/users.service.js';
 import { InvitationsService } from './invitations.service.js';
 import { OrganizationAuth } from './organization-auth.decorator.js';
@@ -39,6 +40,7 @@ export class OrganizationInvitationsController {
     }
 
     @Post()
+    @RateLimit( 'invite' )
     @ApiOperation( {
         summary: 'Invite someone by email (owners and admins)',
         description: 'They see it under /me/invitations once logged in with that email, for 14 days. '

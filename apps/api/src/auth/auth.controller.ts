@@ -43,6 +43,7 @@ import type {
 } from '@studylog/schemas';
 import type { CookieOptions, Request, Response } from 'express';
 
+import { RateLimit } from '../rate-limits.js';
 import { toPublicUser } from '../users/public-user.js';
 import { UsersService } from '../users/users.service.js';
 import { AccountService } from './account.service.js';
@@ -66,15 +67,16 @@ export class AuthController {
     ) {
         this.cookieOptions = {
             httpOnly: true,
-            secure: config.get( 'COOKIE_SECURE' ) === 'true',
+            secure: config.getOrThrow<boolean>( 'COOKIE_SECURE' ),
             sameSite: 'strict',
             // Only sent to the auth endpoints, not with every API call.
             path: '/auth',
-            maxAge: Number( config.get( 'REFRESH_TOKEN_TTL_DAYS', 180 ) ) * 24 * 60 * 60 * 1000,
+            maxAge: config.getOrThrow<number>( 'REFRESH_TOKEN_TTL_DAYS' ) * 24 * 60 * 60 * 1000,
         };
     }
 
     @Post( 'signup' )
+    @RateLimit( 'signup' )
     @ApiOperation( { summary: 'Create an account and start a session (sets the refresh cookie)' } )
     @TypeboxResponse( Responses.AuthResponse, { status: 201, description: 'Account created' } )
     @ApiBadRequestResponse( { description: 'Invalid input' } )
@@ -88,6 +90,7 @@ export class AuthController {
     }
 
     @Post( 'login' )
+    @RateLimit( 'login' )
     @HttpCode( HttpStatus.OK )
     @ApiOperation( { summary: 'Log in and start a session (sets the refresh cookie)' } )
     @TypeboxResponse( Responses.AuthResponse, { description: 'Logged in' } )
@@ -102,6 +105,7 @@ export class AuthController {
     }
 
     @Post( 'refresh' )
+    @RateLimit( 'refresh' )
     @HttpCode( HttpStatus.OK )
     @ApiCookieAuth()
     @ApiOperation( { summary: 'Get a new access token and rotate the refresh cookie' } )
@@ -175,6 +179,7 @@ export class AuthController {
     }
 
     @Post( 'change-password' )
+    @RateLimit( 'sensitive' )
     @UseGuards( AuthGuard )
     @HttpCode( HttpStatus.NO_CONTENT )
     @ApiBearerAuth()
@@ -195,6 +200,7 @@ export class AuthController {
     }
 
     @Post( 'delete-account' )
+    @RateLimit( 'sensitive' )
     @UseGuards( AuthGuard )
     @HttpCode( HttpStatus.NO_CONTENT )
     @ApiBearerAuth()

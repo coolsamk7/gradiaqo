@@ -1117,6 +1117,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/throttler@npm:^6.7.1":
+  version: 6.7.1
+  resolution: "@nestjs/throttler@npm:6.7.1"
+  peerDependencies:
+    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0 || ^12.0.0
+    "@nestjs/core": ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0 || ^12.0.0
+    reflect-metadata: ^0.1.13 || ^0.2.0
+  checksum: 10c0/c91ab43a7c5301862db24401ce84144c15c28c0f525de459da8c495cad4adf5e7aa14710b8dbe4a8b47fa564fbbc44784da90181c975978ed3ab56d794841ebb
+  languageName: node
+  linkType: hard
+
 "@nestjs/typeorm@npm:^12.0.1":
   version: 12.0.1
   resolution: "@nestjs/typeorm@npm:12.0.1"
@@ -1360,6 +1371,7 @@ __metadata:
     "@nestjs/schematics": "npm:^12.0.0"
     "@nestjs/swagger": "npm:^12.0.2"
     "@nestjs/testing": "npm:^12.0.1"
+    "@nestjs/throttler": "npm:^6.7.1"
     "@nestjs/typeorm": "npm:^12.0.1"
     "@studylog/casl": "workspace:*"
     "@studylog/common": "workspace:*"
@@ -1378,6 +1390,7 @@ __metadata:
     argon2: "npm:^0.45.1"
     cookie-parser: "npm:^1.4.7"
     eslint: "npm:^10.11.0"
+    helmet: "npm:^8.3.0"
     pg: "npm:^8.23.0"
     reflect-metadata: "npm:^0.2.2"
     rxjs: "npm:^7.8.1"
@@ -4243,6 +4256,13 @@ __metadata:
   dependencies:
     function-bind: "npm:^1.1.2"
   checksum: 10c0/2d8de939e270b70618f8cebb69746620db10617dbb495bc66ddad326955ea24d3ca4af133aff3eb7c1853e0218f867bc2b050ec26fe02e3aea58f880ffc5e506
+  languageName: node
+  linkType: hard
+
+"helmet@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "helmet@npm:8.3.0"
+  checksum: 10c0/69f33ca716ed3ce34f1f2f48ce8618846dfa9c89e3a15d6bccefc882541e8b028517448c6b0e7450792fd23e5580bfe6d410d4f22bedc2a94f6b1188817a059a
   languageName: node
   linkType: hard
 

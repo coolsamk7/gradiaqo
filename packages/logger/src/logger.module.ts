@@ -26,7 +26,8 @@ export class LoggerModule {
                         createLoggerOptions( {
                             ...options,
                             level: config.get( 'LOG_LEVEL', 'info' ),
-                            pretty: config.get( 'LOG_PRETTY' ) === 'true',
+                            // A boolean when the app validates its config, the raw string otherwise.
+                            pretty: String( config.get( 'LOG_PRETTY' ) ) === 'true',
                         } ),
                 } ),
             ],
