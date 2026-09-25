@@ -72,6 +72,17 @@ export default nodeConfig( { tsconfigRootDir: import.meta.dirname } );
 cp apps/api/.env.example apps/api/.env   # then set JWT_SECRET: openssl rand -base64 48
 ```
 
+### CORS (browser apps)
+
+Set `CORS_ORIGINS` in `apps/api/.env` to the exact origins of your web apps, comma-separated, e.g.
+`http://localhost:5173,https://app.example.com`. Empty means no cross-origin access. No `*` or trailing slash: the
+API allows credentials (the refresh cookie), so every site must be named, and an invalid entry stops the API at
+startup. The frontend can read the `X-Request-Id` response header.
+
+The refresh cookie is `SameSite=Strict`, so it's only sent when the web app is on the **same site** as the API:
+`localhost` on any port, or subdomains of one domain (`app.example.com` + `api.example.com`). Calls from a different
+domain work for access-token requests, but `/auth/refresh` won't get the cookie.
+
 ## Build
 
 The API builds with the **SWC** builder (`nest-cli.json`), with type checking on. Packages build with `tsc`.

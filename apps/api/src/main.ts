@@ -8,12 +8,19 @@ import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module.js';
 import { REFRESH_COOKIE } from './auth/auth.controller.js';
+import { corsOptions, parseCorsOrigins } from './cors.js';
 
 async function bootstrap() {
     // Buffer startup logs until pino is ready, then route all Nest logs through it.
     const app = await NestFactory.create( AppModule, { bufferLogs: true } );
 
     app.useLogger( app.get( PinoLogger ) );
+
+    const corsOrigins = parseCorsOrigins( process.env.CORS_ORIGINS );
+
+    if ( corsOrigins.length > 0 ) {
+        app.enableCors( corsOptions( corsOrigins ) );
+    }
 
     app.use( cookieParser() );
     // Validates `@Body( { schema } )` / `@Query( { schema } )` / `@Param( name, { schema } )` with TypeBox.
@@ -33,6 +40,9 @@ async function bootstrap() {
 
     logger.log( `API running at ${baseUrl}` );
     logger.log( swaggerEnabled ? `Swagger docs at ${baseUrl}/docs` : 'Swagger docs disabled (SWAGGER_ENABLED=false)' );
+    logger.log( corsOrigins.length > 0
+        ? `CORS allowed for ${corsOrigins.join( ', ' )}`
+        : 'CORS disabled: no browser app on another origin can call the API (set CORS_ORIGINS)' );
 }
 
 function setupSwagger( app: INestApplication ) {
