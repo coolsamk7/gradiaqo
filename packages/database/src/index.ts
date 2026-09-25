@@ -10,6 +10,8 @@ export { LearningModule } from './entities/learning-module.entity.js';
 export { LearningPath } from './entities/learning-path.entity.js';
 export { Membership } from './entities/membership.entity.js';
 export { Organization } from './entities/organization.entity.js';
+export { OrganizationInvitation } from './entities/organization-invitation.entity.js';
+export { PathReport } from './entities/path-report.entity.js';
 export { Session } from './entities/session.entity.js';
 export { StudySession } from './entities/study-session.entity.js';
 export { Topic } from './entities/topic.entity.js';
@@ -25,6 +27,8 @@ export {
     PathVisibility,
     PlatformRole,
     ProgressStatus,
+    ReportReason,
+    ReportStatus,
     RuleMode,
     RuleScope,
 } from '@studylog/schemas/enums';

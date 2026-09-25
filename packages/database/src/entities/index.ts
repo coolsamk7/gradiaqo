@@ -7,6 +7,8 @@ import { LearningModule } from './learning-module.entity.js';
 import { LearningPath } from './learning-path.entity.js';
 import { Membership } from './membership.entity.js';
 import { Organization } from './organization.entity.js';
+import { OrganizationInvitation } from './organization-invitation.entity.js';
+import { PathReport } from './path-report.entity.js';
 import { Session } from './session.entity.js';
 import { StudySession } from './study-session.entity.js';
 import { Topic } from './topic.entity.js';
@@ -29,4 +31,6 @@ export const entities = [
     EnrollmentOrder,
     ItemProgress,
     StudySession,
+    OrganizationInvitation,
+    PathReport,
 ];

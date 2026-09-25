@@ -63,6 +63,10 @@ export class LearningPath {
     } )
     visibility: PathVisibility;
 
+    // Set when a moderator takes the path out of the public catalog; it can't be made public again.
+    @Column( { name: 'public_blocked_at', type: 'timestamptz', nullable: true } )
+    publicBlockedAt: Date | null;
+
     @Column( { type: 'int', default: 0 } )
     position: number;
 
