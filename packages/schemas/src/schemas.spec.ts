@@ -1,0 +1,116 @@
+import type { Validator } from 'typebox/compile';
+import { Compile } from 'typebox/compile';
+import { describe, expect, it } from 'vitest';
+
+import {
+    CreateItemRequest,
+    CreateLearningPathRequest,
+    ItemDetailsSchemas,
+    ItemProgress,
+    ItemType,
+    LoginRequest,
+    ReorderRequest,
+    SignupRequest,
+    UpdateOrganizationRequest,
+    User,
+} from './index.js';
+
+const parse = ( validator: Validator ) => ( value: unknown ) =>
+    ( validator.Check( value ) ? validator.Decode( value ) : undefined );
+
+describe( 'request schemas', () => {
+    const signup = parse( Compile( SignupRequest ) );
+
+    it( 'trims names and trims + lowercases emails', () => {
+        expect( signup( { email: '  Sam@Example.COM ', firstName: '  Sam ', lastName: 'K', password: 'supersecret1' } ) )
+            .toEqual( { email: 'sam@example.com', firstName: 'Sam', lastName: 'K', password: 'supersecret1' } );
+    } );
+
+    it( 'rejects invalid emails, blank names, short passwords and unknown fields', () => {
+        const valid = { email: 'a@b.co', firstName: 'A', lastName: 'B', password: 'supersecret1' };
+
+        expect( signup( { ...valid, email: 'not-an-email' } ) ).toBeUndefined();
+        expect( signup( { ...valid, email: 'a b@c.co' } ) ).toBeUndefined();
+        expect( signup( { ...valid, firstName: '   ' } ) ).toBeUndefined();
+        expect( signup( { ...valid, firstName: 'x'.repeat( 101 ) } ) ).toBeUndefined();
+        expect( signup( { ...valid, password: 'short' } ) ).toBeUndefined();
+        expect( signup( { ...valid, platformRole: 'superadmin' } ) ).toBeUndefined();
+        expect( signup( valid ) ).toBeDefined();
+    } );
+
+    it( 'normalizes login emails the same way', () => {
+        expect( parse( Compile( LoginRequest ) )( { email: ' A@B.CO', password: 'x' } ) ).toEqual( { email: 'a@b.co', password: 'x' } );
+    } );
+
+    it( 'trims organization names', () => {
+        expect( parse( Compile( UpdateOrganizationRequest ) )( { name: '  Group  ' } ) ).toEqual( { name: 'Group' } );
+    } );
+} );
+
+describe( 'response schemas', () => {
+    it( 'encode dates to ISO strings and only allow known roles', () => {
+        const user = Compile( User );
+        const createdAt = new Date( '2026-01-02T03:04:05.000Z' );
+        const encoded = user.Encode( {
+            id: '97f12719-9f4c-41c9-afc3-a91de613d02b', email: 'a@b.co', firstName: 'A', lastName: 'B',
+            platformRole: 'application_user', createdAt, updatedAt: createdAt,
+        } );
+
+        expect( encoded.createdAt ).toBe( '2026-01-02T03:04:05.000Z' );
+        expect( user.Check( { ...encoded, platformRole: 'god' } ) ).toBe( false );
+    } );
+
+    it( 'encode nullable dates whether set or null', () => {
+        const progress = Compile( ItemProgress );
+        const at = new Date( '2026-01-02T03:04:05.000Z' );
+        const encoded = progress.Encode( {
+            itemId: '97f12719-9f4c-41c9-afc3-a91de613d02b', status: 'in_progress', startedAt: at, completedAt: null, updatedAt: at,
+        } );
+
+        expect( encoded ).toMatchObject( { startedAt: '2026-01-02T03:04:05.000Z', completedAt: null } );
+    } );
+} );
+
+describe( 'catalog schemas', () => {
+    const createPath = parse( Compile( CreateLearningPathRequest ) );
+
+    it( 'trims titles and accepts only lowercase dashed slugs', () => {
+        expect( createPath( { title: '  DSA ', slug: 'dsa-101' } ) ).toEqual( { title: 'DSA', slug: 'dsa-101' } );
+        expect( createPath( { title: 'DSA', slug: 'DSA' } ) ).toBeUndefined();
+        expect( createPath( { title: 'DSA', slug: 'dsa--101' } ) ).toBeUndefined();
+        expect( createPath( { title: 'DSA', slug: '-dsa' } ) ).toBeUndefined();
+        expect( createPath( { title: '   ' } ) ).toBeUndefined();
+        expect( createPath( { title: 'DSA', status: 'live' } ) ).toBeUndefined();
+    } );
+
+    it( 'accepts any details object when creating an item (checked per type by the API)', () => {
+        const createItem = parse( Compile( CreateItemRequest ) );
+
+        expect( createItem( { type: 'problem', title: 'Two Sum', details: { anything: 1 } } ) ).toBeDefined();
+        expect( createItem( { type: 'podcast', title: 'Two Sum', details: {} } ) ).toBeUndefined();
+        expect( createItem( { type: 'problem', title: 'Two Sum' } ) ).toBeUndefined();
+    } );
+
+    it( 'has a details schema per item type that rejects unknown fields and non-http URLs', () => {
+        const problem = Compile( ItemDetailsSchemas[ItemType.Problem] );
+        const note = Compile( ItemDetailsSchemas[ItemType.Note] );
+        const book = Compile( ItemDetailsSchemas[ItemType.Book] );
+
+        expect( Object.keys( ItemDetailsSchemas ).sort() ).toEqual( Object.values( ItemType ).sort() );
+        expect( problem.Check( { url: 'https://leetcode.com/problems/two-sum', platform: 'leetcode' } ) ).toBe( true );
+        expect( problem.Check( { url: 'javascript:alert(1)' } ) ).toBe( false );
+        expect( problem.Check( { url: 'https://a.co', extra: true } ) ).toBe( false );
+        expect( problem.Check( {} ) ).toBe( false );
+        expect( note.Check( { content: '' } ) ).toBe( false );
+        expect( book.Check( {} ) ).toBe( true );
+    } );
+
+    it( 'rejects duplicate ids in a reorder', () => {
+        const reorder = parse( Compile( ReorderRequest ) );
+        const id = '97f12719-9f4c-41c9-afc3-a91de613d02b';
+
+        expect( reorder( { ids: [ id ] } ) ).toEqual( { ids: [ id ] } );
+        expect( reorder( { ids: [ id, id ] } ) ).toBeUndefined();
+        expect( reorder( { ids: [ 'not-a-uuid' ] } ) ).toBeUndefined();
+    } );
+} );

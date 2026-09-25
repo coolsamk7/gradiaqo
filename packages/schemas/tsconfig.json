@@ -1,0 +1,10 @@
+{
+  "extends": "@studylog/common/tsconfig/base.json",
+  "compilerOptions": {
+    "declarationMap": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": []
+  },
+  "include": ["src"]
+}
