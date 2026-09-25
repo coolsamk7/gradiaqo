@@ -4,8 +4,14 @@ import { ApiBadRequestResponse, ApiNotFoundResponse, ApiOperation, ApiTags } fro
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { AccessTokenPayload } from '@studylog/casl';
 import { CatalogStatus, Enrollment } from '@studylog/database';
-import { ListItemsQueryParams, Responses } from '@studylog/nestjs';
-import type { ItemPage, ListItemsQuery, PublishedPath, PublishedPathSummary } from '@studylog/schemas';
+import { ListItemsQueryParams, ListPublishedPathsQueryParams, Responses } from '@studylog/nestjs';
+import type {
+    ItemPage,
+    ListItemsQuery,
+    ListPublishedPathsQuery,
+    PublishedPath,
+    PublishedPathSummary,
+} from '@studylog/schemas';
 import { DataSource } from 'typeorm';
 
 import { CurrentUser } from '../auth/auth.guard.js';
@@ -30,11 +36,16 @@ export class PublishedCatalogController {
     @ApiOperation( {
         summary: 'Learning paths you can follow, with your enrollment in each (if any)',
         description: 'Published paths of the global catalog, of your organizations (including your personal workspace), '
-            + 'and paths other users made public. `organizationId` null means an official path.',
+            + 'and paths other users made public. Filter with `source` (official, mine, organizations, community) '
+            + 'and `search` (title).',
     } )
     @TypeboxResponse( Responses.PublishedPathList )
-    async list( @CurrentUser() user: AccessTokenPayload ): Promise<PublishedPathSummary[]> {
-        const paths = await this.catalogAccess.visiblePaths( user.sub );
+    @ApiBadRequestResponse( { description: 'Invalid filters' } )
+    async list(
+        @CurrentUser() user: AccessTokenPayload,
+        @Query( { schema: ListPublishedPathsQueryParams } ) query: ListPublishedPathsQuery,
+    ): Promise<PublishedPathSummary[]> {
+        const paths = await this.catalogAccess.visiblePaths( user.sub, query );
         const enrollmentIds = await this.enrollmentIdsByPath( user.sub );
 
         return paths.map( ( path ) => ( { ...path, enrollmentId: enrollmentIds.get( path.id ) ?? null } ) );
@@ -54,7 +65,11 @@ export class PublishedCatalogController {
             throw new NotFoundException( 'Learning path not found' );
         }
 
-        return { ...tree, enrollmentId: ( await this.enrollmentIdsByPath( user.sub ) ).get( pathId ) ?? null };
+        return {
+            ...tree,
+            ...( await this.catalogAccess.originOfPath( pathId ) ),
+            enrollmentId: ( await this.enrollmentIdsByPath( user.sub ) ).get( pathId ) ?? null,
+        };
     }
 
     @Get( 'items' )

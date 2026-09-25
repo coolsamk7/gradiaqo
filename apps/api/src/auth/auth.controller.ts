@@ -5,6 +5,7 @@ import {
     Get,
     HttpCode,
     HttpStatus,
+    Patch,
     Post,
     Req,
     Res,
@@ -23,12 +24,28 @@ import {
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { AccessTokenPayload } from '@studylog/casl';
-import { LoginBody, Responses, SignupBody } from '@studylog/nestjs';
-import type { AccessTokenResponse, LoginRequest, SignupRequest, User } from '@studylog/schemas';
+import {
+    ChangePasswordBody,
+    DeleteAccountBody,
+    LoginBody,
+    Responses,
+    SignupBody,
+    UpdateProfileBody,
+} from '@studylog/nestjs';
+import type {
+    AccessTokenResponse,
+    ChangePasswordRequest,
+    DeleteAccountRequest,
+    LoginRequest,
+    SignupRequest,
+    UpdateProfileRequest,
+    User,
+} from '@studylog/schemas';
 import type { CookieOptions, Request, Response } from 'express';
 
 import { toPublicUser } from '../users/public-user.js';
 import { UsersService } from '../users/users.service.js';
+import { AccountService } from './account.service.js';
 import { AuthGuard, CurrentUser } from './auth.guard.js';
 import type { AuthResult } from './auth.service.js';
 import { AuthService } from './auth.service.js';
@@ -44,6 +61,7 @@ export class AuthController {
     constructor(
         private readonly authService: AuthService,
         private readonly usersService: UsersService,
+        private readonly accountService: AccountService,
         config: ConfigService,
     ) {
         this.cookieOptions = {
@@ -140,6 +158,62 @@ export class AuthController {
         }
 
         return toPublicUser( user );
+    }
+
+    @Patch( 'me' )
+    @UseGuards( AuthGuard )
+    @ApiBearerAuth()
+    @ApiOperation( { summary: 'Update your name' } )
+    @TypeboxResponse( Responses.User, { description: 'The updated user' } )
+    @ApiBadRequestResponse( { description: 'Invalid input' } )
+    @ApiUnauthorizedResponse( { description: 'Missing or invalid access token' } )
+    updateProfile(
+        @CurrentUser() current: AccessTokenPayload,
+        @Body( { schema: UpdateProfileBody } ) dto: UpdateProfileRequest,
+    ): Promise<User> {
+        return this.accountService.updateProfile( current.sub, dto );
+    }
+
+    @Post( 'change-password' )
+    @UseGuards( AuthGuard )
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiBearerAuth()
+    @ApiOperation( {
+        summary: 'Change your password',
+        description: 'Signs out every other device (their refresh tokens stop working; access tokens expire within '
+            + '15 minutes). This device stays signed in.',
+    } )
+    @ApiNoContentResponse( { description: 'Password changed' } )
+    @ApiBadRequestResponse( { description: 'Invalid input' } )
+    @ApiUnauthorizedResponse( { description: 'Wrong current password, or missing/invalid access token' } )
+    changePassword(
+        @CurrentUser() current: AccessTokenPayload,
+        @Body( { schema: ChangePasswordBody } ) dto: ChangePasswordRequest,
+        @Req() req: Request,
+    ): Promise<void> {
+        return this.accountService.changePassword( current.sub, dto.currentPassword, dto.newPassword, readRefreshCookie( req ) );
+    }
+
+    @Post( 'delete-account' )
+    @UseGuards( AuthGuard )
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiBearerAuth()
+    @ApiOperation( {
+        summary: 'Delete your account',
+        description: 'Deletes your personal workspace (your own paths and items), organizations where you are the only '
+            + 'member, your enrollments, progress and study sessions. Refused while you are the only owner of an '
+            + 'organization with other members.',
+    } )
+    @ApiNoContentResponse( { description: 'Account deleted; the refresh cookie is cleared' } )
+    @ApiUnauthorizedResponse( { description: 'Wrong password, or missing/invalid access token' } )
+    @ApiConflictResponse( { description: 'You are the only owner of an organization with other members' } )
+    async deleteAccount(
+        @CurrentUser() current: AccessTokenPayload,
+        @Body( { schema: DeleteAccountBody } ) dto: DeleteAccountRequest,
+        @Res( { passthrough: true } ) res: Response,
+    ): Promise<void> {
+        await this.accountService.deleteAccount( current.sub, dto.password );
+        this.clearRefreshCookie( res );
     }
 
     private withRefreshCookie( res: Response, result: AuthResult ): Omit<AuthResult, 'refreshToken'> {

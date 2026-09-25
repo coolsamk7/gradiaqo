@@ -8,6 +8,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
+import { ModerationModule } from './moderation/moderation.module.js';
 import { OrganizationsModule } from './organizations/organizations.module.js';
 import { StudyModule } from './study/study.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -29,6 +30,7 @@ import { UsersModule } from './users/users.module.js';
         OrganizationsModule,
         CatalogModule,
         StudyModule,
+        ModerationModule,
     ],
     controllers: [ AppController ],
     providers: [ AppService ],

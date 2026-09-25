@@ -4,7 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Session } from '@studylog/database';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 
 export interface ClientMeta {
     userAgent?: string;
@@ -102,6 +102,16 @@ export class SessionsService {
         }
 
         return { userId: session.userId, token: `${session.id}.${newSecret}` };
+    }
+
+    /** Ends every session of the user except the one `keepToken` belongs to (e.g. after a password change). */
+    async revokeOthers( userId: string, keepToken: string | undefined ): Promise<void> {
+        const keep = keepToken ? parseToken( keepToken ) : null;
+
+        await this.sessions.delete( {
+            userId,
+            ...( keep && { id: Not( keep.sessionId ) } ),
+        } );
     }
 
     async revoke( token: string ): Promise<void> {

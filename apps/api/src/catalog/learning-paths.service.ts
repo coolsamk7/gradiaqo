@@ -85,6 +85,9 @@ export class LearningPathsService {
         const path = await this.findOrFail( owner, id );
 
         resolveVisibility( await this.findOrganization( owner ), dto.visibility );
+        if ( path.publicBlockedAt && dto.visibility === PathVisibility.Public ) {
+            throw new BadRequestException( 'A moderator removed this path from the public catalog; it can\'t be made public again' );
+        }
 
         return saveUnique(
             () => this.dataSource.getRepository( LearningPath ).save( Object.assign( path, dto ) ),

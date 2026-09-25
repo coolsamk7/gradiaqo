@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@studylog/database';
 import type { EntityManager } from 'typeorm';
@@ -10,6 +10,25 @@ export class UsersService {
 
     findById( id: string ): Promise<User | null> {
         return this.users.findOneBy( { id } );
+    }
+
+    /** For routes where the access token's user must still exist. */
+    async findByIdOrFail( id: string ): Promise<User> {
+        const user = await this.findById( id );
+
+        if ( !user ) {
+            throw new UnauthorizedException();
+        }
+
+        return user;
+    }
+
+    findByIdWithPassword( id: string ): Promise<User | null> {
+        return this.users
+            .createQueryBuilder( 'user' )
+            .addSelect( 'user.passwordHash' )
+            .where( 'user.id = :id', { id } )
+            .getOne();
     }
 
     findByEmailWithPassword( email: string ): Promise<User | null> {

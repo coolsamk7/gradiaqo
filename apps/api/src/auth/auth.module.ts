@@ -6,6 +6,7 @@ import { Session } from '@studylog/database';
 
 import { OrganizationsModule } from '../organizations/organizations.module.js';
 import { UsersModule } from '../users/users.module.js';
+import { AccountService } from './account.service.js';
 import { AuthController } from './auth.controller.js';
 import { AuthGuard } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
@@ -28,7 +29,7 @@ import { SessionsService } from './sessions.service.js';
         } ),
     ],
     controllers: [ AuthController ],
-    providers: [ AuthService, SessionsService, AuthGuard ],
+    providers: [ AuthService, SessionsService, AccountService, AuthGuard ],
     exports: [ AuthGuard ],
 } )
 export class AuthModule {}

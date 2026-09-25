@@ -1,19 +1,94 @@
 import { randomBytes } from 'node:crypto';
 
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import type { User } from '@studylog/database';
 import { Membership, Organization, OrganizationRole } from '@studylog/database';
 import type { Member, MyOrganization, Organization as OrganizationView } from '@studylog/schemas';
 import type { EntityManager } from 'typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
 export class OrganizationsService {
     constructor(
         @InjectRepository( Organization ) private readonly organizations: Repository<Organization>,
         @InjectRepository( Membership ) private readonly memberships: Repository<Membership>,
+        @InjectDataSource() private readonly dataSource: DataSource,
     ) {}
+
+    /** Creates a shared organization (e.g. a study group) with the user as its owner. */
+    async create( userId: string, name: string ): Promise<MyOrganization> {
+        const organization = await this.dataSource.transaction( async ( manager ) => {
+            const created = await manager.save( manager.create( Organization, {
+                name,
+                slug: toSlug( name ),
+                isPersonal: false,
+                createdById: userId,
+            } ) );
+
+            await manager.insert( Membership, { userId, organizationId: created.id, role: OrganizationRole.Owner } );
+
+            return created;
+        } );
+
+        return { ...toOrganizationResponse( organization ), role: OrganizationRole.Owner };
+    }
+
+    /** Deletes the organization with its memberships, invitations, paths and items. */
+    async remove( organization: Organization ): Promise<void> {
+        await this.organizations.remove( organization );
+    }
+
+    findMember( organizationId: string, userId: string ): Promise<Membership | null> {
+        return this.memberships.findOneBy( { organizationId, userId } );
+    }
+
+    /**
+     * Changes a member's role. An organization always keeps at least one owner, so the last owner can't be
+     * demoted: make someone else owner first.
+     */
+    async changeRole( organizationId: string, userId: string, role: OrganizationRole ): Promise<Member> {
+        await this.dataSource.transaction( async ( manager ) => {
+            const owners = await lockOwners( manager, organizationId );
+            const isLastOwner = owners.length === 1 && owners[0]?.userId === userId;
+
+            if ( isLastOwner && role !== OrganizationRole.Owner ) {
+                throw new ConflictException( 'An organization needs an owner: make someone else owner first' );
+            }
+            const { affected } = await manager.update( Membership, { organizationId, userId }, { role } );
+
+            if ( !affected ) {
+                throw new NotFoundException( 'Member not found' );
+            }
+        } );
+
+        const member = ( await this.listMembers( organizationId ) ).find( ( candidate ) => candidate.userId === userId );
+
+        if ( !member ) {
+            throw new NotFoundException( 'Member not found' );
+        }
+
+        return member;
+    }
+
+    /** Removes a member (or lets them leave). The last owner can't go: transfer ownership or delete instead. */
+    async removeMember( organizationId: string, userId: string ): Promise<void> {
+        await this.dataSource.transaction( async ( manager ) => {
+            const owners = await lockOwners( manager, organizationId );
+
+            if ( owners.length === 1 && owners[0]?.userId === userId ) {
+                throw new ConflictException(
+                    'The last owner can\'t leave: make someone else owner first, or delete the organization',
+                );
+            }
+
+            const { affected } = await manager.delete( Membership, { organizationId, userId } );
+
+            if ( !affected ) {
+                throw new NotFoundException( 'Member not found' );
+            }
+        } );
+    }
 
     /** Creates the user's personal workspace and makes them its owner. Runs inside the signup transaction. */
     async createPersonal( user: User, manager: EntityManager ): Promise<Organization> {
@@ -85,6 +160,21 @@ export class OrganizationsService {
             joinedAt: createdAt,
         } ) );
     }
+}
+
+/** Personal workspaces have exactly one member, their owner; memberships there can't change. */
+export function assertShared( organization: Organization ): void {
+    if ( organization.isPersonal ) {
+        throw new BadRequestException( 'Not possible in a personal workspace: it always has just its owner' );
+    }
+}
+
+/** The organization's owners, locked until the transaction ends so two requests can't both remove "another" owner. */
+function lockOwners( manager: EntityManager, organizationId: string ): Promise<Membership[]> {
+    return manager.find( Membership, {
+        where: { organizationId, role: OrganizationRole.Owner },
+        lock: { mode: 'pessimistic_write' },
+    } );
 }
 
 export function toOrganizationResponse( organization: Organization ): OrganizationView {

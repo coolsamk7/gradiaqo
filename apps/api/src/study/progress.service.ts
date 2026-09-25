@@ -9,12 +9,14 @@ import type {
 import { DataSource } from 'typeorm';
 
 import { CatalogAccessService } from '../catalog/catalog-access.service.js';
+import { EnrollmentsService } from './enrollments.service.js';
 
 @Injectable()
 export class ProgressService {
     constructor(
         @InjectDataSource() private readonly dataSource: DataSource,
         private readonly catalogAccess: CatalogAccessService,
+        private readonly enrollmentsService: EnrollmentsService,
     ) {}
 
     /** The user's items with any progress, most recently updated first. */
@@ -44,7 +46,7 @@ export class ProgressService {
     /**
      * Records the user's status on an item. `startedAt` is set the first time it moves past not started,
      * `completedAt` the first time it's done (or marked for revision); both are kept on later changes.
-     * `not_started` removes the record.
+     * `not_started` removes the record. Finishing the last required item of an enrollment completes it.
      */
     async set( userId: string, itemId: string, status: ProgressStatus ): Promise<ItemProgressView> {
         await this.assertItemVisible( userId, itemId );
@@ -60,14 +62,19 @@ export class ProgressService {
         const existing = await repository.findOneBy( { userId, itemId } );
         const now = new Date();
         const isCompleted = status === ProgressStatus.Done || status === ProgressStatus.Revise;
-
-        return toView( itemId, await repository.save( repository.create( {
+        const saved = await repository.save( repository.create( {
             userId,
             itemId,
             status,
             startedAt: existing?.startedAt ?? now,
             completedAt: existing?.completedAt ?? ( isCompleted ? now : null ),
-        } ) ) );
+        } ) );
+
+        if ( isCompleted ) {
+            await this.enrollmentsService.completeFinished( userId );
+        }
+
+        return toView( itemId, saved );
     }
 
     /** Users can only track items they can see. */

@@ -4,6 +4,7 @@ import {
     Enrollment,
     EnrollmentOrder,
     EnrollmentRule,
+    EnrollmentStatus,
     ItemProgress,
     OrderParentType,
     RuleScope,
@@ -13,7 +14,6 @@ import type {
     Enrollment as EnrollmentView,
     EnrollmentDetail,
     EnrollmentRule as EnrollmentRuleView,
-    EnrollmentStatus,
     ProgressStatus,
 } from '@studylog/schemas';
 import type { EntityManager } from 'typeorm';
@@ -161,6 +161,28 @@ export class EnrollmentsService {
         await this.dataSource.getRepository( EnrollmentOrder ).delete( { enrollmentId: id, parentType, parentId } );
 
         return this.detail( userId, id );
+    }
+
+    /**
+     * Marks the user's active enrollments as completed once every required item in them is done (or marked for
+     * revision). Called after progress changes; never moves an enrollment back, the user decides that.
+     */
+    async completeFinished( userId: string ): Promise<void> {
+        const active = await this.dataSource.getRepository( Enrollment ).find( {
+            where: { userId, status: EnrollmentStatus.Active },
+            relations: { learningPath: true, rules: true, orders: true },
+        } );
+
+        for ( const enrollment of active ) {
+            const { progress } = await this.build( enrollment );
+
+            if ( progress.total > 0 && progress.completed === progress.total ) {
+                await this.dataSource.getRepository( Enrollment ).update(
+                    { id: enrollment.id },
+                    { status: EnrollmentStatus.Completed },
+                );
+            }
+        }
     }
 
     private async findOrFail( userId: string, id: string ): Promise<Enrollment> {

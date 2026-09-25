@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { CatalogStatus, Item, LearningPath, Membership, PathVisibility, Topic } from '@studylog/database';
+import type { ListPublishedPathsQuery, PublishedPathSummary } from '@studylog/schemas';
+import { PathSource } from '@studylog/schemas';
 import { Brackets, DataSource } from 'typeorm';
 
 type PathAccess = Pick<LearningPath, 'status' | 'organizationId' | 'visibility'>;
@@ -14,28 +16,54 @@ type PathAccess = Pick<LearningPath, 'status' | 'organizationId' | 'visibility'>
 export class CatalogAccessService {
     constructor( @InjectDataSource() private readonly dataSource: DataSource ) {}
 
-    /** Visible paths: the global catalog in its order, then the user's organizations' paths, then public ones. */
-    async visiblePaths( userId: string ): Promise<LearningPath[]> {
+    /**
+     * Visible paths: the global catalog in its order, then the user's organizations' paths, then public ones;
+     * with where each comes from. `enrollmentId` is left null for the caller to fill in.
+     */
+    async visiblePaths( userId: string, { source, search }: ListPublishedPathsQuery = {} ): Promise<PublishedPathSummary[]> {
         const organizationIds = await this.organizationIdsOf( userId );
-        const paths = await this.dataSource.getRepository( LearningPath )
+        const query = this.dataSource.getRepository( LearningPath )
             .createQueryBuilder( 'path' )
+            .leftJoinAndSelect( 'path.organization', 'organization' )
+            .leftJoinAndSelect( 'path.createdBy', 'createdBy' )
             .where( 'path.status = :published', { published: CatalogStatus.Published } )
             .andWhere( new Brackets( ( visible ) => visible
                 .where( 'path.organization_id IS NULL' )
                 .orWhere( 'path.visibility = :public', { public: PathVisibility.Public } )
                 .orWhere( 'path.organization_id IN ( SELECT organization_id FROM memberships WHERE user_id = :userId )', { userId } ) ) )
             .orderBy( 'path.position', 'ASC' )
-            .addOrderBy( 'path.created_at', 'ASC' )
-            .getMany();
-        const rank = ( path: LearningPath ) => {
-            if ( path.organizationId === null ) {
-                return 0;
+            .addOrderBy( 'path.created_at', 'ASC' );
+
+        if ( search ) {
+            query.andWhere( 'path.title ILIKE :search', { search: `%${search.replace( /[\\%_]/g, '\\$&' )}%` } );
+        }
+
+        const sourceOf = ( path: LearningPath ): PathSource => {
+            if ( !path.organization ) {
+                return PathSource.Official;
+            }
+            if ( !organizationIds.has( path.organization.id ) ) {
+                return PathSource.Community;
             }
 
-            return organizationIds.has( path.organizationId ) ? 1 : 2;
+            return path.organization.isPersonal ? PathSource.Mine : PathSource.Organizations;
         };
+        const rank = [ PathSource.Official, PathSource.Mine, PathSource.Organizations, PathSource.Community ];
 
-        return paths.sort( ( a, b ) => rank( a ) - rank( b ) );
+        return ( await query.getMany() )
+            .filter( ( path ) => !source || sourceOf( path ) === source )
+            .sort( ( a, b ) => rank.indexOf( sourceOf( a ) ) - rank.indexOf( sourceOf( b ) ) )
+            .map( ( path ) => ( { ...path, ...originOf( path ), enrollmentId: null } ) );
+    }
+
+    /** Loads where a path comes from: its organization and creator (null for official paths). */
+    async originOfPath( pathId: string ): Promise<Pick<PublishedPathSummary, 'organization' | 'createdBy'>> {
+        const path = await this.dataSource.getRepository( LearningPath ).findOneOrFail( {
+            where: { id: pathId },
+            relations: { organization: true, createdBy: true },
+        } );
+
+        return originOf( path );
     }
 
     async canSeePath( userId: string, path: PathAccess ): Promise<boolean> {
@@ -97,4 +125,18 @@ export class CatalogAccessService {
 
         return new Set( memberships.map( ( membership ) => membership.organizationId ) );
     }
+}
+
+/** Only names are exposed, never the creator's email. Official paths don't show which admin made them. */
+function originOf( path: LearningPath ): Pick<PublishedPathSummary, 'organization' | 'createdBy'> {
+    const { organization, createdBy } = path;
+
+    if ( !organization ) {
+        return { organization: null, createdBy: null };
+    }
+
+    return {
+        organization: { id: organization.id, name: organization.name, isPersonal: organization.isPersonal },
+        createdBy: createdBy && { id: createdBy.id, firstName: createdBy.firstName, lastName: createdBy.lastName },
+    };
 }

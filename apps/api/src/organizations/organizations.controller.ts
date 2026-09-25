@@ -1,20 +1,44 @@
+import { subject } from '@casl/ability';
 import { TypeboxResponse } from '@gradiaqo/nestjs-typebox';
-import { Body, Controller, ForbiddenException, Get, NotFoundException, Patch, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    ForbiddenException,
+    Get,
+    HttpCode,
+    HttpStatus,
+    NotFoundException,
+    Param,
+    ParseUUIDPipe,
+    Patch,
+    Post,
+    UseGuards,
+} from '@nestjs/common';
 import {
     ApiBadRequestResponse,
     ApiBearerAuth,
+    ApiConflictResponse,
+    ApiNoContentResponse,
     ApiOperation,
     ApiTags,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { AccessTokenPayload, AppAbility, OrganizationContext } from '@studylog/casl';
 import { CheckAbilities, CurrentAbility, CurrentOrganization } from '@studylog/casl';
-import { Responses, UpdateOrganizationBody } from '@studylog/nestjs';
-import type { Member, MyOrganization, UpdateOrganizationRequest } from '@studylog/schemas';
+import { OrganizationRole, PlatformRole } from '@studylog/database';
+import { CreateOrganizationBody, Responses, UpdateMemberBody, UpdateOrganizationBody } from '@studylog/nestjs';
+import type {
+    CreateOrganizationRequest,
+    Member,
+    MyOrganization,
+    UpdateMemberRequest,
+    UpdateOrganizationRequest,
+} from '@studylog/schemas';
 
 import { AuthGuard, CurrentUser } from '../auth/auth.guard.js';
 import { OrganizationAuth } from './organization-auth.decorator.js';
-import { OrganizationsService, toOrganizationResponse } from './organizations.service.js';
+import { assertShared, OrganizationsService, toOrganizationResponse } from './organizations.service.js';
 
 @ApiTags( 'organizations' )
 @Controller( 'organizations' )
@@ -29,6 +53,20 @@ export class OrganizationsController {
     @ApiUnauthorizedResponse( { description: 'Missing or invalid access token' } )
     listMine( @CurrentUser() user: AccessTokenPayload ): Promise<MyOrganization[]> {
         return this.organizationsService.listForUser( user.sub );
+    }
+
+    @Post()
+    @UseGuards( AuthGuard )
+    @ApiBearerAuth()
+    @ApiOperation( { summary: 'Create an organization (e.g. a study group); you become its owner' } )
+    @TypeboxResponse( Responses.MyOrganization, { status: 201 } )
+    @ApiBadRequestResponse( { description: 'Invalid input' } )
+    @ApiUnauthorizedResponse( { description: 'Missing or invalid access token' } )
+    create(
+        @CurrentUser() user: AccessTokenPayload,
+        @Body( { schema: CreateOrganizationBody } ) dto: CreateOrganizationRequest,
+    ): Promise<MyOrganization> {
+        return this.organizationsService.create( user.sub, dto.name );
     }
 
     @Get( ':organizationId' )
@@ -79,5 +117,118 @@ export class OrganizationsController {
     @TypeboxResponse( Responses.MemberList )
     listMembers( @CurrentOrganization() context: OrganizationContext ): Promise<Member[]> {
         return this.organizationsService.listMembers( context.organizationId );
+    }
+
+    @Delete( ':organizationId' )
+    @OrganizationAuth()
+    @CheckAbilities( [ 'delete', 'Organization' ] )
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiOperation( { summary: 'Delete an organization with its paths, items and memberships (owner only)' } )
+    @ApiNoContentResponse( { description: 'Deleted' } )
+    @ApiBadRequestResponse( { description: 'Personal workspaces can\'t be deleted' } )
+    async remove(
+        @CurrentOrganization() context: OrganizationContext,
+        @CurrentAbility() ability: AppAbility,
+    ): Promise<void> {
+        const organization = await this.findOrFail( context.organizationId );
+
+        assertShared( organization );
+        if ( !ability.can( 'delete', organization ) ) {
+            throw new ForbiddenException();
+        }
+        await this.organizationsService.remove( organization );
+    }
+
+    @Patch( ':organizationId/members/:userId' )
+    @OrganizationAuth()
+    @CheckAbilities( [ 'update', 'Membership' ] )
+    @ApiOperation( {
+        summary: 'Change a member\'s role',
+        description: 'Owners can change anyone and make others owner. Admins can change members and admins. '
+            + 'The last owner can\'t be demoted.',
+    } )
+    @TypeboxResponse( Responses.Member )
+    @ApiBadRequestResponse( { description: 'Invalid input, or a personal workspace' } )
+    @ApiConflictResponse( { description: 'Would leave the organization without an owner' } )
+    async changeRole(
+        @CurrentUser() user: AccessTokenPayload,
+        @CurrentOrganization() context: OrganizationContext,
+        @CurrentAbility() ability: AppAbility,
+        @Param( 'userId', ParseUUIDPipe ) userId: string,
+        @Body( { schema: UpdateMemberBody } ) dto: UpdateMemberRequest,
+    ): Promise<Member> {
+        assertShared( await this.findOrFail( context.organizationId ) );
+
+        const membership = await this.findMemberOrFail( context.organizationId, userId );
+        const isOwner = context.role === OrganizationRole.Owner || user.platformRole === PlatformRole.Superadmin;
+
+        // Admins can't touch owners (CASL rule), and only owners can hand out ownership.
+        if ( !ability.can( 'update', membership ) || ( dto.role === OrganizationRole.Owner && !isOwner ) ) {
+            throw new ForbiddenException();
+        }
+
+        return this.organizationsService.changeRole( context.organizationId, userId, dto.role );
+    }
+
+    @Delete( ':organizationId/members/:userId' )
+    @OrganizationAuth()
+    @CheckAbilities( [ 'delete', 'Membership' ] )
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiOperation( { summary: 'Remove a member (owners: anyone; admins: members and admins)' } )
+    @ApiNoContentResponse( { description: 'Removed' } )
+    @ApiBadRequestResponse( { description: 'A personal workspace' } )
+    @ApiConflictResponse( { description: 'The last owner can\'t be removed' } )
+    async removeMember(
+        @CurrentOrganization() context: OrganizationContext,
+        @CurrentAbility() ability: AppAbility,
+        @Param( 'userId', ParseUUIDPipe ) userId: string,
+    ): Promise<void> {
+        assertShared( await this.findOrFail( context.organizationId ) );
+
+        const membership = await this.findMemberOrFail( context.organizationId, userId );
+
+        if ( !ability.can( 'delete', membership ) ) {
+            throw new ForbiddenException();
+        }
+        await this.organizationsService.removeMember( context.organizationId, userId );
+    }
+
+    @Post( ':organizationId/leave' )
+    @OrganizationAuth()
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiOperation( { summary: 'Leave an organization' } )
+    @ApiNoContentResponse( { description: 'Left' } )
+    @ApiBadRequestResponse( { description: 'You can\'t leave your personal workspace' } )
+    @ApiConflictResponse( { description: 'The last owner can\'t leave' } )
+    async leave(
+        @CurrentUser() user: AccessTokenPayload,
+        @CurrentOrganization() context: OrganizationContext,
+    ): Promise<void> {
+        assertShared( await this.findOrFail( context.organizationId ) );
+        if ( context.role === null ) {
+            throw new NotFoundException( 'You are not a member of this organization' );
+        }
+        await this.organizationsService.removeMember( context.organizationId, user.sub );
+    }
+
+    private async findOrFail( id: string ) {
+        const organization = await this.organizationsService.findById( id );
+
+        if ( !organization ) {
+            throw new NotFoundException( 'Organization not found' );
+        }
+
+        return organization;
+    }
+
+    /** The membership as a CASL subject, for record-level checks. */
+    private async findMemberOrFail( organizationId: string, userId: string ) {
+        const membership = await this.organizationsService.findMember( organizationId, userId );
+
+        if ( !membership ) {
+            throw new NotFoundException( 'Member not found' );
+        }
+
+        return subject( 'Membership', membership );
     }
 }
