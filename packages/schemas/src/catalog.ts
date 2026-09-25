@@ -2,7 +2,7 @@ import type { StaticDecode, StaticEncode, TSchema } from 'typebox';
 import Type from 'typebox';
 
 import { CatalogStatus, Difficulty, ItemType, PathVisibility } from './enums.js';
-import { IsoDate, TrimmedText, Uuid } from './primitives.js';
+import { IsoDate, NullableIsoDate, TrimmedText, Uuid } from './primitives.js';
 
 /*
  * The learning catalog, managed by admins: LearningPath → Module → Topic → (linked) Item.
@@ -129,6 +129,9 @@ export const LearningPath = Type.Object( {
         description: 'Null for the global catalog; otherwise the organization (e.g. personal workspace) that owns it',
     } ),
     visibility: Type.Enum( PathVisibility ),
+    publicBlockedAt: NullableIsoDate( {
+        description: 'Set when a moderator took the path out of the public catalog; it can\'t be made public again',
+    } ),
 } );
 export type LearningPath = StaticDecode<typeof LearningPath>;
 export type LearningPathJson = StaticEncode<typeof LearningPath>;

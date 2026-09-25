@@ -80,3 +80,17 @@ export enum PathVisibility {
     Private = 'private',
     Public = 'public',
 }
+
+export enum ReportReason {
+    Spam = 'spam',
+    Inappropriate = 'inappropriate',
+    Copyright = 'copyright',
+    Other = 'other',
+}
+
+export enum ReportStatus {
+    Open = 'open',
+    Dismissed = 'dismissed',
+    /** A moderator acted on it, e.g. took the path out of the public catalog. */
+    Actioned = 'actioned',
+}

@@ -2,7 +2,7 @@ import type { StaticDecode, StaticEncode } from 'typebox';
 import Type from 'typebox';
 
 import { OrganizationRole } from './enums.js';
-import { IsoDate, TrimmedText, Uuid } from './primitives.js';
+import { Email, IsoDate, TrimmedText, Uuid } from './primitives.js';
 
 export const Organization = Type.Object( {
     id: Uuid(),
@@ -39,3 +39,55 @@ export const UpdateOrganizationRequest = Type.Object(
     { additionalProperties: false },
 );
 export type UpdateOrganizationRequest = StaticDecode<typeof UpdateOrganizationRequest>;
+
+export const CreateOrganizationRequest = Type.Object(
+    { name: TrimmedText( 100, [ 'DSA Study Group' ] ) },
+    { additionalProperties: false },
+);
+export type CreateOrganizationRequest = StaticDecode<typeof CreateOrganizationRequest>;
+
+/** Roles an invitation or a role change can give. Ownership is given with a role change, not an invitation. */
+const InvitableRole = () =>
+    Type.Union( [ Type.Literal( OrganizationRole.Admin ), Type.Literal( OrganizationRole.Member ) ] );
+
+export const UpdateMemberRequest = Type.Object(
+    { role: Type.Enum( OrganizationRole, { description: 'Only owners can make someone an owner' } ) },
+    { additionalProperties: false },
+);
+export type UpdateMemberRequest = StaticDecode<typeof UpdateMemberRequest>;
+
+const PersonName = Type.Object( { id: Uuid(), firstName: Type.String(), lastName: Type.String() } );
+
+/** A pending invitation, as the organization's owners and admins see it. */
+export const Invitation = Type.Object( {
+    id: Uuid(),
+    email: Type.String( { examples: [ 'priya@example.com' ] } ),
+    role: Type.Enum( OrganizationRole ),
+    invitedBy: Type.Union( [ PersonName, Type.Null() ] ),
+    expiresAt: IsoDate(),
+    createdAt: IsoDate(),
+} );
+export type Invitation = StaticDecode<typeof Invitation>;
+
+/** A pending invitation, as the invited user sees it. */
+export const MyInvitation = Type.Object( {
+    id: Uuid(),
+    organization: Type.Object( { id: Uuid(), name: Type.String() } ),
+    role: Type.Enum( OrganizationRole ),
+    invitedBy: Type.Union( [ PersonName, Type.Null() ] ),
+    expiresAt: IsoDate(),
+    createdAt: IsoDate(),
+} );
+export type MyInvitation = StaticDecode<typeof MyInvitation>;
+
+export const CreateInvitationRequest = Type.Object(
+    {
+        email: Email(),
+        role: Type.Optional( InvitableRole() ),
+    },
+    {
+        additionalProperties: false,
+        description: 'Invites someone by email, whether or not they have an account yet. Default role: member.',
+    },
+);
+export type CreateInvitationRequest = StaticDecode<typeof CreateInvitationRequest>;

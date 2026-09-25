@@ -2,8 +2,16 @@ import type { StaticDecode } from 'typebox';
 import Type from 'typebox';
 
 import { Item, LearningModule, LearningPath, Topic, TopicItem } from './catalog.js';
-import { EnrollmentStatus, OrderParentType, ProgressStatus, RuleMode, RuleScope } from './enums.js';
-import { IsoDate, NullableIsoDate, Uuid } from './primitives.js';
+import {
+    EnrollmentStatus,
+    OrderParentType,
+    ProgressStatus,
+    ReportReason,
+    ReportStatus,
+    RuleMode,
+    RuleScope,
+} from './enums.js';
+import { IsoDate, NullableIsoDate, TrimmedText, Uuid } from './primitives.js';
 
 /*
  * A user's side of the catalog: which paths they follow (enrollments), which parts (rules), in what order
@@ -17,18 +25,47 @@ export const PublishedTopic = Type.Object( { ...Topic.properties, items: Type.Ar
 export const PublishedModule = Type.Object( { ...LearningModule.properties, topics: Type.Array( PublishedTopic ) } );
 
 /** A published path with its published content, in the admin's order. */
-export const PublishedPath = Type.Object( {
-    ...LearningPath.properties,
+/** Where a path comes from, to tell official paths from users' own. */
+const PathOrigin = {
+    organization: Type.Union( [
+        Type.Object( { id: Uuid(), name: Type.String(), isPersonal: Type.Boolean() } ),
+        Type.Null(),
+    ], { description: 'Null for official (global catalog) paths' } ),
+    createdBy: Type.Union( [
+        Type.Object( { id: Uuid(), firstName: Type.String(), lastName: Type.String() } ),
+        Type.Null(),
+    ], { description: 'Null for official paths, or if the creator deleted their account' } ),
     enrollmentId: Type.Union( [ Uuid(), Type.Null() ], { description: 'Your enrollment in this path, if any' } ),
+};
+
+export const PublishedPathSummary = Type.Object( { ...LearningPath.properties, ...PathOrigin } );
+export type PublishedPathSummary = StaticDecode<typeof PublishedPathSummary>;
+
+export const PublishedPath = Type.Object( {
+    ...PublishedPathSummary.properties,
     modules: Type.Array( PublishedModule ),
 } );
 export type PublishedPath = StaticDecode<typeof PublishedPath>;
 
-export const PublishedPathSummary = Type.Object( {
-    ...LearningPath.properties,
-    enrollmentId: PublishedPath.properties.enrollmentId,
-} );
-export type PublishedPathSummary = StaticDecode<typeof PublishedPathSummary>;
+export enum PathSource {
+    /** The global catalog. */
+    Official = 'official',
+    /** Your personal workspace. */
+    Mine = 'mine',
+    /** Shared organizations you belong to. */
+    Organizations = 'organizations',
+    /** Paths other users made public. */
+    Community = 'community',
+}
+
+export const ListPublishedPathsQuery = Type.Object(
+    {
+        source: Type.Optional( Type.Enum( PathSource ) ),
+        search: Type.Optional( Type.String( { minLength: 1, maxLength: 100, description: 'Matches the title' } ) ),
+    },
+    { additionalProperties: false },
+);
+export type ListPublishedPathsQuery = StaticDecode<typeof ListPublishedPathsQuery>;
 
 // ---------- Progress ----------
 
@@ -226,3 +263,65 @@ export const StudyStats = Type.Object( {
     last30Days: Type.Array( DailyMinutes, { description: 'Oldest first, including days with 0 minutes' } ),
 } );
 export type StudyStats = StaticDecode<typeof StudyStats>;
+
+// ---------- Reports (moderation of public paths) ----------
+
+export const CreateReportRequest = Type.Object(
+    {
+        reason: Type.Enum( ReportReason ),
+        details: Type.Optional( TrimmedText( 2000 ) ),
+    },
+    { additionalProperties: false },
+);
+export type CreateReportRequest = StaticDecode<typeof CreateReportRequest>;
+
+export const Report = Type.Object( {
+    id: Uuid(),
+    reason: Type.Enum( ReportReason ),
+    details: Type.Union( [ Type.String(), Type.Null() ] ),
+    status: Type.Enum( ReportStatus ),
+    resolutionNote: Type.Union( [ Type.String(), Type.Null() ] ),
+    resolvedAt: NullableIsoDate(),
+    createdAt: IsoDate(),
+    learningPath: Type.Object( {
+        id: Uuid(),
+        title: Type.String(),
+        organizationId: Type.Union( [ Uuid(), Type.Null() ] ),
+        visibility: LearningPath.properties.visibility,
+    } ),
+    reporter: Type.Union( [
+        Type.Object( { id: Uuid(), email: Type.String(), firstName: Type.String(), lastName: Type.String() } ),
+        Type.Null(),
+    ] ),
+} );
+export type Report = StaticDecode<typeof Report>;
+
+export const ListReportsQuery = Type.Object(
+    {
+        status: Type.Optional( Type.Enum( ReportStatus, { description: 'Default: open' } ) ),
+        limit: Type.Optional( Type.Integer( { minimum: 1, maximum: 200, default: 50 } ) ),
+        offset: Type.Optional( Type.Integer( { minimum: 0, default: 0 } ) ),
+    },
+    { additionalProperties: false },
+);
+export type ListReportsQuery = StaticDecode<typeof ListReportsQuery>;
+
+export const ReportPage = Type.Object( { items: Type.Array( Report ), total: Type.Integer() } );
+export type ReportPage = StaticDecode<typeof ReportPage>;
+
+export enum ReportAction {
+    Dismiss = 'dismiss',
+    /** Take the path out of the public catalog for good (its owner keeps it, privately). */
+    HidePath = 'hide_path',
+}
+
+export const ResolveReportRequest = Type.Object(
+    {
+        action: Type.Enum( ReportAction, {
+            description: '`hide_path` also closes every other open report on the same path',
+        } ),
+        note: Type.Optional( TrimmedText( 2000 ) ),
+    },
+    { additionalProperties: false },
+);
+export type ResolveReportRequest = StaticDecode<typeof ResolveReportRequest>;

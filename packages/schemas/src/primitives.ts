@@ -11,8 +11,8 @@ export const IsoDate = (): TCodec<TString, Date> =>
  * `IsoDate()` or null. Use this rather than `Type.Union( [ IsoDate(), Type.Null() ] )`: encoding a codec inside
  * a union fails on null.
  */
-export const NullableIsoDate = (): TCodec<TUnion<[ TString, TNull ]>, Date | null> =>
-    Type.Codec( Type.Union( [ Type.String( { format: 'date-time' } ), Type.Null() ] ) )
+export const NullableIsoDate = ( options: { description?: string } = {} ): TCodec<TUnion<[ TString, TNull ]>, Date | null> =>
+    Type.Codec( Type.Union( [ Type.String( { format: 'date-time' } ), Type.Null() ], options ) )
         .Decode( ( value ) => ( value === null ? null : new Date( value ) ) )
         .Encode( ( value ) => ( value === null ? null : value.toISOString() ) );
 
