@@ -2,17 +2,19 @@
   "name": "@studylog/common",
   "version": "0.0.0",
   "private": true,
-  "description": "Shared configs for every StudyLog app and package: ESLint rules and tsconfigs",
+  "description": "Shared configs for every StudyLog app and package: ESLint rules, tsconfigs and test coverage settings",
   "type": "module",
   "exports": {
     "./eslint/base": "./eslint/base.js",
     "./eslint/node": "./eslint/node.js",
     "./tsconfig/base.json": "./tsconfig/base.json",
-    "./tsconfig/nestjs.json": "./tsconfig/nestjs.json"
+    "./tsconfig/nestjs.json": "./tsconfig/nestjs.json",
+    "./vitest/coverage": "./vitest/coverage.js"
   },
   "files": [
     "eslint",
-    "tsconfig"
+    "tsconfig",
+    "vitest"
   ],
   "dependencies": {
     "@eslint/js": "^10.0.1",

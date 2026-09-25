@@ -62,6 +62,21 @@ yarn workspace @studylog/api test:e2e # end-to-end tests against the database fr
   TypeORM (`apps/api/test/unit/fake-data-source.ts`): each test sets up only the database answers its rule depends
   on and checks the calls it expects. Permission tests use the real CASL rules.
 
+### Coverage
+
+```sh
+yarn test:cov            # every app and package, then one combined table
+open coverage/index.html # the combined report; click a package for its line-by-line report
+```
+
+- Each app/package writes `coverage/` (HTML, `lcov.info` for CI and editors, `coverage-summary.json`);
+  `scripts/coverage-summary.mjs` combines them into the table and `coverage/index.html` at the root.
+- Settings are shared in `@studylog/common/vitest/coverage`. Left out: `main.ts` and `*.module.ts` (wiring), and in
+  `packages/database` the entities (declarations) and generated migrations.
+- **Coverage must stay at 100%** (lines, branches, functions, statements) in every app and package: the run fails
+  otherwise, so new code comes with its tests. No `/* v8 ignore */` comments are used.
+- One package only: `yarn workspace @studylog/api test:cov`.
+
 ## Code style
 
 ESLint handles both code quality and formatting (no Prettier). Rules live in `packages/common/eslint`; each app/package has a 3-line `eslint.config.mjs` that uses them:

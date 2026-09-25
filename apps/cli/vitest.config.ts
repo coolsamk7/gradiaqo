@@ -1,3 +1,4 @@
+import { coverageConfig } from '@studylog/common/vitest/coverage';
 import swc from 'unplugin-swc';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
@@ -12,5 +13,6 @@ export default defineConfig( {
         globals: true,
         root: './',
         include: [ '**/*.spec.ts' ],
+        coverage: coverageConfig(),
     },
 } );

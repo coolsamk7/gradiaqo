@@ -21,7 +21,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "eslint . --fix",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage"
   },
   "peerDependencies": {
     "@nestjs/common": "^12.0.1",
@@ -34,6 +35,7 @@
     "@nestjs/swagger": "^12.0.2",
     "@studylog/common": "workspace:*",
     "@types/node": "^24.0.0",
+    "@vitest/coverage-v8": "^4.1.2",
     "eslint": "^10.11.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",

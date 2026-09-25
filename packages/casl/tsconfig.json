@@ -2,8 +2,7 @@
   "extends": "@studylog/common/tsconfig/nestjs.json",
   "compilerOptions": {
     "declarationMap": true,
-    "rootDir": "src",
-    "outDir": "dist"
+    "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src", "vitest.config.ts"]
 }
