@@ -145,10 +145,42 @@ Log in via `/auth/login`, click **Authorize**, and paste the `accessToken`.
 | POST | `/auth/refresh` | none (uses cookie) | Returns `{ accessToken }`, rotates refresh cookie |
 | POST | `/auth/logout` | none (uses cookie) | Ends the session, clears cookie |
 | GET | `/auth/me` | none | Needs `Authorization: Bearer <accessToken>` |
-| GET | `/organizations` | none | Your organizations and your role in each |
-| GET | `/organizations/:organizationId` | none | Any member |
-| PATCH | `/organizations/:organizationId` | `name` | Owner or admin |
+| PATCH | `/auth/me` | `firstName?, lastName?` | Update your name |
+| POST | `/auth/change-password` | `currentPassword, newPassword` | Signs out your other devices |
+| POST | `/auth/delete-account` | `password` | See "Accounts" below |
+
+## Accounts
+
+- Changing your password ends every other session (their refresh tokens stop working; access tokens expire within
+  15 minutes); the device you changed it from stays signed in.
+- Deleting your account deletes your personal workspace (your own paths and items), organizations where you're the only
+  member, and your enrollments, progress and study sessions. It's refused while you're the only owner of an
+  organization with other members: make someone else owner, or delete the organization, first.
+- Not yet (they need email codes): password reset, email verification, changing your email.
+
+## Organizations
+
+Every user has a personal workspace; for studying together, create an organization (e.g. a study group).
+
+| Method | Path | Body | Who |
+|---|---|---|---|
+| GET / POST | `/organizations` | POST: `name` | Your organizations / create one (you become owner) |
+| GET / PATCH / DELETE | `/organizations/:organizationId` | PATCH: `name` | Members / owner or admin / owner |
 | GET | `/organizations/:organizationId/members` | none | Any member |
+| PATCH / DELETE | `/organizations/:organizationId/members/:userId` | PATCH: `role` | Owner or admin (see rules) |
+| POST | `/organizations/:organizationId/leave` | none | Any member |
+| GET / POST | `/organizations/:organizationId/invitations` | POST: `email, role?` | Owner or admin |
+| DELETE | `/organizations/:organizationId/invitations/:invitationId` | none | Owner or admin (revoke) |
+| GET | `/me/invitations` | none | Invitations sent to your email |
+| POST | `/me/invitations/:invitationId/accept` · `/decline` | none | The invited user |
+
+- **Invitations** go to an email, even one without an account yet; that person sees them in `/me/invitations` once
+  logged in with that email. They're valid for 14 days; inviting again updates the role and restarts the 14 days.
+  (Nothing is emailed yet.) An invitation gives `member` (default) or `admin`.
+- **Roles:** owners can change anyone and make others owner; admins can manage members and admins but never owners.
+- **Always an owner:** the last owner can't be demoted, removed or leave; make someone else owner first (or delete the
+  organization).
+- Personal workspaces can't be deleted, left, or have members added.
 
 - Access token: JWT, 15 minutes.
 - Refresh token: `httpOnly` cookie on `/auth`, rotated on every refresh. Expiry slides 180 days forward each time, so active users stay logged in.
@@ -208,11 +240,18 @@ Every user has a personal workspace (an organization they own), so every user ha
   - personal workspace: `private` by default (only you), or `public` (in everyone's catalog, anyone can enroll)
   - shared organization: always for its members only (`public` is rejected)
   - global catalog: always public
+- **Where a path comes from:** `/catalog/paths` includes `organization` (name, whether it's a personal workspace)
+  and `createdBy` (name only) for user-made paths, both null for official ones. Filter with
+  `?source=official|mine|organizations|community` and `?search=`.
 - **Reusing global material:** link any *published* global item into your own topics (find them with
   `GET /catalog/items?search=`). It isn't copied, so progress on it counts everywhere. You can't edit global items, and
   can only link your own organization's items.
 - Your content is **published right away** and can be **deleted at any time** (no draft/archive rules). Creating a path
   in your personal workspace **enrolls you in it** automatically.
+- **Reports:** anyone can report another user's public path (`POST /catalog/paths/:pathId/reports`, reason `spam`,
+  `inappropriate`, `copyright` or `other`). Superadmins review them at `GET /admin/reports` and either `dismiss` or
+  `hide_path` (`PATCH /admin/reports/:reportId`). Hiding makes the path private for good (`publicBlockedAt` is set;
+  its owner keeps it) and closes all open reports on it.
 - If a path becomes invisible to someone (made private, or they leave the organization), their enrollment stays but
   shows no content, and they can no longer track its items.
 
@@ -231,7 +270,8 @@ What a logged-in user does with the catalog. Everything under `/me` only ever to
 - **Custom order** per parent (a path's modules, a module's topics, a topic's items). Children not listed, e.g. added
   by the admin later, follow in the admin's order. Users can't move things between parents.
 - **Progress** is per item (`not_started` · `in_progress` · `done` · `revise`), so an item done once shows as done in
-  every topic and path. Counts at topic/module/path level are calculated: required (non-optional) items that are
+  every topic and path. Finishing the last required item of an active enrollment marks it `completed` (it's never
+  moved back automatically). Counts at topic/module/path level are calculated: required (non-optional) items that are
   `done` or `revise`, each item once. Unenrolling keeps progress and sessions.
 - **Study sessions** log minutes against a published topic and/or item (the item must be in the topic if both), with
   optional notes. `startedAt` can't be in the future (5 minutes of clock skew allowed).
