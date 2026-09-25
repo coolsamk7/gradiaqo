@@ -1,0 +1,32 @@
+{
+  "name": "@studylog/common",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared configs for every StudyLog app and package: ESLint rules and tsconfigs",
+  "type": "module",
+  "exports": {
+    "./eslint/base": "./eslint/base.js",
+    "./eslint/node": "./eslint/node.js",
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/nestjs.json": "./tsconfig/nestjs.json"
+  },
+  "files": [
+    "eslint",
+    "tsconfig"
+  ],
+  "dependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "globals": "^17.12.0",
+    "typescript-eslint": "^8.70.1"
+  },
+  "peerDependencies": {
+    "eslint": "^10.0.0",
+    "typescript": ">=5.5.0 <6.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.11.0",
+    "typescript": "^6.0.2"
+  }
+}

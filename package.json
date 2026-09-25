@@ -1,0 +1,23 @@
+{
+  "name": "studylog",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "lint:fix": "turbo run lint:fix",
+    "format": "turbo run format",
+    "cli": "turbo run build --filter=@studylog/cli --output-logs=errors-only && yarn workspace @studylog/cli start"
+  },
+  "packageManager": "yarn@4.9.1",
+  "devDependencies": {
+    "turbo": "^2.11.3"
+  }
+}
