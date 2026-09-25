@@ -1,0 +1,73 @@
+{
+  "name": "@gradiaqo/nestjs-typebox",
+  "version": "5.0.0-alpha.0",
+  "private": true,
+  "description": "TypeBox validation and OpenAPI for NestJS 12, built on NestJS Standard Schema support. Fork of nestjs-typebox.",
+  "author": "Sameer Khandke",
+  "contributors": [
+    "Andrew Smiley <jayalfredprufrock@gmail.com> (original nestjs-typebox)"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "keywords": [
+    "nestjs",
+    "typebox",
+    "standard-schema",
+    "openapi",
+    "swagger",
+    "validation",
+    "json-schema"
+  ],
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "eslint . --fix",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@standard-schema/spec": "^1.1.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^12.0.2",
+    "@nestjs/core": "^12.0.2",
+    "@nestjs/swagger": "^12.0.0",
+    "rxjs": "^7.8.0",
+    "typebox": "^1.3.0"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/core": "^12.0.1",
+    "@nestjs/platform-express": "^12.0.1",
+    "@nestjs/swagger": "^12.0.2",
+    "@nestjs/testing": "^12.0.1",
+    "@studylog/common": "workspace:*",
+    "@swc/core": "^1.16.2",
+    "@types/node": "^24.0.0",
+    "@types/supertest": "^7.0.0",
+    "eslint": "^10.11.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "supertest": "^7.0.0",
+    "typebox": "^1.3.34",
+    "typescript": "^6.0.2",
+    "unplugin-swc": "^2.0.0",
+    "vitest": "^4.1.2"
+  }
+}
