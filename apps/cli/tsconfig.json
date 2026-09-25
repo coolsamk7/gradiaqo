@@ -1,0 +1,10 @@
+{
+  "extends": "@studylog/common/tsconfig/nestjs.json",
+  "compilerOptions": {
+    "removeComments": true,
+    "incremental": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["vitest/globals", "node"]
+  }
+}
