@@ -3,14 +3,20 @@ import type { ItemType } from '@studylog/schemas';
 import {
     AccessTokenResponse,
     AuthResponse,
+    ChangePasswordRequest,
     CreateEnrollmentRequest,
+    CreateInvitationRequest,
     CreateItemRequest,
     CreateLearningModuleRequest,
     CreateLearningPathRequest,
+    CreateOrganizationRequest,
+    CreateReportRequest,
     CreateStudySessionRequest,
     CreateTopicRequest,
+    DeleteAccountRequest,
     Enrollment,
     EnrollmentDetail,
+    Invitation,
     Item,
     ItemDetailsSchemas,
     ItemPage,
@@ -22,14 +28,20 @@ import {
     LinkItemRequest,
     ListItemsQuery,
     ListProgressQuery,
+    ListPublishedPathsQuery,
+    ListReportsQuery,
     ListStudySessionsQuery,
     LoginRequest,
     Member,
+    MyInvitation,
     MyOrganization,
     PublishedPath,
     PublishedPathSummary,
     ReorderRequest,
     ReplaceRulesRequest,
+    Report,
+    ReportPage,
+    ResolveReportRequest,
     SignupRequest,
     StatsQuery,
     StudySession,
@@ -41,7 +53,9 @@ import {
     UpdateItemRequest,
     UpdateLearningModuleRequest,
     UpdateLearningPathRequest,
+    UpdateMemberRequest,
     UpdateOrganizationRequest,
+    UpdateProfileRequest,
     UpdateProgressRequest,
     UpdateStudySessionRequest,
     UpdateTopicRequest,
@@ -71,6 +85,15 @@ export const UpdateItemBody = typebox( UpdateItemRequest, { name: 'UpdateItemReq
 export const LinkItemBody = typebox( LinkItemRequest, { name: 'LinkItemRequest' } );
 export const ReorderBody = typebox( ReorderRequest, { name: 'ReorderRequest' } );
 
+export const CreateOrganizationBody = typebox( CreateOrganizationRequest, { name: 'CreateOrganizationRequest' } );
+export const UpdateMemberBody = typebox( UpdateMemberRequest, { name: 'UpdateMemberRequest' } );
+export const CreateInvitationBody = typebox( CreateInvitationRequest, { name: 'CreateInvitationRequest' } );
+export const UpdateProfileBody = typebox( UpdateProfileRequest, { name: 'UpdateProfileRequest' } );
+export const ChangePasswordBody = typebox( ChangePasswordRequest, { name: 'ChangePasswordRequest' } );
+export const DeleteAccountBody = typebox( DeleteAccountRequest, { name: 'DeleteAccountRequest' } );
+export const CreateReportBody = typebox( CreateReportRequest, { name: 'CreateReportRequest' } );
+export const ResolveReportBody = typebox( ResolveReportRequest, { name: 'ResolveReportRequest' } );
+
 export const CreateEnrollmentBody = typebox( CreateEnrollmentRequest, { name: 'CreateEnrollmentRequest' } );
 export const UpdateEnrollmentBody = typebox( UpdateEnrollmentRequest, { name: 'UpdateEnrollmentRequest' } );
 export const ReplaceRulesBody = typebox( ReplaceRulesRequest, { name: 'ReplaceRulesRequest' } );
@@ -83,6 +106,8 @@ export const UpdateStudySessionBody = typebox( UpdateStudySessionRequest, { name
 export const ListItemsQueryParams = typebox( ListItemsQuery, { coerce: true, location: 'query' } );
 export const ListProgressQueryParams = typebox( ListProgressQuery, { coerce: true, location: 'query' } );
 export const ListStudySessionsQueryParams = typebox( ListStudySessionsQuery, { coerce: true, location: 'query' } );
+export const ListPublishedPathsQueryParams = typebox( ListPublishedPathsQuery, { coerce: true, location: 'query' } );
+export const ListReportsQueryParams = typebox( ListReportsQuery, { coerce: true, location: 'query' } );
 export const StatsQueryParams = typebox( StatsQuery, { coerce: true, location: 'query' } );
 
 // ---------- Item details, checked against the item's type: `ItemDetails[ type ].safeParse( details )` ----------
@@ -121,4 +146,10 @@ export const Responses = {
     StudySession: typebox( StudySession, { name: 'StudySession', direction: 'response' } ),
     StudySessionPage: typebox( StudySessionPage, { name: 'StudySessionPage', direction: 'response' } ),
     StudyStats: typebox( StudyStats, { name: 'StudyStats', direction: 'response' } ),
+    InvitationList: typebox( Type.Array( Invitation ), { name: 'InvitationList', direction: 'response' } ),
+    Invitation: typebox( Invitation, { name: 'Invitation', direction: 'response' } ),
+    MyInvitationList: typebox( Type.Array( MyInvitation ), { name: 'MyInvitationList', direction: 'response' } ),
+    Member: typebox( Member, { name: 'Member', direction: 'response' } ),
+    Report: typebox( Report, { name: 'Report', direction: 'response' } ),
+    ReportPage: typebox( ReportPage, { name: 'ReportPage', direction: 'response' } ),
 } as const;

@@ -15,6 +15,8 @@ export type SubjectType =
     | 'LearningModule'
     | 'Topic'
     | 'Item'
+    // Reports on public paths. Only superadmins moderate (via `manage all`).
+    | 'PathReport'
     | 'all';
 
 // Entity instances (detected by class name) or plain objects tagged with `subject( 'Organization', obj )`.
