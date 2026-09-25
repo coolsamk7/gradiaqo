@@ -1,0 +1,46 @@
+{
+  "name": "@studylog/nestjs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "StudyLog API contract wired into NestJS: validated request bodies and documented responses",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "eslint . --fix"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/swagger": "^12.0.2",
+    "typebox": "^1.3.0"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/core": "^12.0.1",
+    "@nestjs/swagger": "^12.0.2",
+    "@studylog/common": "workspace:*",
+    "@types/node": "^24.0.0",
+    "eslint": "^10.11.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "typebox": "^1.3.34",
+    "typescript": "^6.0.2"
+  },
+  "dependencies": {
+    "@gradiaqo/nestjs-typebox": "workspace:*",
+    "@studylog/schemas": "workspace:*"
+  }
+}
