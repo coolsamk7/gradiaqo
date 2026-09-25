@@ -11,6 +11,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:cov": "turbo run test:cov --concurrency=2 --output-logs=errors-only && node scripts/coverage-summary.mjs",
+    "test:mutation": "turbo run test:mutation --concurrency=1 && node scripts/mutation-summary.mjs",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
     "lint:fix": "turbo run lint:fix",

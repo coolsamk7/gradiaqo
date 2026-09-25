@@ -22,7 +22,8 @@
     "lint:fix": "eslint . --fix",
     "format": "eslint . --fix",
     "test": "vitest run",
-    "test:cov": "vitest run --coverage"
+    "test:cov": "vitest run --coverage",
+    "test:mutation": "stryker run"
   },
   "peerDependencies": {
     "@nestjs/common": "^12.0.1",
@@ -33,6 +34,8 @@
     "@nestjs/common": "^12.0.1",
     "@nestjs/core": "^12.0.1",
     "@nestjs/swagger": "^12.0.2",
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/vitest-runner": "^10.0.0",
     "@studylog/common": "workspace:*",
     "@types/node": "^24.0.0",
     "@vitest/coverage-v8": "^4.1.2",

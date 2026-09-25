@@ -40,7 +40,8 @@
     "lint:fix": "eslint . --fix",
     "format": "eslint . --fix",
     "test": "vitest run",
-    "test:cov": "vitest run --coverage"
+    "test:cov": "vitest run --coverage",
+    "test:mutation": "stryker run"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0"
@@ -58,6 +59,8 @@
     "@nestjs/platform-express": "^12.0.1",
     "@nestjs/swagger": "^12.0.2",
     "@nestjs/testing": "^12.0.1",
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/vitest-runner": "^10.0.0",
     "@studylog/common": "workspace:*",
     "@swc/core": "^1.16.2",
     "@types/node": "^24.0.0",

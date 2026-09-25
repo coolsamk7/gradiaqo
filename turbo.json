@@ -49,6 +49,12 @@
         "coverage/**"
       ]
     },
+    "test:mutation": {
+      "dependsOn": [
+        "^build"
+      ],
+      "cache": false
+    },
     "test:e2e": {
       "dependsOn": [
         "^build"

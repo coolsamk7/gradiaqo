@@ -77,6 +77,25 @@ open coverage/index.html # the combined report; click a package for its line-by-
   otherwise, so new code comes with its tests. No `/* v8 ignore */` comments are used.
 - One package only: `yarn workspace @studylog/api test:cov`.
 
+### Mutation testing
+
+```sh
+yarn test:mutation                            # every app and package, one at a time, then one table (slow)
+yarn workspace @studylog/logger test:mutation # one package
+```
+
+Coverage says a line ran; mutation testing checks that a test would notice if it were wrong. Stryker makes small
+changes to the code ("mutants": `>` to `>=`, `true` to `false`, a removed call, ...) and runs the tests against each.
+A mutant the tests catch is **killed**; one they miss **survives** and points at behavior no test checks. The
+**mutation score** is the share killed.
+
+- Settings are shared in `@studylog/common/stryker/config`; it mutates the same files coverage measures.
+- Reports: `<package>/reports/mutation/mutation.html` shows each surviving mutant in the code.
+  `scripts/mutation-summary.mjs` prints the combined table.
+- Runs are incremental (`reports/stryker-incremental.json`): later runs only retest mutants in changed code.
+- Mutants that don't compile aren't type-checked out, so a few survivors can be impossible code.
+- No minimum score yet; one will be set once the current survivors are handled.
+
 ## Code style
 
 ESLint handles both code quality and formatting (no Prettier). Rules live in `packages/common/eslint`; each app/package has a 3-line `eslint.config.mjs` that uses them:

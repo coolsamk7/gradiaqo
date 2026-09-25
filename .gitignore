@@ -11,3 +11,5 @@ coverage
 !.yarn/plugins
 .pnp.*
 *.tsbuildinfo
+reports
+.stryker-tmp
