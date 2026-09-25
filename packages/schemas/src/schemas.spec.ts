@@ -5,12 +5,16 @@ import { describe, expect, it } from 'vitest';
 import {
     CreateItemRequest,
     CreateLearningPathRequest,
+    Email,
+    IsoDate,
     ItemDetailsSchemas,
     ItemProgress,
     ItemType,
     LoginRequest,
+    NullableIsoDate,
     ReorderRequest,
     SignupRequest,
+    TrimmedText,
     UpdateOrganizationRequest,
     User,
 } from './index.js';
@@ -112,5 +116,29 @@ describe( 'catalog schemas', () => {
         expect( reorder( { ids: [ id ] } ) ).toEqual( { ids: [ id ] } );
         expect( reorder( { ids: [ id, id ] } ) ).toBeUndefined();
         expect( reorder( { ids: [ 'not-a-uuid' ] } ) ).toBeUndefined();
+    } );
+} );
+
+describe( 'primitives', () => {
+    const at = new Date( '2026-01-02T03:04:05.000Z' );
+
+    it( 'IsoDate decodes to a Date and encodes back', () => {
+        const date = Compile( IsoDate() );
+
+        expect( date.Decode( '2026-01-02T03:04:05.000Z' ) ).toEqual( at );
+        expect( date.Encode( at ) ).toBe( '2026-01-02T03:04:05.000Z' );
+    } );
+
+    it( 'NullableIsoDate handles both a date and null, in both directions', () => {
+        const date = Compile( NullableIsoDate() );
+
+        expect( date.Decode( '2026-01-02T03:04:05.000Z' ) ).toEqual( at );
+        expect( date.Decode( null ) ).toBeNull();
+        expect( date.Encode( null ) ).toBeNull();
+    } );
+
+    it( 'Email and TrimmedText send values back unchanged', () => {
+        expect( Compile( Email() ).Encode( 'a@b.co' ) ).toBe( 'a@b.co' );
+        expect( Compile( TrimmedText( 10 ) ).Encode( 'text' ) ).toBe( 'text' );
     } );
 } );

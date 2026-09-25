@@ -51,6 +51,17 @@ Changing an entity:
 A database that was created earlier with `synchronize` already has the tables: run `yarn cli migration:run --fake`
 once so the `init` migration is recorded instead of failing.
 
+## Tests
+
+```sh
+yarn test                            # unit tests in every app and package (no database needed)
+yarn workspace @studylog/api test:e2e # end-to-end tests against the database from yarn db:up
+```
+
+- Unit tests sit next to the code (`*.spec.ts`, Vitest). Services are tested against an in-memory stand-in for
+  TypeORM (`apps/api/test/unit/fake-data-source.ts`): each test sets up only the database answers its rule depends
+  on and checks the calls it expects. Permission tests use the real CASL rules.
+
 ## Code style
 
 ESLint handles both code quality and formatting (no Prettier). Rules live in `packages/common/eslint`; each app/package has a 3-line `eslint.config.mjs` that uses them:

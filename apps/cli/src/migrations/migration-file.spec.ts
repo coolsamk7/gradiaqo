@@ -1,6 +1,9 @@
+import { writeFile } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 
-import { buildMigrationFile, toPascalCase } from './migration-file.js';
+import { buildMigrationFile, toPascalCase, writeMigrationFile } from './migration-file.js';
+
+vi.mock( 'node:fs/promises', () => ( { writeFile: vi.fn() } ) );
 
 describe( 'toPascalCase', () => {
     it.each( [
@@ -45,5 +48,15 @@ describe( 'buildMigrationFile', () => {
 
     it( 'renders an empty migration with a hint', () => {
         expect( buildMigrationFile( 'backfill', [], [] ).content ).toContain( '// Write your migration here' );
+    } );
+} );
+
+describe( 'writeMigrationFile', () => {
+    it( 'never overwrites an existing file', async () => {
+        const file = buildMigrationFile( 'add-things', [], [], 1727000000000 );
+
+        await writeMigrationFile( file );
+
+        expect( writeFile ).toHaveBeenCalledWith( file.path, file.content, { flag: 'wx' } );
     } );
 } );
