@@ -1,5 +1,5 @@
 import { TypeboxResponse } from '@gradiaqo/nestjs-typebox';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import {
     ApiBadRequestResponse,
     ApiConflictResponse,
@@ -56,9 +56,10 @@ export class OrganizationInvitationsController {
     ): Promise<Invitation> {
         const organization = await this.organizationsService.findById( context.organizationId );
 
-        if ( organization ) {
-            assertShared( organization );
+        if ( !organization ) {
+            throw new NotFoundException( 'Organization not found' );
         }
+        assertShared( organization );
 
         return this.invitationsService.create( context.organizationId, user.sub, dto );
     }

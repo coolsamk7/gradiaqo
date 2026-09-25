@@ -116,12 +116,7 @@ export class TopicsService {
     ): Promise<TopicItemView> {
         await this.findOrFail( owner, topicId );
 
-        const items = this.dataSource.getRepository( Item );
-        const usable = await items.existsBy( { id: itemId, organizationId: ownedBy( owner ) } )
-            || ( owner !== null
-                && await items.existsBy( { id: itemId, organizationId: IsNull(), status: CatalogStatus.Published } ) );
-
-        if ( !usable ) {
+        if ( !( await this.isLinkable( owner, itemId ) ) ) {
             throw new NotFoundException( 'Item not found' );
         }
 
@@ -172,6 +167,18 @@ export class TopicsService {
         } );
 
         return this.findLinks( topicId );
+    }
+
+    /** The catalog's own items, and for an organization also the published global ones. */
+    private async isLinkable( owner: CatalogOwner, itemId: string ): Promise<boolean> {
+        const items = this.dataSource.getRepository( Item );
+
+        if ( await items.existsBy( { id: itemId, organizationId: ownedBy( owner ) } ) ) {
+            return true;
+        }
+
+        return owner !== null
+            && items.existsBy( { id: itemId, organizationId: IsNull(), status: CatalogStatus.Published } );
     }
 
     private async findLinks( topicId: string ): Promise<TopicItemView[]> {

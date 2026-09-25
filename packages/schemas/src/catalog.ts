@@ -239,7 +239,10 @@ const ItemInput = {
     description: Type.Optional( Description() ),
     difficulty: Type.Optional( Type.Union( [ Type.Enum( Difficulty ), Type.Null() ] ) ),
     estimatedMinutes: Type.Optional( Type.Union( [ Type.Integer( { minimum: 1, maximum: 10_000 } ), Type.Null() ] ) ),
-    tags: Type.Optional( Type.Array( Type.String( { minLength: 1, maxLength: 50 } ), { maxItems: 20, uniqueItems: true } ) ),
+    tags: Type.Optional( Type.Array(
+        Type.String( { minLength: 1, maxLength: 50 } ),
+        { maxItems: 20, uniqueItems: true },
+    ) ),
     details: DetailsInput(),
     status: Type.Optional( Type.Enum( CatalogStatus, {
         description: 'Default: draft in the global catalog, published in an organization',

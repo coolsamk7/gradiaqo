@@ -58,7 +58,7 @@ export class ItemsService {
         return item;
     }
 
-    create( owner: CatalogOwner, dto: CreateItemRequest, userId: string ): Promise<Item> {
+    async create( owner: CatalogOwner, dto: CreateItemRequest, userId: string ): Promise<Item> {
         return this.items.save( this.items.create( {
             status: defaultStatus( owner ),
             ...dto,

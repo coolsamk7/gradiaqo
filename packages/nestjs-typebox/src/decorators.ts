@@ -64,7 +64,9 @@ export function isSchemaValidator( type: unknown ): type is SchemaValidator {
 
 /** v4 API. Prefer `typebox()` in new code. */
 export function buildSchemaValidator( config: SchemaValidatorConfig ): SchemaValidator {
-    const { type, schema, coerceTypes, stripUnknownProps, name, required } = config;
+    const { type, schema, coerceTypes, stripUnknownProps, name } = config;
+    // Same defaults as `@Validate()`: bodies, path params and responses are required, query values aren't.
+    const required = config.required ?? type !== 'query';
 
     if ( !type ) {
         throw new Error( 'Validator missing "type".' );

@@ -26,12 +26,18 @@ export class ReportsService {
         if ( path.organizationId === null || path.visibility !== PathVisibility.Public ) {
             throw new BadRequestException( 'Only public paths shared by users can be reported' );
         }
-        if ( await this.dataSource.getRepository( Membership ).existsBy( { userId, organizationId: path.organizationId } ) ) {
+        const isOwnPath = await this.dataSource.getRepository( Membership ).existsBy( {
+            userId,
+            organizationId: path.organizationId,
+        } );
+
+        if ( isOwnPath ) {
             throw new BadRequestException( 'You can\'t report your own path' );
         }
 
+        const reports = this.dataSource.getRepository( PathReport );
         const report = await saveUnique(
-            () => this.dataSource.getRepository( PathReport ).save( this.dataSource.getRepository( PathReport ).create( {
+            () => reports.save( reports.create( {
                 learningPathId: pathId,
                 reporterId: userId,
                 reason: dto.reason,

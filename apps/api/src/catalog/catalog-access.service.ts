@@ -20,7 +20,10 @@ export class CatalogAccessService {
      * Visible paths: the global catalog in its order, then the user's organizations' paths, then public ones;
      * with where each comes from. `enrollmentId` is left null for the caller to fill in.
      */
-    async visiblePaths( userId: string, { source, search }: ListPublishedPathsQuery = {} ): Promise<PublishedPathSummary[]> {
+    async visiblePaths(
+        userId: string,
+        { source, search }: ListPublishedPathsQuery = {},
+    ): Promise<PublishedPathSummary[]> {
         const organizationIds = await this.organizationIdsOf( userId );
         const query = this.dataSource.getRepository( LearningPath )
             .createQueryBuilder( 'path' )

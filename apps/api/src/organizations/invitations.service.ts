@@ -58,7 +58,8 @@ export class InvitationsService {
     }
 
     async revoke( organizationId: string, id: string ): Promise<void> {
-        const { affected } = await this.dataSource.getRepository( OrganizationInvitation ).delete( { id, organizationId } );
+        const invitations = this.dataSource.getRepository( OrganizationInvitation );
+        const { affected } = await invitations.delete( { id, organizationId } );
 
         if ( !affected ) {
             throw new NotFoundException( 'Invitation not found' );
@@ -83,7 +84,10 @@ export class InvitationsService {
     async accept( user: User, id: string ): Promise<MyOrganization> {
         return this.dataSource.transaction( async ( manager ) => {
             const invitation = await this.findForUser( manager.getRepository( OrganizationInvitation ), user, id );
-            const alreadyMember = await manager.existsBy( Membership, { userId: user.id, organizationId: invitation.organizationId } );
+            const alreadyMember = await manager.existsBy( Membership, {
+                userId: user.id,
+                organizationId: invitation.organizationId,
+            } );
 
             if ( !alreadyMember ) {
                 await manager.insert( Membership, {

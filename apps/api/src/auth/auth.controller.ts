@@ -196,7 +196,12 @@ export class AuthController {
         @Body( { schema: ChangePasswordBody } ) dto: ChangePasswordRequest,
         @Req() req: Request,
     ): Promise<void> {
-        return this.accountService.changePassword( current.sub, dto.currentPassword, dto.newPassword, readRefreshCookie( req ) );
+        return this.accountService.changePassword(
+            current.sub,
+            dto.currentPassword,
+            dto.newPassword,
+            readRefreshCookie( req ),
+        );
     }
 
     @Post( 'delete-account' )

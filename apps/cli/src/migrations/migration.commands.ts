@@ -2,6 +2,7 @@ import { relative } from 'node:path';
 
 import { MIGRATIONS_TABLE } from '@studylog/database';
 import { Command, CommandRunner, Option } from 'nest-commander';
+import type { MigrationInterface } from 'typeorm';
 
 import { DatabaseService } from '../database/database.service.js';
 import { output, runSafely } from '../output.js';
@@ -97,7 +98,7 @@ export class MigrationRunCommand extends CommandRunner {
                 // TypeORM returns nothing for fake runs, so work out what's pending ourselves.
                 const before = new Set( await lastApplied( dataSource.query.bind( dataSource ) ) );
                 const pending = dataSource.migrations
-                    .map( ( migration ) => migration.name ?? migration.constructor.name )
+                    .map( migrationName )
                     .filter( ( name ) => !before.has( name ) )
                     .sort( byTimestamp );
 
@@ -148,7 +149,7 @@ export class MigrationShowCommand extends CommandRunner {
     async run(): Promise<void> {
         await runSafely( async () => {
             const { all, applied } = await this.database.withDataSource( async ( dataSource ) => ( {
-                all: dataSource.migrations.map( ( migration ) => migration.name ?? migration.constructor.name ),
+                all: dataSource.migrations.map( migrationName ),
                 applied: new Set( await lastApplied( dataSource.query.bind( dataSource ) ) ),
             } ) );
 
@@ -179,6 +180,11 @@ async function lastApplied( query: Query ): Promise<string[]> {
     }
 
     return ( await query( `SELECT name FROM "${MIGRATIONS_TABLE}" ORDER BY "timestamp" DESC, id DESC` ) ).map( ( row ) => row.name );
+}
+
+/** A migration's `name`, or its class name for migrations that don't set one. */
+function migrationName( migration: MigrationInterface ): string {
+    return migration.name ?? migration.constructor.name;
 }
 
 function byTimestamp( a: string, b: string ): number {

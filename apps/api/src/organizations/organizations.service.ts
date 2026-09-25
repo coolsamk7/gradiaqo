@@ -62,7 +62,8 @@ export class OrganizationsService {
             }
         } );
 
-        const member = ( await this.listMembers( organizationId ) ).find( ( candidate ) => candidate.userId === userId );
+        const members = await this.listMembers( organizationId );
+        const member = members.find( ( candidate ) => candidate.userId === userId );
 
         if ( !member ) {
             throw new NotFoundException( 'Member not found' );

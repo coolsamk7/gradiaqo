@@ -22,7 +22,9 @@ export function toPascalCase( name: string ): string {
         .split( /[^a-zA-Z0-9]+/ )
         .filter( Boolean );
 
-    if ( words.length === 0 || !/^[a-zA-Z]/.test( words[0] ?? '' ) ) {
+    const [ first ] = words;
+
+    if ( first === undefined || !/^[a-zA-Z]/.test( first ) ) {
         throw new Error( `Invalid migration name "${name}": use letters, numbers and dashes, starting with a letter.` );
     }
 

@@ -34,7 +34,9 @@ export class AccountService {
         currentRefreshToken: string | undefined,
     ): Promise<void> {
         await this.verifyPassword( userId, currentPassword );
-        await this.dataSource.getRepository( User ).update( { id: userId }, { passwordHash: await argon2.hash( newPassword ) } );
+        const passwordHash = await argon2.hash( newPassword );
+
+        await this.dataSource.getRepository( User ).update( { id: userId }, { passwordHash } );
         await this.sessionsService.revokeOthers( userId, currentRefreshToken );
     }
 
