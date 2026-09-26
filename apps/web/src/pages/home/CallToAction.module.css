@@ -1,0 +1,60 @@
+.section {
+    /* The previous section already leaves room above. */
+    padding-top: 0;
+}
+
+.panel {
+    position: relative;
+    overflow: hidden;
+    padding: clamp( 40px, 7vw, 72px ) var( --gutter );
+    border-radius: calc( var( --radius-lg ) + 6px );
+    color: var( --color-on-brand );
+    background: var( --gradient-brand );
+    text-align: center;
+    box-shadow: var( --shadow-lg );
+}
+
+/* Light shapes on the gradient. */
+.panel::before,
+.panel::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: rgb( 255 255 255 / 10% );
+}
+
+.panel::before {
+    width: 320px;
+    height: 320px;
+    top: -160px;
+    left: -80px;
+}
+
+.panel::after {
+    width: 240px;
+    height: 240px;
+    right: -60px;
+    bottom: -120px;
+}
+
+.title {
+    position: relative;
+    font-size: clamp( 1.8rem, 1.2rem + 2vw, 2.6rem );
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.text {
+    position: relative;
+    margin-top: 12px;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.button {
+    position: relative;
+    margin-top: 28px;
+    color: #312e81;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgb( 0 0 0 / 18% );
+}

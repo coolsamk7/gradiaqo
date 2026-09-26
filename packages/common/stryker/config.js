@@ -12,7 +12,7 @@
  * catch "survives", which points at behavior no test checks, even when that line is covered. The mutation score
  * is the share of mutants killed.
  *
- * It mutates the same files coverage measures (not `main.ts`, `*.module.ts` or specs). Reports go to
+ * It mutates the same files coverage measures (not entry points, `*.module.ts`, test setup or specs). Reports go to
  * `reports/mutation/mutation.html`; `incremental` keeps results in `reports/stryker-incremental.json`, so later
  * runs only retest mutants in changed code.
  *
@@ -29,11 +29,11 @@ export function strykerConfig( { thresholds = {}, ignore = [], concurrency } = {
         testRunner: 'vitest',
         plugins: [ '@stryker-mutator/vitest-runner' ],
         mutate: [
-            'src/**/*.ts',
-            '!src/**/*.spec.ts',
-            '!src/**/*.test.ts',
-            '!src/main.ts',
+            'src/**/*.{ts,tsx}',
+            '!src/**/*.{spec,test}.{ts,tsx}',
+            '!src/main.{ts,tsx}',
             '!src/**/*.module.ts',
+            '!src/test/**',
             ...ignore.map( ( glob ) => `!${glob}` ),
         ],
         // Only the tests that cover a mutant run against it.

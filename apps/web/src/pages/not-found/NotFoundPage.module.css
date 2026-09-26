@@ -1,0 +1,29 @@
+.page {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 12px;
+    min-height: 100dvh;
+    padding: var( --gutter );
+    text-align: center;
+}
+
+.code {
+    background: var( --gradient-brand );
+    background-clip: text;
+    color: transparent;
+    font-size: 4.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.title {
+    font-size: 1.8rem;
+    letter-spacing: -0.02em;
+}
+
+.text {
+    margin-bottom: 12px;
+    color: var( --color-text-muted );
+}

@@ -1,0 +1,123 @@
+/*
+ * Design tokens and base styles. Components use these variables (never raw colors), so the dark theme and later
+ * restyling only change this file.
+ */
+
+:root {
+    color-scheme: light;
+
+    /* Brand */
+    --color-brand: #4f46e5;
+    --color-brand-strong: #4338ca;
+    --color-brand-soft: #eef2ff;
+    --color-accent: #7c3aed;
+    --color-streak: #f59e0b;
+    --color-success: #059669;
+    --color-danger: #dc2626;
+    --gradient-brand: linear-gradient( 135deg, #4f46e5 0%, #7c3aed 100% );
+
+    /* Surfaces and text */
+    --color-bg: #ffffff;
+    --color-bg-subtle: #f7f7fb;
+    --color-surface: #ffffff;
+    --color-border: #e6e6ef;
+    --color-text: #16162a;
+    --color-text-muted: #5b5b72;
+    --color-on-brand: #ffffff;
+
+    /* Shape and depth */
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --radius-full: 999px;
+    --shadow-sm: 0 1px 2px rgb( 22 22 42 / 6% );
+    --shadow-md: 0 8px 24px rgb( 22 22 42 / 8% );
+    --shadow-lg: 0 24px 60px rgb( 79 70 229 / 18% );
+
+    /* Layout */
+    --content-width: 1120px;
+    --gutter: clamp( 16px, 4vw, 32px );
+    --section-space: clamp( 64px, 10vw, 120px );
+
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: var( --color-text );
+    background: var( --color-bg );
+    -webkit-font-smoothing: antialiased;
+}
+
+@media ( prefers-color-scheme: dark ) {
+    :root {
+        color-scheme: dark;
+
+        --color-brand: #818cf8;
+        --color-brand-strong: #a5b4fc;
+        --color-brand-soft: rgb( 129 140 248 / 14% );
+        --color-accent: #a78bfa;
+        --color-success: #34d399;
+        --color-danger: #f87171;
+        --gradient-brand: linear-gradient( 135deg, #6366f1 0%, #8b5cf6 100% );
+
+        --color-bg: #0d0d18;
+        --color-bg-subtle: #13131f;
+        --color-surface: #181826;
+        --color-border: #2a2a3d;
+        --color-text: #ececf5;
+        --color-text-muted: #a3a3bb;
+
+        --shadow-sm: 0 1px 2px rgb( 0 0 0 / 40% );
+        --shadow-md: 0 8px 24px rgb( 0 0 0 / 35% );
+        --shadow-lg: 0 24px 60px rgb( 0 0 0 / 45% );
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin: 0;
+}
+
+a {
+    color: inherit;
+}
+
+:focus-visible {
+    outline: 3px solid var( --color-brand );
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Hidden visually, still read by screen readers. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset( 50% );
+    white-space: nowrap;
+}

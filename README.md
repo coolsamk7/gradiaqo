@@ -3,8 +3,9 @@
 Study time tracker. Turborepo monorepo using Yarn workspaces.
 
 - `apps/api`: NestJS backend
+- `apps/web`: React web app (Vite), at http://localhost:5173; empty for now (see `apps/web/README.md`)
 - `apps/cli`: command-line tools (database migrations), built with nest-commander (`@studylog/cli`)
-- `packages/common`: shared configs for every app/package: ESLint rules (`@studylog/common/eslint/*`) and tsconfigs (`@studylog/common/tsconfig/*`)
+- `packages/common`: shared configs for every app/package: ESLint rules (`@studylog/common/eslint/*`, with `react` for the web app), tsconfigs (`@studylog/common/tsconfig/*`), coverage and mutation testing settings
 - `packages/schemas`: the API contract as TypeBox schemas + types + role enums, no framework deps (`@studylog/schemas`); shareable with web/mobile
 - `packages/nestjs`: those schemas wired into NestJS: request bodies and documented responses (`@studylog/nestjs`)
 - `packages/nestjs-typebox`: `@gradiaqo/nestjs-typebox`, our NestJS 12 fork of nestjs-typebox (see its README)
@@ -17,7 +18,7 @@ Study time tracker. Turborepo monorepo using Yarn workspaces.
 yarn install
 yarn db:up                 # start Postgres on localhost:5432
 yarn cli migration:run     # create/update the tables
-yarn dev                   # start the API
+yarn dev                   # start the API and the web app
 yarn db:down               # stop Postgres (data is kept)
 ```
 
@@ -364,3 +365,67 @@ What a logged-in user does with the catalog. Everything under `/me` only ever to
 | GET / POST | `/me/study-sessions` | Filter: `from`, `to`, `topicId`, `itemId`, `limit`, `offset` |
 | PATCH / DELETE | `/me/study-sessions/:id` | |
 | GET | `/me/stats` | Today, this week, total, streaks, items completed, last 30 days |
+
+## Roadmap
+
+What's still open, so it isn't forgotten. Tick items off (or remove them) as they're done. New code must keep unit
+test coverage at 100% (see [Tests](#tests)).
+
+### Backend features
+
+- [ ] **OTP and email** (needs an email provider, e.g. Resend, SendGrid, Amazon SES, or SMTP for development)
+  - [ ] Email verification at signup
+  - [ ] Password reset
+  - [ ] Changing your email (verify the new address first)
+  - [ ] Send invitation emails (today invited people only see them in `GET /me/invitations`)
+- [ ] **Moderation:** let a superadmin un-hide a path hidden by mistake (clear `publicBlockedAt`)
+- [ ] **Pagination** for `GET /catalog/paths` and `GET /me/enrollments` (both return everything today)
+- [ ] **Study reminders / notifications**, e.g. "you haven't studied today, keep your streak"
+- [ ] **Data export:** a user downloads their progress and study sessions
+- [ ] **Performance:** `GET /me/enrollments` builds each path's tree one by one to count progress; batch it once users
+  have many enrollments
+- [ ] **Rate limits in a shared store** (e.g. Redis) before running more than one API instance; counters are in memory
+
+### Testing
+
+- [ ] **Raise mutation scores** and set a minimum (`thresholds.break` in `@studylog/common/stryker/config`). Last run:
+  total 71.6%; api 81.4%, cli 91.9%, casl 86.8%, nestjs-typebox 84.9%, logger 83.1%, database 58.3%, schemas 10.9%,
+  nestjs 2.8%
+  - [ ] Contract snapshot of every request/response schema (most survivors in `schemas` and `nestjs`)
+  - [ ] Test that every `*Request` schema rejects unknown fields; date formats and numeric limits
+- [ ] **End-to-end tests** against a real database (permissions, visibility, the SQL the unit tests fake)
+- [ ] **Property-based tests** (fast-check) for pure logic: enrollment rules and ordering, streaks and dates, slugs
+- [ ] **Type-check mutants** (`@stryker-mutator/typescript-checker`) for more accurate mutation scores
+
+### Tooling and deployment
+
+- [ ] **CI (GitHub Actions)** on every push and pull request: build, lint, `yarn test:cov`,
+  `yarn cli migration:generate x --check`, and mutation testing on changed code (incremental)
+- [ ] **Branch protection** on `master`: pull requests only, CI must pass, no force pushes
+  (needs GitHub Pro, or a public repository)
+- [ ] **Pre-commit hooks** (husky + lint-staged): lint and related tests on committed files
+- [ ] **Dockerfile and deployment**, with `migration:run` as a release step; check production settings
+  (`NODE_ENV=production`, `COOKIE_SECURE=true`, `SWAGGER_ENABLED=false`, `LOG_PRETTY=false`, `TRUST_PROXY`)
+- [ ] **Dependency updates** (Dependabot or Renovate) and `yarn npm audit` in CI
+
+### Operations
+
+- [ ] **Error tracking** (e.g. Sentry)
+- [ ] **Metrics:** request counts, latency, database timing
+- [ ] **Graceful shutdown:** close database connections cleanly on deploy
+
+### Documentation
+
+- [ ] Replace the NestJS starter READMEs in `apps/api` and `apps/cli`
+- [ ] Architecture overview (catalog, enrollments, permissions)
+
+### Frontend
+
+- [x] Empty web app (`apps/web`: React + Vite), with the repo's lint, tests and coverage
+- [x] Homepage
+- [x] Login page, API client and session handling (restored from the refresh cookie on reload)
+- [ ] Signup page (`/signup` shows "not found" until then)
+- [ ] Renew the access token automatically when it expires (15 minutes) during use: retry once after
+  `POST /auth/refresh` on a 401
+- [ ] Dashboard at `/app`, then catalog, enrollments, progress, study sessions and stats pages
+- [ ] Mobile app
