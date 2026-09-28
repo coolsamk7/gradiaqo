@@ -1,0 +1,124 @@
+/* Form parts shared by the login and signup pages. */
+
+.formError {
+    margin-top: 20px;
+    padding: 12px 14px;
+    border: 1px solid color-mix( in srgb, var( --color-danger ) 35%, transparent );
+    border-radius: var( --radius-sm );
+    color: var( --color-danger );
+    background: color-mix( in srgb, var( --color-danger ) 8%, transparent );
+    font-size: 0.95rem;
+}
+
+.form {
+    display: grid;
+    gap: 18px;
+    margin-top: 24px;
+}
+
+.field {
+    display: grid;
+    gap: 6px;
+}
+
+.label {
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-sm );
+    color: var( --color-text );
+    background: var( --color-bg );
+    font: inherit;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input:hover {
+    border-color: color-mix( in srgb, var( --color-brand ) 35%, var( --color-border ) );
+}
+
+.input:focus-visible {
+    border-color: var( --color-brand );
+    outline: none;
+    box-shadow: 0 0 0 4px var( --color-brand-soft );
+}
+
+.input[aria-invalid='true'] {
+    border-color: var( --color-danger );
+}
+
+.passwordRow {
+    position: relative;
+}
+
+.passwordRow .input {
+    padding-right: 72px;
+}
+
+.toggle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 6px;
+    color: var( --color-brand-strong );
+    background: transparent;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transform: translateY( -50% );
+}
+
+.toggle:hover {
+    background: var( --color-brand-soft );
+}
+
+.fieldError {
+    color: var( --color-danger );
+    font-size: 0.88rem;
+}
+
+.submit {
+    margin-top: 6px;
+    width: 100%;
+    padding-block: 13px;
+    border: 0;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.submit:disabled {
+    cursor: progress;
+    opacity: 0.75;
+    transform: none;
+}
+
+
+.formError a {
+    color: inherit;
+    font-weight: 600;
+}
+
+/* Two fields side by side (first and last name), stacked on narrow screens. */
+.row {
+    display: grid;
+    gap: 18px;
+}
+
+@media ( width >= 480px ) {
+    .row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.hint {
+    color: var( --color-text-muted );
+    font-size: 0.88rem;
+}

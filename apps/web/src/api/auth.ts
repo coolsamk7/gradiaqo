@@ -1,6 +1,11 @@
-import type { AccessTokenResponse, AuthResponse, LoginRequest, UserJson } from '@studylog/schemas';
+import type { AccessTokenResponse, AuthResponse, LoginRequest, SignupRequest, UserJson } from '@studylog/schemas';
 
 import { apiRequest } from './client.ts';
+
+/** Creates an account and starts a session, like login(). Fails with 409 if the email is already registered. */
+export function signup( details: SignupRequest ): Promise<AuthResponse> {
+    return apiRequest<AuthResponse>( '/auth/signup', { method: 'POST', body: details } );
+}
 
 /** Starts a session: returns an access token and the user, and sets the refresh cookie. */
 export function login( credentials: LoginRequest ): Promise<AuthResponse> {

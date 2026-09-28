@@ -424,7 +424,7 @@ test coverage at 100% (see [Tests](#tests)).
 - [x] Empty web app (`apps/web`: React + Vite), with the repo's lint, tests and coverage
 - [x] Homepage
 - [x] Login page, API client and session handling (restored from the refresh cookie on reload)
-- [ ] Signup page (`/signup` shows "not found" until then)
+- [x] Signup page
 - [ ] Renew the access token automatically when it expires (15 minutes) during use: retry once after
   `POST /auth/refresh` on a 401
 - [ ] Dashboard at `/app`, then catalog, enrollments, progress, study sessions and stats pages

@@ -1,4 +1,4 @@
-import type { UserJson } from '@studylog/schemas';
+import type { SignupRequest, UserJson } from '@studylog/schemas';
 import { createContext, useContext } from 'react';
 
 export interface Session {
@@ -17,6 +17,8 @@ export interface AuthContextValue {
     state: AuthState;
     /** Rejects with ApiError / NetworkError, like the API call. */
     logIn: ( email: string, password: string ) => Promise<void>;
+    /** Creates the account and logs in. Rejects with ApiError / NetworkError, like the API call. */
+    signUp: ( details: SignupRequest ) => Promise<void>;
     /** Always ends up logged out locally, even if the API can't be reached. */
     logOut: () => Promise<void>;
 }

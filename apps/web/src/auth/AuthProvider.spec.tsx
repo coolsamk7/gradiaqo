@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { StrictMode } from 'react';
 
 import { anonymous, json, loggedIn, mockApi, noContent, USER } from '../test/api.ts';
@@ -6,14 +6,17 @@ import { renderApp } from '../test/render.tsx';
 import { useAuth } from './auth-context.ts';
 import { AuthProvider } from './AuthProvider.tsx';
 
+const SIGNUP = { firstName: 'Sam', lastName: 'Khan', email: 'sam@example.com', password: 'supersecret1' };
+
 /** Shows the auth state, with buttons to log in and out. */
 function AuthProbe() {
-    const { state, logIn, logOut } = useAuth();
+    const { state, logIn, signUp, logOut } = useAuth();
 
     return (
         <>
             <output>{state.status === 'authenticated' ? `${state.status}:${state.session.user.firstName}:${state.session.accessToken}` : state.status}</output>
             <button type="button" onClick={() => void logIn( 'sam@example.com', 'secret' ).catch( () => undefined )}>log in</button>
+            <button type="button" onClick={() => void signUp( SIGNUP ).catch( () => undefined )}>sign up</button>
             <button type="button" onClick={() => void logOut()}>log out</button>
         </>
     );
@@ -55,6 +58,26 @@ describe( 'AuthProvider', () => {
 
         screen.getByRole( 'button', { name: 'log out' } ).click();
         expect( await screen.findByText( 'anonymous' ) ).toBeInTheDocument();
+    } );
+
+    it( 'signs up, and stays anonymous when that fails', async () => {
+        let status = 409;
+        const { calls } = mockApi( {
+            ...anonymous,
+            'POST /auth/signup': () => ( status === 201 ? json( 201, { accessToken: 'signup-token', user: USER } ) : json( status, {} ) ),
+        } );
+
+        renderProvider();
+        await screen.findByText( 'anonymous' );
+
+        screen.getByRole( 'button', { name: 'sign up' } ).click();
+        await waitFor( () => expect( calls.filter( ( call ) => call.path === '/auth/signup' ) ).toHaveLength( 1 ) );
+        expect( screen.getByRole( 'status' ) ).toHaveTextContent( 'anonymous' );
+
+        status = 201;
+        screen.getByRole( 'button', { name: 'sign up' } ).click();
+        expect( await screen.findByText( 'authenticated:Sam:signup-token' ) ).toBeInTheDocument();
+        expect( calls.at( -1 )?.body ).toEqual( SIGNUP );
     } );
 
     it( 'logs out through the API when it answers', async () => {

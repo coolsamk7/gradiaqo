@@ -14,6 +14,7 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
 |---|---|
 | `/` | Homepage (`src/pages/home`) |
 | `/login` | Log in (`src/pages/login`); logged-in users go straight to `/app` |
+| `/signup` | Create an account (`src/pages/signup`), then straight into `/app`; logged-in users go straight there too |
 | `/app` | Placeholder for the dashboard, logged-in users only (others go to `/login` and come back) |
 | anything else | Not found |
 
@@ -25,7 +26,10 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
 - Request/response types come from `@studylog/schemas`, the same contract the API validates against.
 - `src/auth`: `AuthProvider` keeps the session. The access token lives in memory only (never localStorage); on
   startup the refresh cookie restores the session, so reloading doesn't log you out. `useAuth()` gives the state plus
-  `logIn` / `logOut`, and `<RequireAuth>` protects pages.
+  `logIn` / `signUp` / `logOut`, and `<RequireAuth>` protects pages.
+- Login and signup share `src/components/AuthLayout.tsx` and `src/forms` (fields, password input, error messages).
+  Each page checks what it can before calling the API (same limits as the schemas), shows the API's errors on
+  their fields, and focuses the first problem. Links between them keep the router state (`from`: where to go next).
 - The API must allow this origin: http://localhost:5173 is in its default `CORS_ORIGINS`.
 
 ## Tests

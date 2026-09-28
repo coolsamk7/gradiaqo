@@ -150,6 +150,31 @@ describe( 'LoginPage', () => {
         expect( await screen.findByRole( 'heading', { name: 'Welcome back, Sam!' } ) ).toBeInTheDocument();
     } );
 
+    it( 'clears old errors while it logs in', async () => {
+        await openLoginPage( { 'POST /auth/login': () => pending() } );
+
+        await fillAndSubmit( 'sam@example.com', '' );
+        await fillAndSubmit( '', 'supersecret1' );
+
+        expect( screen.queryByText( 'Enter your password.' ) ).not.toBeInTheDocument();
+        expect( passwordInput() ).not.toHaveAttribute( 'aria-describedby' );
+    } );
+
+    it( 'shows what StudyLog offers next to the form (on wide screens)', async () => {
+        await openLoginPage();
+
+        expect( screen.getAllByRole( 'listitem', { hidden: true } ).map( ( item ) => item.textContent ) ).toEqual( [
+            'Your learning paths, in your order', 'Progress on every topic and module', 'Study sessions, streaks and weekly totals',
+        ] );
+        expect( screen.getByText( /^New to StudyLog\?/ ) ).toHaveTextContent( /^New to StudyLog\? Create an account$/ );
+    } );
+
+    it( 'can start with an email filled in', async () => {
+        await openLoginPage( {}, { pathname: '/login', state: { email: 'sam@example.com' } } );
+
+        expect( emailInput() ).toHaveValue( 'sam@example.com' );
+    } );
+
     it( 'links to signing up and back home', async () => {
         await openLoginPage();
 

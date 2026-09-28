@@ -1,21 +1,20 @@
-import { ApiError, NetworkError } from '../../api/client.ts';
+import type { FieldErrors, FormErrors } from '../../forms/form-errors.ts';
+import { describeApiError, emailError } from '../../forms/form-errors.ts';
 
 export type Field = 'email' | 'password';
-export type FieldErrors = Partial<Record<Field, string>>;
+
+/** Form order, for focusing the first problem. */
+export const FIELDS: readonly Field[] = [ 'email', 'password' ];
 
 const LABELS: Record<Field, string> = { email: 'Email', password: 'Password' };
 
-// Deliberately loose: the API does the real check. This only catches obvious typos before a round trip.
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 /** Problems visible without asking the API. */
-export function validate( email: string, password: string ): FieldErrors {
-    const errors: FieldErrors = {};
+export function validate( email: string, password: string ): FieldErrors<Field> {
+    const errors: FieldErrors<Field> = {};
+    const emailProblem = emailError( email );
 
-    if ( !email.trim() ) {
-        errors.email = 'Enter your email.';
-    } else if ( !EMAIL.test( email.trim() ) ) {
-        errors.email = 'Enter a valid email, like name@example.com.';
+    if ( emailProblem ) {
+        errors.email = emailProblem;
     }
     if ( !password ) {
         errors.password = 'Enter your password.';
@@ -24,43 +23,9 @@ export function validate( email: string, password: string ): FieldErrors {
     return errors;
 }
 
-/** What to tell the user when logging in fails: a message for the form, and/or per-field messages. */
-export function describeLoginError( error: unknown ): { form?: string; fields: FieldErrors } {
-    if ( error instanceof NetworkError ) {
-        return { form: 'Can\'t reach StudyLog right now. Check your connection and try again.', fields: {} };
-    }
-    if ( !( error instanceof ApiError ) ) {
-        return { form: 'Something went wrong. Please try again.', fields: {} };
-    }
-
-    switch ( error.status ) {
-        case 401:
-            return { form: 'That email and password don\'t match. Check them and try again.', fields: {} };
-
-        case 429:
-            return {
-                form: error.retryAfterSeconds
-                    ? `Too many attempts. Try again in ${error.retryAfterSeconds} seconds.`
-                    : 'Too many attempts. Wait a minute and try again.',
-                fields: {},
-            };
-
-        case 400: {
-            // The API's validation messages continue the field name: "must be a valid email address".
-            const fields: FieldErrors = {};
-
-            for ( const field of Object.keys( LABELS ) as Field[] ) {
-                const message = error.fieldErrors[field];
-
-                if ( message ) {
-                    fields[field] = `${LABELS[field]} ${message}.`;
-                }
-            }
-
-            return { form: Object.keys( fields ).length > 0 ? undefined : 'Check your details and try again.', fields };
-        }
-
-        default:
-            return { form: 'Something went wrong. Please try again.', fields: {} };
-    }
+/** What to tell the user when logging in fails. */
+export function describeLoginError( error: unknown ): FormErrors<Field> {
+    return describeApiError( error, LABELS, {
+        401: { form: 'That email and password don\'t match. Check them and try again.' },
+    } );
 }

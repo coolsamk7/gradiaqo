@@ -1,7 +1,8 @@
+import type { SignupRequest } from '@studylog/schemas';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { getCurrentUser, login, logout, refreshSession } from '../api/auth.ts';
+import { getCurrentUser, login, logout, refreshSession, signup } from '../api/auth.ts';
 import type { AuthState, Session } from './auth-context.ts';
 import { AuthContext } from './auth-context.ts';
 
@@ -30,6 +31,12 @@ export function AuthProvider( { children }: { children: ReactNode } ) {
         setState( { status: 'authenticated', session: { accessToken, user } } );
     }, [] );
 
+    const signUp = useCallback( async ( details: SignupRequest ) => {
+        const { accessToken, user } = await signup( details );
+
+        setState( { status: 'authenticated', session: { accessToken, user } } );
+    }, [] );
+
     const logOut = useCallback( async () => {
         try {
             await logout();
@@ -40,7 +47,7 @@ export function AuthProvider( { children }: { children: ReactNode } ) {
         }
     }, [] );
 
-    const value = useMemo( () => ( { state, logIn, logOut } ), [ state, logIn, logOut ] );
+    const value = useMemo( () => ( { state, logIn, signUp, logOut } ), [ state, logIn, signUp, logOut ] );
 
     return <AuthContext value={value}>{children}</AuthContext>;
 }
