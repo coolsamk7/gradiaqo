@@ -46,7 +46,7 @@ describe( 'SignupPage', () => {
 
         await fillAndSubmit( { firstName: ' Sam ', lastName: ' Khan ', email: ' sam@example.com ', password: ' supersecret1 ' } );
 
-        expect( await screen.findByRole( 'heading', { name: 'Welcome back, Sam!' } ) ).toBeInTheDocument();
+        expect( await screen.findByRole( 'heading', { name: /, Sam!$/ } ) ).toBeInTheDocument();
         expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app' );
         // The password is sent exactly as typed: spaces can be part of it.
         expect( calls.find( ( call ) => call.path === '/auth/signup' )?.body ).toEqual( {
@@ -101,7 +101,7 @@ describe( 'SignupPage', () => {
         await fillAndSubmit( {
             firstName: 'a'.repeat( 100 ), lastName: 'b'.repeat( 100 ), email: `${'a'.repeat( 243 )}@example.com`, password: 'x'.repeat( 8 ),
         } );
-        await screen.findByRole( 'heading', { name: 'Welcome back, Sam!' } );
+        await screen.findByRole( 'heading', { name: /, Sam!$/ } );
 
         expect( calls.filter( ( call ) => call.path === '/auth/signup' ) ).toHaveLength( 1 );
     } );
@@ -111,7 +111,7 @@ describe( 'SignupPage', () => {
 
         await fillAndSubmit( { ...SAM, password: 'x'.repeat( 128 ) } );
 
-        expect( await screen.findByRole( 'heading', { name: 'Welcome back, Sam!' } ) ).toBeInTheDocument();
+        expect( await screen.findByRole( 'heading', { name: /, Sam!$/ } ) ).toBeInTheDocument();
     } );
 
     it( 'says that an email is taken, and offers to log in with it', async () => {
@@ -221,7 +221,7 @@ describe( 'SignupPage', () => {
 
         renderApp( '/signup' );
 
-        expect( await screen.findByRole( 'heading', { name: 'Welcome back, Sam!' } ) ).toBeInTheDocument();
+        expect( await screen.findByRole( 'heading', { name: /, Sam!$/ } ) ).toBeInTheDocument();
     } );
 
     it( 'links to logging in and back, keeping where to go next', async () => {

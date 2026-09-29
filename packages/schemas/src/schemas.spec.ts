@@ -14,6 +14,7 @@ import {
     NullableIsoDate,
     ReorderRequest,
     SignupRequest,
+    StudySessionPage,
     TrimmedText,
     UpdateOrganizationRequest,
     User,
@@ -140,5 +141,20 @@ describe( 'primitives', () => {
     it( 'Email and TrimmedText send values back unchanged', () => {
         expect( Compile( Email() ).Encode( 'a@b.co' ) ).toBe( 'a@b.co' );
         expect( Compile( TrimmedText( 10 ) ).Encode( 'text' ) ).toBe( 'text' );
+    } );
+} );
+
+describe( 'response schemas', () => {
+    it( 'StudySessionPage keeps only the titles of a session\'s topic and item', () => {
+        const id = '97f12719-9f4c-41c9-afc3-a91de613d02b';
+        const date = new Date( '2026-09-28T10:00:00Z' );
+        const dates = { startedAt: date, createdAt: date, updatedAt: date };
+        const session = { id, topicId: id, itemId: null, durationMinutes: 45, notes: null, ...dates };
+        const page = Compile( StudySessionPage ).Clean( {
+            total: 1,
+            items: [ { ...session, userId: 'secret', topic: { id, title: 'Two Pointers', slug: 'two-pointers' }, item: null } ],
+        } );
+
+        expect( page ).toEqual( { total: 1, items: [ { ...session, topic: { id, title: 'Two Pointers' }, item: null } ] } );
     } );
 } );

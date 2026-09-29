@@ -1,9 +1,10 @@
-import type { StaticDecode } from 'typebox';
+import type { StaticDecode, StaticEncode } from 'typebox';
 import Type from 'typebox';
 
 import { Item, LearningModule, LearningPath, Topic, TopicItem } from './catalog.js';
 import {
     EnrollmentStatus,
+    ItemType,
     OrderParentType,
     ProgressStatus,
     ReportReason,
@@ -135,6 +136,7 @@ export const Enrollment = Type.Object( {
     progress: ProgressCount,
 } );
 export type Enrollment = StaticDecode<typeof Enrollment>;
+export type EnrollmentJson = StaticEncode<typeof Enrollment>;
 
 export const MyTopicItem = Type.Object( { ...TopicItem.properties, progress: Type.Enum( ProgressStatus ) } );
 export type MyTopicItem = StaticDecode<typeof MyTopicItem>;
@@ -200,8 +202,22 @@ export const StudySession = Type.Object( {
 } );
 export type StudySession = StaticDecode<typeof StudySession>;
 
-export const StudySessionPage = Type.Object( { items: Type.Array( StudySession ), total: Type.Integer() } );
+export type StudySessionJson = StaticEncode<typeof StudySession>;
+
+/** A listed session, with the titles of what was studied (null if nothing was linked, or it has been deleted). */
+export const StudySessionListItem = Type.Object( {
+    ...StudySession.properties,
+    topic: Type.Union( [ Type.Object( { id: Uuid(), title: Type.String() } ), Type.Null() ] ),
+    item: Type.Union( [
+        Type.Object( { id: Uuid(), title: Type.String(), type: Type.Enum( ItemType ) } ),
+        Type.Null(),
+    ] ),
+} );
+export type StudySessionListItem = StaticDecode<typeof StudySessionListItem>;
+
+export const StudySessionPage = Type.Object( { items: Type.Array( StudySessionListItem ), total: Type.Integer() } );
 export type StudySessionPage = StaticDecode<typeof StudySessionPage>;
+export type StudySessionPageJson = StaticEncode<typeof StudySessionPage>;
 
 const SessionInput = {
     topicId: Type.Optional( Type.Union( [ Uuid(), Type.Null() ] ) ),

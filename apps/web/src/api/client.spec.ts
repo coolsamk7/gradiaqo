@@ -9,6 +9,7 @@ describe( 'apiRequest', () => {
         expect( calls[0] ).toEqual( {
             method: 'POST',
             path: '/things',
+            query: '',
             body: { name: 'X' },
             headers: { 'Content-Type': 'application/json', Authorization: 'Bearer token' },
             credentials: 'include',

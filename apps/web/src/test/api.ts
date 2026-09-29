@@ -1,6 +1,6 @@
 /*
- * A fake StudyLog API for tests: answers fetch() by "METHOD /path" and records every call, so tests can check what
- * the app sent. Any call without a handler fails the test.
+ * A fake StudyLog API for tests: answers fetch() by "METHOD /path" (without the query string) and records every
+ * call, so tests can check what the app sent. Any call without a handler fails the test.
  */
 
 type Handler = ( init: RequestInit ) => Response | Promise<Response>;
@@ -8,6 +8,8 @@ type Handler = ( init: RequestInit ) => Response | Promise<Response>;
 export interface RecordedCall {
     method: string;
     path: string;
+    /** The query string, e.g. "?limit=5" ("" when there is none). */
+    query: string;
     body: unknown;
     headers: Record<string, string>;
     credentials: RequestCredentials | undefined;
@@ -25,6 +27,7 @@ export function mockApi( handlers: Record<string, Handler> ) {
         calls.push( {
             method,
             path: url.pathname,
+            query: url.search,
             body: typeof init.body === 'string' ? JSON.parse( init.body ) : undefined,
             headers: { ...( init.headers as Record<string, string> ) },
             credentials: init.credentials,

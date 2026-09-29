@@ -260,6 +260,6 @@ describe( 'RequireAuth', () => {
 
         renderApp( '/app' );
 
-        expect( await screen.findByRole( 'heading', { name: 'Welcome back, Sam!' } ) ).toBeInTheDocument();
+        expect( await screen.findByRole( 'heading', { name: /, Sam!$/ } ) ).toBeInTheDocument();
     } );
 } );

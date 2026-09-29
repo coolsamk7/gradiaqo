@@ -15,7 +15,7 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
 | `/` | Homepage (`src/pages/home`) |
 | `/login` | Log in (`src/pages/login`); logged-in users go straight to `/app` |
 | `/signup` | Create an account (`src/pages/signup`), then straight into `/app`; logged-in users go straight there too |
-| `/app` | Placeholder for the dashboard, logged-in users only (others go to `/login` and come back) |
+| `/app` | Dashboard (`src/pages/dashboard`), logged-in users only (others go to `/login` and come back): study time today, this week and in total, streak, items completed, the last 30 days as a chart, learning paths with progress, and recent sessions |
 | anything else | Not found |
 
 ## Talking to the API
@@ -40,6 +40,7 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
 
 ## Tests
 
-`src/test/api.ts` fakes the API (answers `fetch` by `METHOD /path` and records calls) and `src/test/render.tsx`
-renders the whole app at a URL, so tests go through the real routes and auth.
+`src/test/api.ts` fakes the API (answers `fetch` by `METHOD /path` and records calls, query strings included) and
+`src/test/render.tsx` renders the whole app at a URL, so tests go through the real routes and auth. Tests run in UTC
+(`vitest.config.ts`), so dates and times read the same on every machine.
 - Same code style, 100% coverage rule and mutation testing as the rest of the monorepo (see the root README).

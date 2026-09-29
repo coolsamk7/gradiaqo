@@ -37,7 +37,7 @@ describe( 'LoginPage', () => {
 
         await fillAndSubmit( '  sam@example.com ', 'supersecret1' );
 
-        expect( await screen.findByRole( 'heading', { name: 'Welcome back, Sam!' } ) ).toBeInTheDocument();
+        expect( await screen.findByRole( 'heading', { name: /, Sam!$/ } ) ).toBeInTheDocument();
         expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app' );
         expect( calls.find( ( call ) => call.path === '/auth/login' )?.body ).toEqual( { email: 'sam@example.com', password: 'supersecret1' } );
     } );
@@ -147,7 +147,7 @@ describe( 'LoginPage', () => {
 
         renderApp( '/login' );
 
-        expect( await screen.findByRole( 'heading', { name: 'Welcome back, Sam!' } ) ).toBeInTheDocument();
+        expect( await screen.findByRole( 'heading', { name: /, Sam!$/ } ) ).toBeInTheDocument();
     } );
 
     it( 'clears old errors while it logs in', async () => {

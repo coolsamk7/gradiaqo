@@ -1,0 +1,50 @@
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var( --color-border );
+    background: color-mix( in srgb, var( --color-bg ) 85%, transparent );
+    backdrop-filter: blur( 12px );
+}
+
+.bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+}
+
+.account {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: var( --color-on-brand );
+    background: var( --gradient-brand );
+    font-weight: 700;
+}
+
+.name {
+    font-weight: 600;
+}
+
+.logOut {
+    padding: 8px 16px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@media ( max-width: 560px ) {
+    .name {
+        display: none;
+    }
+}

@@ -10,6 +10,8 @@ export default defineConfig( {
         globals: true,
         environment: 'jsdom',
         setupFiles: [ './src/test/setup.ts' ],
+        // Dates are shown in the browser's time zone: the same one everywhere, so tests don't depend on the machine.
+        env: { TZ: 'UTC' },
         include: [ 'src/**/*.spec.{ts,tsx}' ],
         coverage: coverageConfig(),
     },
