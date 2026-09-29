@@ -1,31 +1,11 @@
-/* The dashboard page and its sections. Cards and progress bars follow the homepage's dashboard preview. */
-
-.page {
-    min-height: 100dvh;
-    background: var( --color-bg-subtle );
-}
-
-.main {
-    display: grid;
-    gap: 20px;
-    padding-block: 32px 64px;
-}
+/* The dashboard's own sections. Page layout, cards and session rows are shared: see src/styles/app.module.css. */
 
 .intro {
-    display: grid;
-    gap: 4px;
-}
-
-.title {
-    font-size: clamp( 1.6rem, 1.2rem + 1.5vw, 2.2rem );
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-}
-
-.muted {
-    margin: 0;
-    color: var( --color-text-muted );
-    font-size: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
 }
 
 .label {
@@ -34,51 +14,6 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-}
-
-/* ---------- Loading and errors ---------- */
-
-.status,
-.error {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 20px;
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-md );
-    background: var( --color-surface );
-}
-
-.status {
-    color: var( --color-text-muted );
-}
-
-.spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid var( --color-brand-soft );
-    border-top-color: var( --color-brand );
-    border-radius: 50%;
-    animation: spin 800ms linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate( 1turn );
-    }
-}
-
-.error {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    border-color: var( --color-danger );
-}
-
-.retry {
-    padding: 8px 16px;
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
 }
 
 /* ---------- Stat tiles ---------- */
@@ -142,7 +77,7 @@
     background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" ), linear-gradient( 135deg, #34d399, #059669 );
 }
 
-/* ---------- Cards and columns ---------- */
+/* ---------- Columns ---------- */
 
 .columns {
     display: grid;
@@ -160,35 +95,6 @@
     .columns {
         grid-template-columns: minmax( 0, 1fr );
     }
-}
-
-.card {
-    padding: 20px;
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-md );
-    background: var( --color-surface );
-    box-shadow: var( --shadow-sm );
-}
-
-.cardHeader {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 4px 12px;
-    margin-bottom: 16px;
-}
-
-.cardTitle {
-    font-size: 1.05rem;
-}
-
-.empty {
-    padding: 24px 12px;
-    border: 1px dashed var( --color-border );
-    border-radius: var( --radius-sm );
-    color: var( --color-text-muted );
-    text-align: center;
 }
 
 /* ---------- Learning paths ---------- */
@@ -295,55 +201,4 @@
     color: var( --color-text-muted );
     font-size: 0.75rem;
     font-weight: 600;
-}
-
-/* ---------- Recent sessions ---------- */
-
-.sessions {
-    display: grid;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.session {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding-block: 12px;
-    border-top: 1px solid var( --color-border );
-}
-
-.session:first-child {
-    padding-top: 0;
-    border-top: 0;
-}
-
-.sessionMain {
-    flex: 1;
-    min-width: 0;
-}
-
-.sessionTitle {
-    font-weight: 600;
-}
-
-.notes {
-    margin-top: 4px;
-    overflow: hidden;
-    font-size: 0.9rem;
-    font-style: italic;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.duration {
-    flex: none;
-    padding: 2px 10px;
-    border-radius: var( --radius-full );
-    color: var( --color-brand-strong );
-    background: var( --color-brand-soft );
-    font-size: 0.85rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
 }

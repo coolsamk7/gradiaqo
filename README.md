@@ -451,5 +451,6 @@ test coverage at 100% (see [Tests](#tests)).
 - [x] Renew the access token automatically when it expires (15 minutes) during use: retry once after
   `POST /auth/refresh` on a 401
 - [x] Dashboard at `/app`: stats, streak, last 30 days, learning paths with progress, recent sessions
-- [ ] Study sessions, learning path, catalog and enrollment pages
+- [x] Study sessions at `/app/sessions`: history by day, log, edit and delete sessions
+- [ ] Learning path, catalog and enrollment pages
 - [ ] Mobile app

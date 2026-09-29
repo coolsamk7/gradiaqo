@@ -1,7 +1,8 @@
 import type { StudyStats } from '@studylog/schemas';
 
+import { formatDays, formatMinutes } from '../../format/format.ts';
+import app from '../../styles/app.module.css';
 import styles from './Dashboard.module.css';
-import { formatDays, formatMinutes } from './format.ts';
 
 interface Tile {
     label: string;
@@ -33,7 +34,7 @@ export function StatTiles( { stats }: { stats: StudyStats } ) {
                     <div>
                         <dt className={styles.label}>{tile.label}</dt>
                         <dd className={styles.tileValue}>{tile.value}</dd>
-                        {tile.detail && <dd className={styles.muted}>{tile.detail}</dd>}
+                        {tile.detail && <dd className={app.muted}>{tile.detail}</dd>}
                     </div>
                 </div>
             ) )}

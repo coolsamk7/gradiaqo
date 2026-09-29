@@ -163,6 +163,7 @@ export const EnrollmentDetail = Type.Object( {
     modules: Type.Array( MyModule ),
 } );
 export type EnrollmentDetail = StaticDecode<typeof EnrollmentDetail>;
+export type EnrollmentDetailJson = StaticEncode<typeof EnrollmentDetail>;
 
 export const CreateEnrollmentRequest = Type.Object(
     {
@@ -232,9 +233,11 @@ export const CreateStudySessionRequest = Type.Object( SessionInput, {
     description: 'Needs a topic, an item or both. startedAt can\'t be in the future.',
 } );
 export type CreateStudySessionRequest = StaticDecode<typeof CreateStudySessionRequest>;
+export type CreateStudySessionRequestJson = StaticEncode<typeof CreateStudySessionRequest>;
 
 export const UpdateStudySessionRequest = Type.Partial( CreateStudySessionRequest );
 export type UpdateStudySessionRequest = StaticDecode<typeof UpdateStudySessionRequest>;
+export type UpdateStudySessionRequestJson = StaticEncode<typeof UpdateStudySessionRequest>;
 
 export const ListStudySessionsQuery = Type.Object(
     {

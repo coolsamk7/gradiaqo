@@ -1,8 +1,9 @@
 import type { EnrollmentJson } from '@studylog/schemas';
 import { EnrollmentStatus } from '@studylog/schemas/enums';
 
+import { percent } from '../../format/format.ts';
+import app from '../../styles/app.module.css';
 import styles from './Dashboard.module.css';
-import { percent } from './format.ts';
 
 const STATUS_LABELS: Partial<Record<EnrollmentStatus, string>> = {
     [EnrollmentStatus.Paused]: 'Paused',
@@ -14,11 +15,11 @@ export function PathList( { enrollments }: { enrollments: EnrollmentJson[] } ) {
     const shown = enrollments.filter( ( enrollment ) => enrollment.status !== EnrollmentStatus.Dropped );
 
     return (
-        <section className={styles.card} aria-labelledby="paths-title">
-            <div className={styles.cardHeader}>
-                <h2 id="paths-title" className={styles.cardTitle}>Your learning paths</h2>
+        <section className={app.card} aria-labelledby="paths-title">
+            <div className={app.cardHeader}>
+                <h2 id="paths-title" className={app.cardTitle}>Your learning paths</h2>
             </div>
-            {shown.length === 0 && <p className={styles.empty}>You aren&apos;t following any learning paths yet.</p>}
+            {shown.length === 0 && <p className={app.empty}>You aren&apos;t following any learning paths yet.</p>}
             {shown.length > 0 && (
                 <ul className={styles.paths}>
                     {shown.map( ( enrollment ) => <PathRow key={enrollment.id} enrollment={enrollment} /> )}
@@ -51,7 +52,7 @@ function PathRow( { enrollment }: { enrollment: EnrollmentJson } ) {
             >
                 <div className={styles.fill} style={{ width: `${done}%` }} />
             </div>
-            <p className={styles.muted}>{`${completed} of ${total} items done`}</p>
+            <p className={app.muted}>{`${completed} of ${total} items done`}</p>
         </li>
     );
 }

@@ -15,6 +15,31 @@
     min-height: 64px;
 }
 
+.nav {
+    display: flex;
+    flex: 1;
+    gap: 4px;
+}
+
+.link {
+    padding: 8px 12px;
+    border-radius: var( --radius-sm );
+    color: var( --color-text-muted );
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.link:hover {
+    color: var( --color-text );
+    background: var( --color-bg-subtle );
+}
+
+/* NavLink sets aria-current="page" on the current page's link. */
+.link[aria-current='page'] {
+    color: var( --color-brand-strong );
+    background: var( --color-brand-soft );
+}
+
 .account {
     display: flex;
     align-items: center;

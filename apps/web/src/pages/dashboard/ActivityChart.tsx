@@ -1,7 +1,8 @@
 import type { StudyStats } from '@studylog/schemas';
 
+import { formatDays, formatMinutes, formatStatsDate } from '../../format/format.ts';
+import app from '../../styles/app.module.css';
 import styles from './Dashboard.module.css';
-import { formatDays, formatMinutes, formatStatsDate } from './format.ts';
 
 /** Minutes studied on each of the last 30 days, as bars. Oldest first; the last bar is today. */
 export function ActivityChart( { days }: { days: StudyStats['last30Days'] } ) {
@@ -13,10 +14,10 @@ export function ActivityChart( { days }: { days: StudyStats['last30Days'] } ) {
         : `${formatMinutes( total )} over ${formatDays( activeDays )}.`;
 
     return (
-        <section className={styles.card} aria-labelledby="activity-title">
-            <div className={styles.cardHeader}>
-                <h2 id="activity-title" className={styles.cardTitle}>Last 30 days</h2>
-                <p className={styles.muted}>{summary}</p>
+        <section className={app.card} aria-labelledby="activity-title">
+            <div className={app.cardHeader}>
+                <h2 id="activity-title" className={app.cardTitle}>Last 30 days</h2>
+                <p className={app.muted}>{summary}</p>
             </div>
             <ol className={styles.chart} aria-label="Minutes studied per day">
                 {days.map( ( day ) => {

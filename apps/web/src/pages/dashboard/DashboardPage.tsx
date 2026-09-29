@@ -1,9 +1,12 @@
+import { Link } from 'react-router';
+
 import { useAuth } from '../../auth/auth-context.ts';
 import { AppHeader } from '../../components/AppHeader.tsx';
+import { greeting } from '../../format/format.ts';
+import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import { ActivityChart } from './ActivityChart.tsx';
 import styles from './Dashboard.module.css';
-import { greeting } from './format.ts';
 import { PathList } from './PathList.tsx';
 import { RecentSessions } from './RecentSessions.tsx';
 import { StatTiles } from './StatTiles.tsx';
@@ -18,25 +21,28 @@ export function DashboardPage() {
     const now = new Date();
 
     return (
-        <div className={styles.page}>
+        <div className={app.page}>
             <AppHeader />
-            <main className={`${shared.container} ${styles.main}`}>
+            <main className={`${shared.container} ${app.main}`}>
                 <div className={styles.intro}>
-                    <h1 className={styles.title}>{`${greeting( now )}, ${user.firstName}!`}</h1>
-                    <p className={styles.muted}>Here&apos;s how your studying is going.</p>
+                    <div>
+                        <h1 className={app.title}>{`${greeting( now )}, ${user.firstName}!`}</h1>
+                        <p className={app.muted}>Here&apos;s how your studying is going.</p>
+                    </div>
+                    <Link to="/app/sessions?log" className={`${shared.button} ${shared.primary}`}>Log session</Link>
                 </div>
 
                 {state.status === 'loading' && (
-                    <div className={styles.status} role="status">
-                        <span className={styles.spinner} aria-hidden="true" />
+                    <div className={app.status} role="status">
+                        <span className={app.spinner} aria-hidden="true" />
                         Loading your dashboard…
                     </div>
                 )}
 
                 {state.status === 'error' && (
-                    <div className={styles.error} role="alert">
+                    <div className={app.error} role="alert">
                         <p>{state.message}</p>
-                        <button type="button" className={`${shared.button} ${shared.secondary} ${styles.retry}`} onClick={reload}>
+                        <button type="button" className={`${shared.button} ${shared.secondary} ${app.retry}`} onClick={reload}>
                             Try again
                         </button>
                     </div>

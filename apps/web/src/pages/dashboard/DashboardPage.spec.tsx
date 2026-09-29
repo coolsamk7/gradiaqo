@@ -1,15 +1,15 @@
 import type { EnrollmentJson, StudySessionPageJson, StudyStats } from '@studylog/schemas';
-import { CatalogStatus, EnrollmentStatus, ItemType, PathVisibility } from '@studylog/schemas/enums';
+import { EnrollmentStatus, ItemType } from '@studylog/schemas/enums';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { json, loggedIn, mockApi, noContent, pending } from '../../test/api.ts';
+import { enrollment, session } from '../../test/fixtures.ts';
 import { renderApp } from '../../test/render.tsx';
 
 // Tests run in UTC (see vitest.config.ts). "Now" is Tuesday Sep 29, 2026, 9:00 AM.
 const NOW = new Date( '2026-09-29T09:00:00Z' );
 const ID = '97f12719-9f4c-41c9-afc3-a91de613d02b';
-const DATE = '2026-09-01T09:00:00.000Z';
 
 /** The last 30 days, ending today (Sep 29), with minutes on the given days. */
 function last30Days( minutes: Record<string, number> = {} ): StudyStats['last30Days'] {
@@ -30,48 +30,6 @@ const STATS: StudyStats = {
     itemsCompleted: 13,
     last30Days: last30Days( { '2026-09-01': 30, '2026-09-28': 60, '2026-09-29': 45 } ),
 };
-
-function enrollment( title: string, status: EnrollmentStatus, completed: number, total: number ): EnrollmentJson {
-    return {
-        id: `${ID.slice( 0, -2 )}${String( completed ).padStart( 2, '0' )}`,
-        status,
-        position: 0,
-        enrolledAt: DATE,
-        updatedAt: DATE,
-        progress: { completed, total },
-        learningPath: {
-            id: ID,
-            title,
-            slug: 'path',
-            description: null,
-            status: CatalogStatus.Published,
-            position: 0,
-            organizationId: null,
-            visibility: PathVisibility.Public,
-            publicBlockedAt: null,
-            createdAt: DATE,
-            updatedAt: DATE,
-        },
-    };
-}
-
-type Session = StudySessionPageJson['items'][number];
-
-function session( id: string, startedAt: string, durationMinutes: number, about: Partial<Session> = {} ): Session {
-    return {
-        id,
-        topicId: null,
-        itemId: null,
-        topic: null,
-        item: null,
-        startedAt,
-        durationMinutes,
-        notes: null,
-        createdAt: startedAt,
-        updatedAt: startedAt,
-        ...about,
-    };
-}
 
 const TOPIC = { id: ID, title: 'Hashing Basics' };
 const ITEM = { id: ID, title: 'Two Sum', type: ItemType.Problem };
@@ -206,7 +164,7 @@ describe( 'DashboardPage', () => {
         const region = await screen.findByRole( 'region', { name: 'Recent sessions' } );
         const sessions = within( region ).getAllByRole( 'listitem' );
 
-        expect( region ).toHaveTextContent( '51 in total' );
+        expect( within( region ).getByRole( 'link', { name: 'View all 51' } ) ).toHaveAttribute( 'href', '/app/sessions' );
         expect( sessions[0] ).toHaveTextContent( 'Two SumHashing Basics · Today, 8:00 AMFinally clicked!45m' );
         expect( sessions[1] ).toHaveTextContent( 'Hashing BasicsYesterday, 5:30 PM1h' );
         expect( sessions[0]?.querySelectorAll( 'p' ) ).toHaveLength( 3 );
@@ -229,7 +187,7 @@ describe( 'DashboardPage', () => {
         expect( screen.getByText( 'No study time in the last 30 days yet.' ) ).toBeInTheDocument();
         expect( within( screen.getByRole( 'region', { name: 'Your learning paths' } ) ).queryByRole( 'list' ) ).not.toBeInTheDocument();
         expect( within( screen.getByRole( 'region', { name: 'Recent sessions' } ) ).queryByRole( 'list' ) ).not.toBeInTheDocument();
-        expect( screen.queryByText( /in total/ ) ).not.toBeInTheDocument();
+        expect( screen.queryByRole( 'link', { name: /View all/ } ) ).not.toBeInTheDocument();
     } );
 
     it( 'shows a loading state while the dashboard loads', async () => {

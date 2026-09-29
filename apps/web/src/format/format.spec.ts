@@ -1,4 +1,17 @@
-import { formatDays, formatMinutes, formatSessionStart, formatStatsDate, greeting, percent } from './format.ts';
+import {
+    describeSession,
+    formatDays,
+    formatMinutes,
+    formatSessionStart,
+    formatStatsDate,
+    formatTime,
+    fromDateTimeInputs,
+    greeting,
+    percent,
+    relativeDay,
+    toDateInput,
+    toTimeInput,
+} from './format.ts';
 
 // Tests run in UTC (see vitest.config.ts), so local times below are UTC times.
 
@@ -59,5 +72,55 @@ describe( 'greeting', () => {
         expect( greeting( new Date( '2026-09-29T12:00:00Z' ) ) ).toBe( 'Good afternoon' );
         expect( greeting( new Date( '2026-09-29T17:59:00Z' ) ) ).toBe( 'Good afternoon' );
         expect( greeting( new Date( '2026-09-29T18:00:00Z' ) ) ).toBe( 'Good evening' );
+    } );
+} );
+
+describe( 'relativeDay and formatTime', () => {
+    const now = new Date( '2026-09-29T08:00:00Z' );
+
+    it( 'name the day and the time separately', () => {
+        expect( relativeDay( new Date( '2026-09-29T23:59:00Z' ), now ) ).toBe( 'Today' );
+        expect( relativeDay( new Date( '2026-09-28T00:00:00Z' ), now ) ).toBe( 'Yesterday' );
+        expect( relativeDay( new Date( '2026-09-22T12:00:00Z' ), now ) ).toBe( 'Tue, Sep 22' );
+        expect( formatTime( new Date( '2026-09-22T12:00:00Z' ) ) ).toBe( '12:00 PM' );
+    } );
+} );
+
+describe( 'describeSession', () => {
+    const topic = { title: 'Hashing Basics' };
+    const item = { title: 'Two Sum' };
+
+    it( 'names the item, with its topic as context', () => {
+        expect( describeSession( { topic, item } ) ).toEqual( { title: 'Two Sum', context: 'Hashing Basics' } );
+        expect( describeSession( { topic: null, item } ) ).toEqual( { title: 'Two Sum', context: undefined } );
+    } );
+
+    it( 'falls back to the topic, then to a generic title', () => {
+        expect( describeSession( { topic, item: null } ) ).toEqual( { title: 'Hashing Basics', context: undefined } );
+        expect( describeSession( { topic: null, item: null } ) ).toEqual( { title: 'Study session', context: undefined } );
+    } );
+} );
+
+describe( 'date and time inputs', () => {
+    it( 'give the local date and time, zero-padded', () => {
+        const date = new Date( '2026-01-05T07:03:00Z' );
+
+        expect( toDateInput( date ) ).toBe( '2026-01-05' );
+        expect( toTimeInput( date ) ).toBe( '07:03' );
+    } );
+
+    it( 'read back a local date and time', () => {
+        expect( fromDateTimeInputs( '2026-01-05', '07:03' ) ).toEqual( new Date( '2026-01-05T07:03:00Z' ) );
+    } );
+
+    it( 'reject missing or malformed values', () => {
+        expect( fromDateTimeInputs( '', '07:03' ) ).toBeUndefined();
+        expect( fromDateTimeInputs( '2026-01-05', '' ) ).toBeUndefined();
+        expect( fromDateTimeInputs( '2026-1-5', '07:03' ) ).toBeUndefined();
+        expect( fromDateTimeInputs( '2026-01-05', '7:03' ) ).toBeUndefined();
+        expect( fromDateTimeInputs( 'x2026-01-05', '07:03' ) ).toBeUndefined();
+        expect( fromDateTimeInputs( '2026-01-05', '07:03x' ) ).toBeUndefined();
+        expect( fromDateTimeInputs( '2026-13-45', '07:03' ) ).toBeUndefined();
+        expect( fromDateTimeInputs( '2026-01-05', '25:99' ) ).toBeUndefined();
     } );
 } );
