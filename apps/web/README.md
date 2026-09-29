@@ -27,6 +27,12 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
 - `src/auth`: `AuthProvider` keeps the session. The access token lives in memory only (never localStorage); on
   startup the refresh cookie restores the session, so reloading doesn't log you out. `useAuth()` gives the state plus
   `logIn` / `signUp` / `logOut`, and `<RequireAuth>` protects pages.
+- Call the API as the logged-in user with `useAuth().request( path, options )`, never `apiRequest` with a token by
+  hand. When the access token expires (15 minutes), it renews it with the refresh cookie and retries once; concurrent
+  requests share one renewal (each refresh rotates the cookie). If the session is over (logged out elsewhere,
+  revoked), it logs out and `<RequireAuth>` sends the user to the login page, which says the session ended and
+  brings them back after logging in. Only 401s with `WWW-Authenticate: Bearer` trigger a renewal, so a wrong
+  password stays a normal error.
 - Login and signup share `src/components/AuthLayout.tsx` and `src/forms` (fields, password input, error messages).
   Each page checks what it can before calling the API (same limits as the schemas), shows the API's errors on
   their fields, and focuses the first problem. Links between them keep the router state (`from`: where to go next).

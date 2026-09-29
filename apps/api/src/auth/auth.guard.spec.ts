@@ -4,8 +4,10 @@ import type { JwtService } from '@nestjs/jwt';
 
 import { AuthGuard } from './auth.guard.js';
 
-function contextFor( request: object ): ExecutionContext {
-    return { switchToHttp: () => ( { getRequest: () => request } ) } as unknown as ExecutionContext;
+function contextFor( request: object, response = { setHeader: vi.fn() } ): ExecutionContext {
+    const http = { getRequest: () => request, getResponse: () => response };
+
+    return { switchToHttp: () => http } as unknown as ExecutionContext;
 }
 
 describe( 'AuthGuard', () => {
@@ -17,14 +19,16 @@ describe( 'AuthGuard', () => {
     const guard = new AuthGuard( jwt as unknown as JwtService );
 
     it.each( [
-        [ 'no header', undefined ],
-        [ 'another scheme', 'Basic good' ],
-        [ 'no token', 'Bearer' ],
-        [ 'a bad token', 'Bearer forged' ],
-    ] )( 'rejects %s', async ( _, authorization ) => {
-        const request = { headers: { authorization } };
+        [ 'no header', undefined, 'Bearer' ],
+        [ 'another scheme', 'Basic good', 'Bearer' ],
+        [ 'no token', 'Bearer', 'Bearer' ],
+        [ 'a bad or expired token', 'Bearer forged', 'Bearer error="invalid_token"' ],
+    ] )( 'rejects %s, telling the client to renew its token', async ( _, authorization, challenge ) => {
+        const response = { setHeader: vi.fn() };
 
-        await expect( guard.canActivate( contextFor( request ) ) ).rejects.toThrow( UnauthorizedException );
+        await expect( guard.canActivate( contextFor( { headers: { authorization } }, response ) ) )
+            .rejects.toThrow( UnauthorizedException );
+        expect( response.setHeader ).toHaveBeenCalledExactlyOnceWith( 'WWW-Authenticate', challenge );
     } );
 
     it( 'attaches the token payload as request.user', async () => {

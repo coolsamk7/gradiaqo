@@ -15,7 +15,7 @@ describe( 'describeApiError', () => {
         [ 61, 'Try again in 2 minutes.' ],
         [ 3600, 'Try again in 60 minutes.' ],
     ] )( 'turns a wait of %i seconds into "%s"', ( seconds, wait ) => {
-        expect( describeApiError( new ApiError( 429, 'Too many requests', {}, seconds ), LABELS ).form ).toBe( `Too many attempts. ${wait}` );
+        expect( describeApiError( new ApiError( 429, 'Too many requests', { retryAfterSeconds: seconds } ), LABELS ).form ).toBe( `Too many attempts. ${wait}` );
     } );
 
     it( 'uses the form\'s own message for a status it knows, over the generic one', () => {

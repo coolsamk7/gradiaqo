@@ -18,7 +18,7 @@ import { describeLoginError, FIELDS, validate } from './login-errors.ts';
 export function LoginPage() {
     const { state, logIn } = useAuth();
     const navigate = useNavigate();
-    const { from = '/app', email: initialEmail = '' } = useAuthPageState();
+    const { from = '/app', email: initialEmail = '', expired = false } = useAuthPageState();
     const [ email, setEmail ] = useState( initialEmail );
     const [ password, setPassword ] = useState( '' );
     const [ fieldErrors, setFieldErrors ] = useState<FieldErrors<Field>>( {} );
@@ -73,6 +73,7 @@ export function LoginPage() {
                 </>
             )}
         >
+            {expired && !formError && <p className={styles.notice} role="status">Your session has ended. Log in again to continue.</p>}
             {formError && <p className={styles.formError} role="alert">{formError}</p>}
 
             <form className={styles.form} onSubmit={( event ) => void onSubmit( event )} noValidate>

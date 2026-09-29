@@ -6,6 +6,8 @@ export interface AuthPageState {
     from?: string;
     /** Prefills the email, e.g. after trying to sign up with an email that already has an account. */
     email?: string;
+    /** The session ended while using the app; the login page says so. */
+    expired?: boolean;
 }
 
 export function useAuthPageState(): AuthPageState {

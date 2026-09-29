@@ -254,7 +254,9 @@ Every user has a personal workspace; for studying together, create an organizati
   organization).
 - Personal workspaces can't be deleted, left, or have members added.
 
-- Access token: JWT, 15 minutes.
+- Access token: JWT, 15 minutes. A 401 caused by the access token (missing, expired or invalid) carries
+  `WWW-Authenticate: Bearer` (RFC 6750; `error="invalid_token"` when one was sent): renew it with `/auth/refresh` and
+  retry. Other 401s, like a wrong password, don't have that header.
 - Refresh token: `httpOnly` cookie on `/auth`, rotated on every refresh. Expiry slides 180 days forward each time, so active users stay logged in.
 - Reusing an already-rotated refresh token (outside a 30s grace window for concurrent tabs) revokes that session.
 
@@ -425,7 +427,7 @@ test coverage at 100% (see [Tests](#tests)).
 - [x] Homepage
 - [x] Login page, API client and session handling (restored from the refresh cookie on reload)
 - [x] Signup page
-- [ ] Renew the access token automatically when it expires (15 minutes) during use: retry once after
+- [x] Renew the access token automatically when it expires (15 minutes) during use: retry once after
   `POST /auth/refresh` on a 401
 - [ ] Dashboard at `/app`, then catalog, enrollments, progress, study sessions and stats pages
 - [ ] Mobile app

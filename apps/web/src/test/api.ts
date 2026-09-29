@@ -47,6 +47,11 @@ export function noContent(): Response {
     return new Response( null, { status: 204 } );
 }
 
+/** The API's answer to an expired or invalid access token (see AuthGuard). */
+export function expiredToken(): Response {
+    return json( 401, { statusCode: 401, message: 'Unauthorized' }, { 'WWW-Authenticate': 'Bearer error="invalid_token"' } );
+}
+
 /** A fetch() that never settles, to see what's shown while a request is in flight. */
 export function pending(): Promise<Response> {
     return new Promise( () => undefined );

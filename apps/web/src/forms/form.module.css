@@ -122,3 +122,13 @@
     color: var( --color-text-muted );
     font-size: 0.88rem;
 }
+
+.notice {
+    margin-top: 20px;
+    padding: 12px 14px;
+    border: 1px solid color-mix( in srgb, var( --color-brand ) 30%, transparent );
+    border-radius: var( --radius-sm );
+    color: var( --color-brand-strong );
+    background: var( --color-brand-soft );
+    font-size: 0.95rem;
+}

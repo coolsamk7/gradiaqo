@@ -169,6 +169,23 @@ describe( 'LoginPage', () => {
         expect( screen.getByText( /^New to StudyLog\?/ ) ).toHaveTextContent( /^New to StudyLog\? Create an account$/ );
     } );
 
+    it( 'says when the session ended, until there\'s a new problem to show', async () => {
+        await openLoginPage( { 'POST /auth/login': () => json( 401, { message: 'Invalid email or password' } ) }, { pathname: '/login', state: { expired: true } } );
+
+        expect( screen.getByRole( 'status' ) ).toHaveTextContent( 'Your session has ended. Log in again to continue.' );
+
+        await fillAndSubmit( 'sam@example.com', 'wrong-password' );
+
+        expect( await screen.findByRole( 'alert' ) ).toBeInTheDocument();
+        expect( screen.queryByText( 'Your session has ended. Log in again to continue.' ) ).not.toBeInTheDocument();
+    } );
+
+    it( 'doesn\'t mention an ended session on a normal visit', async () => {
+        await openLoginPage();
+
+        expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
+    } );
+
     it( 'can start with an email filled in', async () => {
         await openLoginPage( {}, { pathname: '/login', state: { email: 'sam@example.com' } } );
 

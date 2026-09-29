@@ -58,7 +58,25 @@ describe( 'apiRequest', () => {
                 message: 'Validation failed (body)',
                 fieldErrors: { email: 'must be a valid email address', password: 'is required' },
                 retryAfterSeconds: undefined,
+                invalidToken: false,
             } );
+        } );
+
+        it.each( [
+            [ 'an expired or invalid token', 401, 'Bearer error="invalid_token"', true ],
+            [ 'a missing token', 401, 'Bearer', true ],
+            [ 'a wrong password (no challenge)', 401, undefined, false ],
+            [ 'another scheme', 401, 'Basic realm="x"', false ],
+            [ 'another scheme that mentions Bearer', 401, 'Basic realm="Bearer"', false ],
+            [ 'a challenge on another status', 403, 'Bearer', false ],
+        ] )( 'tells whether a 401 is about the access token: %s', async ( _, status, challenge, invalidToken ) => {
+            const error = await failWith( json( status, { message: 'Unauthorized' }, challenge ? { 'WWW-Authenticate': challenge } : {} ) );
+
+            expect( error ).toMatchObject( { invalidToken } );
+        } );
+
+        it( 'has no field errors, wait or token problem unless given', () => {
+            expect( new ApiError( 500, 'Oops' ) ).toMatchObject( { fieldErrors: {}, retryAfterSeconds: undefined, invalidToken: false } );
         } );
 
         it( 'reads Retry-After on 429', async () => {

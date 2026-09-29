@@ -1,6 +1,8 @@
 import type { SignupRequest, UserJson } from '@studylog/schemas';
 import { createContext, useContext } from 'react';
 
+import type { AuthedRequest } from './authed-request.ts';
+
 export interface Session {
     /** Short-lived (15 minutes); kept in memory only, never in storage. */
     accessToken: string;
@@ -10,7 +12,8 @@ export interface Session {
 export type AuthState =
     /** Checking for an existing session at startup. */
     | { status: 'loading' }
-    | { status: 'anonymous' }
+    /** `expired`: was logged in, but the session could not be renewed (e.g. logged out on another device). */
+    | { status: 'anonymous'; expired?: boolean }
     | { status: 'authenticated'; session: Session };
 
 export interface AuthContextValue {
@@ -21,6 +24,11 @@ export interface AuthContextValue {
     signUp: ( details: SignupRequest ) => Promise<void>;
     /** Always ends up logged out locally, even if the API can't be reached. */
     logOut: () => Promise<void>;
+    /**
+     * Calls the API as the logged-in user. Renews the access token when it has expired and retries once; if the
+     * session is over, logs out (pages behind <RequireAuth> then go to the login page) and rejects with the 401.
+     */
+    request: AuthedRequest;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>( null );

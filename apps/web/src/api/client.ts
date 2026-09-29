@@ -5,18 +5,27 @@ export class ApiError extends Error {
     readonly fieldErrors: Record<string, string>;
     /** From `Retry-After` on 429 (too many requests). */
     readonly retryAfterSeconds: number | undefined;
+    /**
+     * A 401 caused by the access token (missing, expired or invalid; the API sends `WWW-Authenticate: Bearer`), so
+     * renewing it may help. Other 401s, like a wrong password, are false.
+     */
+    readonly invalidToken: boolean;
 
     constructor(
         status: number,
         message: string,
-        fieldErrors: Record<string, string> = {},
-        retryAfterSeconds?: number,
+        { fieldErrors = {}, retryAfterSeconds, invalidToken = false }: {
+            fieldErrors?: Record<string, string>;
+            retryAfterSeconds?: number;
+            invalidToken?: boolean;
+        } = {},
     ) {
         super( message );
         this.name = 'ApiError';
         this.status = status;
         this.fieldErrors = fieldErrors;
         this.retryAfterSeconds = retryAfterSeconds;
+        this.invalidToken = invalidToken;
     }
 }
 
@@ -28,7 +37,7 @@ export class NetworkError extends Error {
     }
 }
 
-interface RequestOptions {
+export interface RequestOptions {
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
     body?: unknown;
     accessToken?: string;
@@ -80,10 +89,9 @@ function toApiError( response: Response, body: unknown ): ApiError {
     const fieldErrors = Object.fromEntries( errors.toReversed().map( ( error ) => [ error.path.replace( /^\//, '' ), error.message ] ) );
     const retryAfter = Number( response.headers.get( 'Retry-After' ) );
 
-    return new ApiError(
-        response.status,
-        typeof message === 'string' ? message : response.statusText,
+    return new ApiError( response.status, typeof message === 'string' ? message : response.statusText, {
         fieldErrors,
-        retryAfter > 0 ? retryAfter : undefined,
-    );
+        retryAfterSeconds: retryAfter > 0 ? retryAfter : undefined,
+        invalidToken: response.status === 401 && /^Bearer\b/.test( response.headers.get( 'WWW-Authenticate' ) ?? '' ),
+    } );
 }

@@ -4,7 +4,10 @@ import { Navigate, useLocation } from 'react-router';
 import { PageLoading } from '../components/PageLoading.tsx';
 import { useAuth } from './auth-context.ts';
 
-/** Only for logged-in users; others go to the login page, and come back here after logging in. */
+/**
+ * Only for logged-in users; others go to the login page, and come back here after logging in. Also where users land
+ * when their session ends while on the page.
+ */
 export function RequireAuth( { children }: { children: ReactNode } ) {
     const { state } = useAuth();
     const location = useLocation();
@@ -13,7 +16,7 @@ export function RequireAuth( { children }: { children: ReactNode } ) {
         return <PageLoading />;
     }
     if ( state.status === 'anonymous' ) {
-        return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+        return <Navigate to="/login" replace state={{ from: location.pathname, expired: state.expired }} />;
     }
 
     return children;
