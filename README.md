@@ -18,6 +18,7 @@ Study time tracker. Turborepo monorepo using Yarn workspaces.
 yarn install
 yarn db:up                 # start Postgres on localhost:5432
 yarn cli migration:run     # create/update the tables
+yarn cli db:seed           # optional: dummy users, catalog and study history (see below)
 yarn dev                   # start the API and the web app
 yarn db:down               # stop Postgres (data is kept)
 ```
@@ -51,6 +52,26 @@ Changing an entity:
 
 A database that was created earlier with `synchronize` already has the tables: run `yarn cli migration:run --fake`
 once so the `init` migration is recorded instead of failing.
+
+## Dummy data
+
+```sh
+yarn cli db:seed           # add the dummy data (refuses if the dummy users already exist)
+yarn cli db:seed --reset   # delete ALL data first, then add it (the schema and migrations are kept)
+```
+
+Every dummy user's password is `password123`: `admin@example.com` (superadmin), `alice@example.com`,
+`bob@example.com`, `carol@example.com` and `dave@example.com`. Each has a personal workspace, and Alice, Bob and
+Carol share the "Acme Study Group" organization (owner, admin, member), which has two pending invitations. The
+catalog has global paths (Data Structures & Algorithms, System Design Fundamentals, and a draft Graph Algorithms),
+the team's own path and a public path in Alice's workspace. Their modules, topics and items (problems, articles,
+videos, books, courses, notes, exercises) are linked across paths. Alice, Bob and Carol have enrollments,
+progress and about a month of study sessions, and Alice's public path has two reports (one open, one dismissed).
+
+- The data is written in `apps/cli/src/seed/seed-content.ts`; `seed-data.ts` turns it into rows. Dates are
+  relative to today, and the study activity is generated from a fixed seed, so every run looks the same.
+- Everything is inserted in one transaction: a failure leaves the database as it was.
+- It never runs when `NODE_ENV=production`.
 
 ## Tests
 
