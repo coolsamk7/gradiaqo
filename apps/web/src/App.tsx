@@ -2,12 +2,15 @@ import { Route, Routes } from 'react-router';
 
 import { AuthProvider } from './auth/AuthProvider.tsx';
 import { RequireAuth } from './auth/RequireAuth.tsx';
+import { CatalogPage } from './pages/catalog/CatalogPage.tsx';
 import { ComingSoonPage } from './pages/coming-soon/ComingSoonPage.tsx';
 import type { UpcomingPage } from './pages/coming-soon/upcoming.ts';
 import { UPCOMING } from './pages/coming-soon/upcoming.ts';
 import { DashboardPage } from './pages/dashboard/DashboardPage.tsx';
 import { HomePage } from './pages/home/HomePage.tsx';
 import { LoginPage } from './pages/login/LoginPage.tsx';
+import { MyPathsPage } from './pages/my-paths/MyPathsPage.tsx';
+import { PathBuilderPage } from './pages/my-paths/PathBuilderPage.tsx';
 import { NotFoundPage } from './pages/not-found/NotFoundPage.tsx';
 import { PathPage } from './pages/path/PathPage.tsx';
 import { SessionsPage } from './pages/sessions/SessionsPage.tsx';
@@ -23,7 +26,10 @@ export function App() {
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/app" element={<RequireAuth><DashboardPage /></RequireAuth>} />
                 <Route path="/app/sessions" element={<RequireAuth><SessionsPage /></RequireAuth>} />
+                <Route path="/app/catalog" element={<RequireAuth><CatalogPage /></RequireAuth>} />
                 <Route path="/app/paths/:enrollmentId" element={<RequireAuth><PathPage /></RequireAuth>} />
+                <Route path="/app/my-paths" element={<RequireAuth><MyPathsPage /></RequireAuth>} />
+                <Route path="/app/my-paths/:organizationId/:pathId" element={<RequireAuth><PathBuilderPage /></RequireAuth>} />
                 {( Object.keys( UPCOMING ) as UpcomingPage[] ).map( ( page ) => (
                     <Route
                         key={page}

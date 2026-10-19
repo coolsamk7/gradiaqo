@@ -2,12 +2,6 @@ import type { IconName } from '../../components/Icon.tsx';
 
 /** Sections in the sidebar whose pages aren't built yet (Figma has their designs). Remove one when its page exists. */
 export const UPCOMING = {
-    catalog: {
-        path: '/app/catalog',
-        title: 'Browse paths',
-        icon: 'compass',
-        text: 'Find learning paths to follow: the official catalog, your organizations\' paths and paths shared by the community.',
-    },
     analytics: {
         path: '/app/analytics',
         title: 'Analytics',
@@ -19,12 +13,6 @@ export const UPCOMING = {
         title: 'Interview ready',
         icon: 'target',
         text: 'Set an interview goal and see how ready you are: a score, a checklist for each area and your next steps.',
-    },
-    myPaths: {
-        path: '/app/my-paths',
-        title: 'My paths',
-        icon: 'layers',
-        text: 'Build your own learning paths from your notes and problems, or reuse items from the catalog.',
     },
     organizations: {
         path: '/app/organizations',

@@ -9,6 +9,7 @@ import type {
     ItemPage,
     ListItemsQuery,
     ListPublishedPathsQuery,
+    PathContents,
     PublishedPath,
     PublishedPathSummary,
 } from '@studylog/schemas';
@@ -47,8 +48,13 @@ export class PublishedCatalogController {
     ): Promise<PublishedPathSummary[]> {
         const paths = await this.catalogAccess.visiblePaths( user.sub, query );
         const enrollmentIds = await this.enrollmentIdsByPath( user.sub );
+        const contents = await this.contentsByPath( paths.map( ( path ) => path.id ) );
 
-        return paths.map( ( path ) => ( { ...path, enrollmentId: enrollmentIds.get( path.id ) ?? null } ) );
+        return paths.map( ( path ) => ( {
+            ...path,
+            enrollmentId: enrollmentIds.get( path.id ) ?? null,
+            contents: contents.get( path.id ) ?? { modules: 0, items: 0, estimatedMinutes: 0 },
+        } ) );
     }
 
     @Get( 'paths/:pathId' )
@@ -69,6 +75,7 @@ export class PublishedCatalogController {
             ...tree,
             ...( await this.catalogAccess.originOfPath( pathId ) ),
             enrollmentId: ( await this.enrollmentIdsByPath( user.sub ) ).get( pathId ) ?? null,
+            contents: contentsOfTree( tree ),
         };
     }
 
@@ -83,6 +90,36 @@ export class PublishedCatalogController {
         return this.itemsService.list( null, { ...query, status: CatalogStatus.Published } );
     }
 
+    /** Published modules, items and estimated minutes of each path, in one query. */
+    private async contentsByPath( pathIds: string[] ): Promise<Map<string, PathContents>> {
+        if ( pathIds.length === 0 ) {
+            return new Map();
+        }
+
+        const rows: ( PathContents & { pathId: string } )[] = await this.dataSource.query(
+            `WITH content AS (
+                 SELECT DISTINCT m.learning_path_id AS path_id, m.id AS module_id, i.id AS item_id, i.estimated_minutes
+                 FROM modules m
+                 LEFT JOIN topics t ON t.module_id = m.id AND t.status = 'published'
+                 LEFT JOIN topic_items ti ON ti.topic_id = t.id
+                 LEFT JOIN items i ON i.id = ti.item_id AND i.status = 'published'
+                 WHERE m.learning_path_id = ANY( $1 ) AND m.status = 'published'
+             ), path_items AS (
+                 SELECT DISTINCT path_id, item_id, estimated_minutes FROM content WHERE item_id IS NOT NULL
+             )
+             SELECT c.path_id AS "pathId",
+                    COUNT( DISTINCT c.module_id )::int AS modules,
+                    ( SELECT COUNT( * )::int FROM path_items p WHERE p.path_id = c.path_id ) AS items,
+                    ( SELECT COALESCE( SUM( p.estimated_minutes ), 0 )::int FROM path_items p WHERE p.path_id = c.path_id )
+                        AS "estimatedMinutes"
+             FROM content c
+             GROUP BY c.path_id`,
+            [ pathIds ],
+        );
+
+        return new Map( rows.map( ( { pathId, ...contents } ) => [ pathId, contents ] ) );
+    }
+
     private async enrollmentIdsByPath( userId: string ): Promise<Map<string, string>> {
         const enrollments = await this.dataSource.getRepository( Enrollment ).find( {
             select: { id: true, learningPathId: true },
@@ -91,4 +128,16 @@ export class PublishedCatalogController {
 
         return new Map( enrollments.map( ( enrollment ) => [ enrollment.learningPathId, enrollment.id ] ) );
     }
+}
+
+/** The same counts as contentsByPath, from a loaded tree of published content. */
+interface ContentTree { modules: { topics: { items: { id: string; estimatedMinutes: number | null }[] }[] }[] }
+
+function contentsOfTree( tree: ContentTree ): PathContents {
+    const items = new Map( tree.modules
+        .flatMap( ( module ) => module.topics.flatMap( ( topic ) => topic.items ) )
+        .map( ( item ) => [ item.id, item.estimatedMinutes ?? 0 ] ) );
+    const estimatedMinutes = [ ...items.values() ].reduce( ( sum, minutes ) => sum + minutes, 0 );
+
+    return { modules: tree.modules.length, items: items.size, estimatedMinutes };
 }

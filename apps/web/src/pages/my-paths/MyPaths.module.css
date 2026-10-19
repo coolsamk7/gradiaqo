@@ -1,0 +1,138 @@
+/* My paths (Figma: M4 · Build your own › My paths). The builder's own parts: Builder.module.css. */
+
+.tabs {
+    display: flex;
+    gap: var( --space-6 );
+    overflow-x: auto;
+    border-bottom: 1px solid var( --color-border );
+    scrollbar-width: none;
+}
+
+.tab {
+    flex: none;
+    margin-bottom: -1px;
+    padding: var( --space-3 ) var( --space-1 );
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var( --color-text-muted );
+    background: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.tab:hover {
+    color: var( --color-text );
+}
+
+.tab[aria-pressed='true'] {
+    color: var( --color-text );
+    border-bottom-color: var( --color-accent );
+}
+
+.info {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
+.info svg {
+    flex: none;
+}
+
+.list {
+    margin: 0;
+    padding-block: var( --space-1 );
+    list-style: none;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+    padding-block: var( --space-3 );
+}
+
+.row + .row {
+    border-top: 1px solid var( --color-border );
+}
+
+.chip {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
+.empty .chip {
+    width: 40px;
+    height: 40px;
+    border-radius: var( --radius-lg );
+}
+
+.rowMain {
+    display: grid;
+    flex: 1;
+    gap: var( --space-0-5 );
+    min-width: 0;
+}
+
+.rowTitle {
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.empty {
+    display: grid;
+    justify-items: center;
+    gap: var( --space-3 );
+    padding: var( --space-10 ) var( --space-6 );
+    text-align: center;
+}
+
+/* ---------- New path dialog ---------- */
+
+.dialogForm {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+.dialogForm .formError {
+    margin: 0;
+}
+
+.choices {
+    display: grid;
+    gap: var( --space-2 );
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.choices legend {
+    margin-bottom: var( --space-2 );
+    padding: 0;
+}
+
+.choice {
+    display: flex;
+    align-items: center;
+    gap: var( --space-2 );
+    cursor: pointer;
+}
+
+.choice input {
+    margin: 0;
+    accent-color: var( --color-accent );
+}

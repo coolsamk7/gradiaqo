@@ -1,0 +1,414 @@
+/* Path builder (Figma: M4 · Build your own › Path builder, and its link-from-catalog dialog). */
+
+.back {
+    justify-self: start;
+    margin-left: calc( -1 * var( --space-3 ) );
+}
+
+/* ---------- Header ---------- */
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var( --space-4 );
+}
+
+.titleRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: var( --space-4 );
+}
+
+.confirm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-2 ) var( --space-3 );
+    font-size: 13px;
+}
+
+.error {
+    flex-basis: 100%;
+    padding: var( --space-2 ) var( --space-3 );
+    border-radius: var( --radius-md );
+    color: var( --color-danger );
+    background: var( --color-danger-soft );
+}
+
+/* An on/off switch drawn over a checkbox, which stays the control for keyboards and screen readers. */
+.switch {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: var( --space-2 );
+    cursor: pointer;
+}
+
+.switch input {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    margin: 0;
+    border-radius: var( --radius-full );
+    background: var( --color-border-strong );
+    transition: background-color 120ms ease;
+    cursor: pointer;
+    appearance: none;
+}
+
+.switch input::after {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var( --color-surface );
+    box-shadow: var( --shadow-sm );
+    transition: transform 120ms ease;
+    content: '';
+}
+
+.switch input:checked {
+    background: var( --color-accent );
+}
+
+.switch input:checked::after {
+    transform: translateX( 14px );
+}
+
+.switch input:disabled {
+    cursor: progress;
+    opacity: 0.6;
+}
+
+/* ---------- Columns ---------- */
+
+.columns {
+    display: grid;
+    grid-template-columns: 340px minmax( 0, 1fr );
+    align-items: start;
+    gap: var( --space-6 );
+}
+
+.side {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+@media ( max-width: 1000px ) {
+    .columns {
+        grid-template-columns: minmax( 0, 1fr );
+    }
+}
+
+.cardHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var( --space-3 );
+}
+
+.cardTitle {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+.cardActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var( --space-2 );
+}
+
+/* ---------- Structure ---------- */
+
+.structure {
+    display: grid;
+    gap: var( --space-2 );
+}
+
+.tree,
+.topics {
+    display: grid;
+    gap: var( --space-0-5 );
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.topics {
+    padding-left: var( --space-6 );
+}
+
+.branch {
+    display: grid;
+    gap: var( --space-0-5 );
+}
+
+.node {
+    display: flex;
+    align-items: center;
+    gap: var( --space-1 );
+    min-height: 36px;
+    padding-inline: var( --space-1 );
+    border-radius: var( --radius-md );
+}
+
+.node:hover {
+    background: var( --color-bg );
+}
+
+.moduleNode .nodeButton {
+    font-weight: 500;
+}
+
+.selected,
+.selected:hover {
+    background: var( --color-accent-soft );
+}
+
+.selected .nodeButton {
+    color: var( --color-accent-text );
+}
+
+.toggle {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: var( --radius-sm );
+    color: var( --color-icon );
+    background: none;
+    cursor: pointer;
+}
+
+.nodeButton {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: var( --space-2 );
+    min-width: 0;
+    padding: var( --space-2 ) var( --space-1 );
+    border: 0;
+    color: var( --color-text );
+    background: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.count {
+    color: var( --color-text-muted );
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.add {
+    display: inline-flex;
+    align-items: center;
+    gap: var( --space-1 );
+    padding: var( --space-1 ) var( --space-2 );
+    border: 0;
+    border-radius: var( --radius-sm );
+    color: var( --color-text );
+    background: none;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.add:hover {
+    background: var( --color-bg-muted );
+}
+
+.add svg {
+    color: var( --color-icon );
+}
+
+.addTopic {
+    margin-left: var( --space-1 );
+}
+
+.inlineForm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-2 );
+    width: 100%;
+}
+
+.inlineInput {
+    flex: 1;
+    min-width: 140px;
+    padding: var( --space-1 ) var( --space-2 );
+    border: 1px solid var( --color-border-accent );
+    border-radius: var( --radius-sm );
+    color: var( --color-text );
+    background: var( --color-surface );
+    outline: none;
+}
+
+.inlineError {
+    flex-basis: 100%;
+    color: var( --color-danger );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* ---------- Editor and new item ---------- */
+
+.editor {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+.titles {
+    display: grid;
+    gap: var( --space-0-5 );
+}
+
+.editorActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.deleteNode {
+    margin-left: auto;
+    color: var( --color-danger );
+}
+
+.newItem {
+    border-color: var( --color-border-accent );
+}
+
+.typeRow {
+    display: grid;
+    gap: var( --space-3 );
+}
+
+@media ( width >= 600px ) {
+    .typeRow {
+        grid-template-columns: 180px minmax( 0, 1fr );
+    }
+}
+
+/* The short details (link, author…) share a row with difficulty and minutes, like the design. */
+.detailsRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var( --space-3 );
+}
+
+.detailsRow > * {
+    flex: 0 0 140px;
+}
+
+.detailsRow > .grow {
+    flex: 1 1 240px;
+}
+
+/* ---------- Items ---------- */
+
+.noItems {
+    margin-top: var( --space-4 );
+    color: var( --color-text-muted );
+}
+
+.items,
+.results {
+    display: grid;
+    margin: var( --space-2 ) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.item,
+.result {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+    padding-block: var( --space-3 );
+}
+
+.item + .item,
+.result + .result {
+    border-top: 1px solid var( --color-border );
+}
+
+.itemIcon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var( --radius-sm );
+    color: var( --color-icon );
+    background: var( --color-bg-muted );
+}
+
+.itemMain {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+}
+
+.itemTitle {
+    overflow: hidden;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- Link from catalog ---------- */
+
+.search {
+    display: flex;
+    align-items: center;
+    gap: var( --space-2 );
+    padding: var( --space-2 ) var( --space-3 );
+    border: 1px solid var( --color-border-strong );
+    border-radius: var( --radius-md );
+    color: var( --color-icon );
+}
+
+.search:focus-within {
+    border-color: var( --color-border-accent );
+    box-shadow: 0 0 0 1px var( --color-border-accent );
+}
+
+.search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    color: var( --color-text );
+    background: none;
+}
+
+.results {
+    max-height: 360px;
+    margin: 0;
+    padding-inline: var( --space-4 );
+    overflow-y: auto;
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-lg );
+}
+
+.linkFooter {
+    justify-content: space-between;
+}

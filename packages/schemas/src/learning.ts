@@ -39,14 +39,28 @@ const PathOrigin = {
     enrollmentId: Type.Union( [ Uuid(), Type.Null() ], { description: 'Your enrollment in this path, if any' } ),
 };
 
-export const PublishedPathSummary = Type.Object( { ...LearningPath.properties, ...PathOrigin } );
+/** What's in a path, for catalog cards: published modules, items (each once) and their estimated time. */
+export const PathContents = Type.Object( {
+    modules: Type.Integer(),
+    items: Type.Integer( { description: 'Published items, each counted once even if it is in several topics' } ),
+    estimatedMinutes: Type.Integer( { description: 'Sum of the items\' estimated minutes (items without an estimate count as 0)' } ),
+} );
+export type PathContents = StaticDecode<typeof PathContents>;
+
+export const PublishedPathSummary = Type.Object( {
+    ...LearningPath.properties,
+    ...PathOrigin,
+    contents: PathContents,
+} );
 export type PublishedPathSummary = StaticDecode<typeof PublishedPathSummary>;
+export type PublishedPathSummaryJson = StaticEncode<typeof PublishedPathSummary>;
 
 export const PublishedPath = Type.Object( {
     ...PublishedPathSummary.properties,
     modules: Type.Array( PublishedModule ),
 } );
 export type PublishedPath = StaticDecode<typeof PublishedPath>;
+export type PublishedPathJson = StaticEncode<typeof PublishedPath>;
 
 export enum PathSource {
     /** The global catalog. */
