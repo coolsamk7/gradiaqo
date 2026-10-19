@@ -36,8 +36,9 @@ export function corsOptions( origins: string[] ): CorsOptions {
         origin: origins,
         // The refresh token is an httpOnly cookie, so the browser must be allowed to send it.
         credentials: true,
-        // So the frontend can read the request id (for bug reports).
-        exposedHeaders: [ 'X-Request-Id' ],
+        // So the frontend can read the request id (for bug reports), and tell an expired access token (which it can
+        // renew) from other 401s (see AuthGuard).
+        exposedHeaders: [ 'X-Request-Id', 'WWW-Authenticate' ],
         // Browsers cache the preflight answer this long (seconds).
         maxAge: 600,
     };

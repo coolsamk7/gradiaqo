@@ -1,0 +1,237 @@
+/*
+ * Parts shared by the pages of the logged-in app (Figma: Screens – Web): page headers, cards, badges, loading and
+ * error states, and study session rows. The frame around them (sidebar) is components/AppLayout.
+ */
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var( --space-4 );
+}
+
+.titleBlock {
+    display: grid;
+    gap: var( --space-1 );
+}
+
+.overline {
+    color: var( --color-text-muted );
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+    letter-spacing: -0.01em;
+}
+
+.muted {
+    margin: 0;
+    color: var( --color-text-muted );
+}
+
+.small {
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.mono {
+    font-family: var( --font-mono );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Loading and errors ---------- */
+
+.status,
+.error {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.status {
+    color: var( --color-text-muted );
+}
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid var( --color-border );
+    border-top-color: var( --color-accent );
+    border-radius: 50%;
+    animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate( 1turn );
+    }
+}
+
+.error {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    color: var( --color-danger );
+    background: var( --color-danger-soft );
+}
+
+.retry {
+    font: inherit;
+}
+
+.skeleton {
+    border-radius: var( --radius-sm );
+    background: var( --color-bg-muted );
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+    padding: var( --space-5 );
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-lg );
+    background: var( --color-surface );
+}
+
+.cardHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var( --space-1 ) var( --space-3 );
+    margin-bottom: var( --space-4 );
+}
+
+.cardTitle {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+.cardLink {
+    color: var( --color-accent-text );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    text-decoration: none;
+}
+
+.cardLink:hover {
+    text-decoration: underline;
+}
+
+.empty {
+    padding: var( --space-8 ) var( --space-6 );
+    color: var( --color-text-muted );
+    text-align: center;
+}
+
+/* ---------- Badges ---------- */
+
+.badge {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    padding: var( --space-0-5 ) var( --space-2 );
+    border-radius: var( --radius-full );
+    color: var( --color-text-muted );
+    background: var( --color-bg-muted );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.badgeSuccess {
+    color: var( --color-success );
+    background: var( --color-success-soft );
+}
+
+.badgeAccent {
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
+.badgeInverse {
+    color: var( --color-on-inverse );
+    background: var( --color-bg-inverse );
+}
+
+.badgeWarning {
+    color: var( --color-warning );
+    background: var( --color-warning-soft );
+}
+
+/* ---------- Study session rows ---------- */
+
+.sessions {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.session {
+    display: flex;
+    align-items: flex-start;
+    gap: var( --space-3 );
+    padding-block: var( --space-3 );
+}
+
+.session:first-child {
+    padding-top: 0;
+}
+
+.session:last-child {
+    padding-bottom: 0;
+}
+
+.sessionIcon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var( --radius-md );
+    color: var( --color-icon );
+    background: var( --color-bg-muted );
+}
+
+.sessionMain {
+    display: grid;
+    flex: 1;
+    gap: var( --space-0-5 );
+    min-width: 0;
+}
+
+.sessionTitle {
+    font-weight: 500;
+}
+
+.notes {
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.duration {
+    flex: none;
+    font-family: var( --font-mono );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px;
+    font-variant-numeric: tabular-nums;
+}

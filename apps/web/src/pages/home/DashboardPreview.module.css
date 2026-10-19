@@ -1,0 +1,118 @@
+/* Figma: Current · Public › Home › Product preview. */
+
+.preview {
+    margin: 0;
+}
+
+.window {
+    display: grid;
+    gap: var( --space-4 );
+    padding: var( --space-6 );
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-xl );
+    background: var( --color-surface );
+    box-shadow: var( --shadow-lg );
+}
+
+.greeting {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+    gap: var( --space-3 );
+}
+
+.stat {
+    display: grid;
+    gap: var( --space-2 );
+    padding: var( --space-5 );
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-lg );
+}
+
+.statHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.label {
+    color: var( --color-text-muted );
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.chip {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
+.statValue {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 36px;
+    letter-spacing: -0.02em;
+}
+
+.path {
+    display: grid;
+    gap: var( --space-2 );
+    padding-block: var( --space-3 );
+}
+
+.pathHead {
+    display: flex;
+    justify-content: space-between;
+    gap: var( --space-2 );
+}
+
+.pathTitle {
+    font-weight: 500;
+}
+
+.percent,
+.count {
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.percent {
+    font-family: var( --font-mono );
+    font-weight: 500;
+}
+
+.track {
+    height: 6px;
+    overflow: hidden;
+    border-radius: var( --radius-full );
+    background: var( --color-bg-muted );
+}
+
+.fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var( --color-accent );
+}
+
+@media ( width < 600px ) {
+    .stats {
+        grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+    }
+
+    .stat:last-child {
+        display: none;
+    }
+}

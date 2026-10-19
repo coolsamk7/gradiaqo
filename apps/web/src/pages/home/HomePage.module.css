@@ -1,0 +1,17 @@
+/* Only visible when focused with the keyboard: jumps past the header. */
+.skipLink {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    padding: 10px 16px;
+    border-radius: var( --radius-md );
+    color: var( --color-on-accent );
+    background: var( --color-accent );
+    font-weight: 600;
+    transform: translateY( -200% );
+}
+
+.skipLink:focus {
+    transform: none;
+}

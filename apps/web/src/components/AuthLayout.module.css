@@ -1,0 +1,121 @@
+/* Login and signup (Figma: Current · Public › Log in / Sign up). */
+
+.page {
+    display: grid;
+    min-height: 100dvh;
+    background: var( --color-bg );
+}
+
+@media ( width >= 960px ) {
+    .page {
+        grid-template-columns: 560px minmax( 0, 1fr );
+    }
+}
+
+/* ---------- Brand panel (wide screens only) ---------- */
+
+.brand {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var( --space-6 );
+    padding: var( --space-12 );
+    color: var( --color-text-on-sidebar );
+    background: var( --color-sidebar );
+}
+
+@media ( width >= 960px ) {
+    .brand {
+        display: flex;
+    }
+}
+
+.pitch {
+    display: grid;
+    gap: var( --space-6 );
+}
+
+.brandTitle {
+    max-width: 440px;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 40px;
+    letter-spacing: -0.015em;
+}
+
+.highlights {
+    display: grid;
+    gap: var( --space-3 );
+    margin: 0;
+    padding: 0;
+    color: var( --color-text-on-sidebar-muted );
+    font-size: 16px;
+    line-height: 24px;
+    list-style: none;
+}
+
+.highlights li {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.check {
+    flex: none;
+    color: var( --color-accent-text );
+}
+
+.copyright {
+    color: var( --color-text-on-sidebar-muted );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* ---------- Form ---------- */
+
+.main {
+    display: grid;
+    place-items: center;
+    padding: var( --space-10 ) var( --space-5 );
+}
+
+.card {
+    width: min( 100%, 400px );
+}
+
+/* The brand panel shows the logo on wide screens; narrow ones show it above the form. */
+.logoLink {
+    display: inline-block;
+    margin-bottom: var( --space-8 );
+    text-decoration: none;
+}
+
+@media ( width >= 960px ) {
+    .logoLink {
+        display: none;
+    }
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+    letter-spacing: -0.01em;
+}
+
+.subtitle {
+    margin-top: var( --space-1 );
+    color: var( --color-text-muted );
+}
+
+.alternative {
+    margin-top: var( --space-6 );
+    color: var( --color-text-muted );
+    text-align: center;
+}
+
+.alternative a {
+    color: var( --color-accent-text );
+    font-weight: 500;
+    text-decoration: none;
+}

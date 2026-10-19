@@ -3,8 +3,10 @@
 Study time tracker. Turborepo monorepo using Yarn workspaces.
 
 - `apps/api`: NestJS backend
+- `apps/web`: React web app (Vite), at http://localhost:5173; empty for now (see `apps/web/README.md`)
 - `apps/cli`: command-line tools (database migrations), built with nest-commander (`@studylog/cli`)
-- `packages/common`: shared configs for every app/package: ESLint rules (`@studylog/common/eslint/*`) and tsconfigs (`@studylog/common/tsconfig/*`)
+- `apps/e2e`: UI tests: the web app in a real browser against the real API and a test database (Playwright, `@studylog/e2e`)
+- `packages/common`: shared configs for every app/package: ESLint rules (`@studylog/common/eslint/*`, with `react` for the web app), tsconfigs (`@studylog/common/tsconfig/*`), coverage and mutation testing settings
 - `packages/schemas`: the API contract as TypeBox schemas + types + role enums, no framework deps (`@studylog/schemas`); shareable with web/mobile
 - `packages/nestjs`: those schemas wired into NestJS: request bodies and documented responses (`@studylog/nestjs`)
 - `packages/nestjs-typebox`: `@gradiaqo/nestjs-typebox`, our NestJS 12 fork of nestjs-typebox (see its README)
@@ -17,7 +19,8 @@ Study time tracker. Turborepo monorepo using Yarn workspaces.
 yarn install
 yarn db:up                 # start Postgres on localhost:5432
 yarn cli migration:run     # create/update the tables
-yarn dev                   # start the API
+yarn cli db:seed           # optional: dummy users, catalog and study history (see below)
+yarn dev                   # start the API and the web app
 yarn db:down               # stop Postgres (data is kept)
 ```
 
@@ -51,6 +54,26 @@ Changing an entity:
 A database that was created earlier with `synchronize` already has the tables: run `yarn cli migration:run --fake`
 once so the `init` migration is recorded instead of failing.
 
+## Dummy data
+
+```sh
+yarn cli db:seed           # add the dummy data (refuses if the dummy users already exist)
+yarn cli db:seed --reset   # delete ALL data first, then add it (the schema and migrations are kept)
+```
+
+Every dummy user's password is `password123`: `admin@example.com` (superadmin), `alice@example.com`,
+`bob@example.com`, `carol@example.com` and `dave@example.com`. Each has a personal workspace, and Alice, Bob and
+Carol share the "Acme Study Group" organization (owner, admin, member), which has two pending invitations. The
+catalog has global paths (Data Structures & Algorithms, System Design Fundamentals, and a draft Graph Algorithms),
+the team's own path and a public path in Alice's workspace. Their modules, topics and items (problems, articles,
+videos, books, courses, notes, exercises) are linked across paths. Alice, Bob and Carol have enrollments,
+progress and about a month of study sessions, and Alice's public path has two reports (one open, one dismissed).
+
+- The data is written in `apps/cli/src/seed/seed-content.ts`; `seed-data.ts` turns it into rows. Dates are
+  relative to today, and the study activity is generated from a fixed seed, so every run looks the same.
+- Everything is inserted in one transaction: a failure leaves the database as it was.
+- It never runs when `NODE_ENV=production`.
+
 ## Tests
 
 ```sh
@@ -61,6 +84,26 @@ yarn workspace @studylog/api test:e2e # end-to-end tests against the database fr
 - Unit tests sit next to the code (`*.spec.ts`, Vitest). Services are tested against an in-memory stand-in for
   TypeORM (`apps/api/test/unit/fake-data-source.ts`): each test sets up only the database answers its rule depends
   on and checks the calls it expects. Permission tests use the real CASL rules.
+
+### UI tests (Playwright)
+
+```sh
+yarn test:ui:install   # once: download the Chromium that Playwright drives
+yarn db:up
+yarn test:ui           # build, then run every test in apps/e2e/tests
+yarn workspace @studylog/e2e test:e2e:ui   # Playwright's UI mode: pick tests, watch them, time-travel through steps
+yarn workspace @studylog/e2e report        # the HTML report of the last run (traces and screenshots of failures)
+```
+
+- Each run starts its own API (port 3100) and web app (port 5174), so `yarn dev` can keep running.
+- They use a separate database, `studylog_e2e` on the `yarn db:up` server: created if missing, migrated, then emptied
+  and filled with the dummy data (`db:seed --reset`) before every run. Your development data is never touched; the
+  name must end in `_e2e` (override with `E2E_DATABASE_URL`).
+- Tests log in as the dummy users, or set up a new user through the API (`tests/support`): a test that changes
+  data uses its own user, since tests run in parallel against the same database.
+- The test API runs with `RATE_LIMITS_ENABLED=false`, because tests log in far more often than people do. The API
+  refuses that setting in production.
+- Not part of `yarn test` (it needs the database and a browser), nor of coverage or mutation testing.
 
 ### Coverage
 
@@ -253,7 +296,9 @@ Every user has a personal workspace; for studying together, create an organizati
   organization).
 - Personal workspaces can't be deleted, left, or have members added.
 
-- Access token: JWT, 15 minutes.
+- Access token: JWT, 15 minutes. A 401 caused by the access token (missing, expired or invalid) carries
+  `WWW-Authenticate: Bearer` (RFC 6750; `error="invalid_token"` when one was sent): renew it with `/auth/refresh` and
+  retry. Other 401s, like a wrong password, don't have that header.
 - Refresh token: `httpOnly` cookie on `/auth`, rotated on every refresh. Expiry slides 180 days forward each time, so active users stay logged in.
 - Reusing an already-rotated refresh token (outside a 30s grace window for concurrent tabs) revokes that session.
 
@@ -351,7 +396,7 @@ What a logged-in user does with the catalog. Everything under `/me` only ever to
 
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/catalog/paths` | Paths you can see, with your `enrollmentId` in each |
+| GET | `/catalog/paths` | Paths you can see, with your `enrollmentId` and `contents` (published modules, items, estimated minutes) in each |
 | GET | `/catalog/paths/:pathId` | A path you can see, with its published content |
 | GET | `/catalog/items` | Search published global items (to link into your own paths) |
 | GET / POST | `/me/enrollments` | Your paths with progress / enroll (`{ learningPathId, rules? }`) |
@@ -364,3 +409,95 @@ What a logged-in user does with the catalog. Everything under `/me` only ever to
 | GET / POST | `/me/study-sessions` | Filter: `from`, `to`, `topicId`, `itemId`, `limit`, `offset` |
 | PATCH / DELETE | `/me/study-sessions/:id` | |
 | GET | `/me/stats` | Today, this week, total, streaks, items completed, last 30 days |
+| GET | `/me/analytics` | `?period=30d\|90d\|all&enrollmentId=&timeZone=`: see "Insights" below |
+| GET / PUT / DELETE | `/me/interview-goal` | Your goal: `{ title, targetDate, enrollmentIds }` (404 before you set one) |
+| GET | `/me/readiness` | `?timeZone=`: how ready you are for the goal (`{ goal: null, readiness: null }` without one) |
+
+### Insights
+
+Computed from what users already record (enrollments, progress, sessions) in `apps/api/src/study/insights.ts`, pure
+functions with the rules spelled out in their comments.
+
+- **Analytics:** time in the period and in the one before it, sessions, items first finished in the period
+  (`completedAt`), topics completed, items to revise, study time per week (12 weeks for 30 days, 13 for 90, up to 52
+  for all time) and per path, item status and difficulty mix (each item once), habits (average session, best
+  weekday, busiest 3-hour window) and up to four topics that need focus (items to revise first, then the least done,
+  then the longest unstudied) with the next items to do. With `enrollmentId`, only that path and its sessions count.
+- **Interview goal:** one per user (`interview_goals`): a title, a date (today or later) and the paths that count.
+  Paths the user has left since are ignored.
+- **Readiness:** a score out of 100 from coverage 40% (required items finished), depth 25% (easy, medium and hard
+  weighted 20/40/40; follows coverage when the goal has no difficulties), revision 15% (10 points off per item to
+  revise, 20 more if one waits over 14 days) and consistency 20% (days studied in the last 14, the streak). Each
+  category lists its checks. Pace compares items finished per day over the last 14 days with what the date needs.
+  Next steps (up to five): finish the least done module, do a mock interview (exercise items named "mock"), clear
+  items to revise, resume paused paths, try a hard problem. Labels: Ready (85+), Almost ready (65+), Getting there
+  (40+), Just started.
+
+## Roadmap
+
+What's still open, so it isn't forgotten. Tick items off (or remove them) as they're done. New code must keep unit
+test coverage at 100% (see [Tests](#tests)).
+
+### Backend features
+
+- [ ] **OTP and email** (needs an email provider, e.g. Resend, SendGrid, Amazon SES, or SMTP for development)
+  - [ ] Email verification at signup
+  - [ ] Password reset
+  - [ ] Changing your email (verify the new address first)
+  - [ ] Send invitation emails (today invited people only see them in `GET /me/invitations`)
+- [ ] **Moderation:** let a superadmin un-hide a path hidden by mistake (clear `publicBlockedAt`)
+- [ ] **Pagination** for `GET /catalog/paths` and `GET /me/enrollments` (both return everything today)
+- [ ] **Study reminders / notifications**, e.g. "you haven't studied today, keep your streak"
+- [ ] **Data export:** a user downloads their progress and study sessions
+- [ ] **Performance:** `GET /me/enrollments` builds each path's tree one by one to count progress; batch it once users
+  have many enrollments
+- [ ] **Rate limits in a shared store** (e.g. Redis) before running more than one API instance; counters are in memory
+
+### Testing
+
+- [ ] **Raise mutation scores** and set a minimum (`thresholds.break` in `@studylog/common/stryker/config`). Last run:
+  total 71.6%; api 81.4%, cli 91.9%, casl 86.8%, nestjs-typebox 84.9%, logger 83.1%, database 58.3%, schemas 10.9%,
+  nestjs 2.8%
+  - [ ] Contract snapshot of every request/response schema (most survivors in `schemas` and `nestjs`)
+  - [ ] Test that every `*Request` schema rejects unknown fields; date formats and numeric limits
+- [ ] **End-to-end tests** against a real database (permissions, visibility, the SQL the unit tests fake)
+- [ ] **Property-based tests** (fast-check) for pure logic: enrollment rules and ordering, streaks and dates, slugs
+- [ ] **Type-check mutants** (`@stryker-mutator/typescript-checker`) for more accurate mutation scores
+
+### Tooling and deployment
+
+- [ ] **CI (GitHub Actions)** on every push and pull request: build, lint, `yarn test:cov`,
+  `yarn cli migration:generate x --check`, and mutation testing on changed code (incremental)
+- [ ] **Branch protection** on `master`: pull requests only, CI must pass, no force pushes
+  (needs GitHub Pro, or a public repository)
+- [ ] **Pre-commit hooks** (husky + lint-staged): lint and related tests on committed files
+- [ ] **Dockerfile and deployment**, with `migration:run` as a release step; check production settings
+  (`NODE_ENV=production`, `COOKIE_SECURE=true`, `SWAGGER_ENABLED=false`, `LOG_PRETTY=false`, `TRUST_PROXY`)
+- [ ] **Dependency updates** (Dependabot or Renovate) and `yarn npm audit` in CI
+
+### Operations
+
+- [ ] **Error tracking** (e.g. Sentry)
+- [ ] **Metrics:** request counts, latency, database timing
+- [ ] **Graceful shutdown:** close database connections cleanly on deploy
+
+### Documentation
+
+- [ ] Replace the NestJS starter READMEs in `apps/api` and `apps/cli`
+- [ ] Architecture overview (catalog, enrollments, permissions)
+
+### Frontend
+
+- [x] Empty web app (`apps/web`: React + Vite), with the repo's lint, tests and coverage
+- [x] Homepage
+- [x] Login page, API client and session handling (restored from the refresh cookie on reload)
+- [x] Signup page
+- [x] Renew the access token automatically when it expires (15 minutes) during use: retry once after
+  `POST /auth/refresh` on a 401
+- [x] Dashboard at `/app`: stats, streak, last 30 days, learning paths with progress, recent sessions
+- [x] Study sessions at `/app/sessions`: history by day, log, edit and delete sessions
+- [x] Learning path page at `/app/paths/:id`: progress at every level, item status, notes and exercises, log time
+- [ ] Catalog and enrollment pages
+- [x] Redesign to the Figma file (tokens, sidebar, restyled pages)
+- [ ] Analytics and Interview ready pages (the API is done: `/me/analytics`, `/me/interview-goal`, `/me/readiness`)
+- [ ] Mobile app

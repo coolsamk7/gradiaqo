@@ -1,9 +1,10 @@
-import type { StaticDecode } from 'typebox';
+import type { StaticDecode, StaticEncode } from 'typebox';
 import Type from 'typebox';
 
 import { Item, LearningModule, LearningPath, Topic, TopicItem } from './catalog.js';
 import {
     EnrollmentStatus,
+    ItemType,
     OrderParentType,
     ProgressStatus,
     ReportReason,
@@ -38,14 +39,28 @@ const PathOrigin = {
     enrollmentId: Type.Union( [ Uuid(), Type.Null() ], { description: 'Your enrollment in this path, if any' } ),
 };
 
-export const PublishedPathSummary = Type.Object( { ...LearningPath.properties, ...PathOrigin } );
+/** What's in a path, for catalog cards: published modules, items (each once) and their estimated time. */
+export const PathContents = Type.Object( {
+    modules: Type.Integer(),
+    items: Type.Integer( { description: 'Published items, each counted once even if it is in several topics' } ),
+    estimatedMinutes: Type.Integer( { description: 'Sum of the items\' estimated minutes (items without an estimate count as 0)' } ),
+} );
+export type PathContents = StaticDecode<typeof PathContents>;
+
+export const PublishedPathSummary = Type.Object( {
+    ...LearningPath.properties,
+    ...PathOrigin,
+    contents: PathContents,
+} );
 export type PublishedPathSummary = StaticDecode<typeof PublishedPathSummary>;
+export type PublishedPathSummaryJson = StaticEncode<typeof PublishedPathSummary>;
 
 export const PublishedPath = Type.Object( {
     ...PublishedPathSummary.properties,
     modules: Type.Array( PublishedModule ),
 } );
 export type PublishedPath = StaticDecode<typeof PublishedPath>;
+export type PublishedPathJson = StaticEncode<typeof PublishedPath>;
 
 export enum PathSource {
     /** The global catalog. */
@@ -135,6 +150,7 @@ export const Enrollment = Type.Object( {
     progress: ProgressCount,
 } );
 export type Enrollment = StaticDecode<typeof Enrollment>;
+export type EnrollmentJson = StaticEncode<typeof Enrollment>;
 
 export const MyTopicItem = Type.Object( { ...TopicItem.properties, progress: Type.Enum( ProgressStatus ) } );
 export type MyTopicItem = StaticDecode<typeof MyTopicItem>;
@@ -161,6 +177,7 @@ export const EnrollmentDetail = Type.Object( {
     modules: Type.Array( MyModule ),
 } );
 export type EnrollmentDetail = StaticDecode<typeof EnrollmentDetail>;
+export type EnrollmentDetailJson = StaticEncode<typeof EnrollmentDetail>;
 
 export const CreateEnrollmentRequest = Type.Object(
     {
@@ -200,8 +217,22 @@ export const StudySession = Type.Object( {
 } );
 export type StudySession = StaticDecode<typeof StudySession>;
 
-export const StudySessionPage = Type.Object( { items: Type.Array( StudySession ), total: Type.Integer() } );
+export type StudySessionJson = StaticEncode<typeof StudySession>;
+
+/** A listed session, with the titles of what was studied (null if nothing was linked, or it has been deleted). */
+export const StudySessionListItem = Type.Object( {
+    ...StudySession.properties,
+    topic: Type.Union( [ Type.Object( { id: Uuid(), title: Type.String() } ), Type.Null() ] ),
+    item: Type.Union( [
+        Type.Object( { id: Uuid(), title: Type.String(), type: Type.Enum( ItemType ) } ),
+        Type.Null(),
+    ] ),
+} );
+export type StudySessionListItem = StaticDecode<typeof StudySessionListItem>;
+
+export const StudySessionPage = Type.Object( { items: Type.Array( StudySessionListItem ), total: Type.Integer() } );
 export type StudySessionPage = StaticDecode<typeof StudySessionPage>;
+export type StudySessionPageJson = StaticEncode<typeof StudySessionPage>;
 
 const SessionInput = {
     topicId: Type.Optional( Type.Union( [ Uuid(), Type.Null() ] ) ),
@@ -216,9 +247,11 @@ export const CreateStudySessionRequest = Type.Object( SessionInput, {
     description: 'Needs a topic, an item or both. startedAt can\'t be in the future.',
 } );
 export type CreateStudySessionRequest = StaticDecode<typeof CreateStudySessionRequest>;
+export type CreateStudySessionRequestJson = StaticEncode<typeof CreateStudySessionRequest>;
 
 export const UpdateStudySessionRequest = Type.Partial( CreateStudySessionRequest );
 export type UpdateStudySessionRequest = StaticDecode<typeof UpdateStudySessionRequest>;
+export type UpdateStudySessionRequestJson = StaticEncode<typeof UpdateStudySessionRequest>;
 
 export const ListStudySessionsQuery = Type.Object(
     {

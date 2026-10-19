@@ -1,0 +1,176 @@
+/* The dashboard's own sections (Figma: Current · App › Dashboard). Cards, badges and session rows: styles/app.module.css. */
+
+/* ---------- Stat tiles ---------- */
+
+.tiles {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax( 180px, 1fr ) );
+    gap: var( --space-4 );
+    margin: 0;
+}
+
+.tile {
+    display: grid;
+    align-content: start;
+    gap: var( --space-2 );
+}
+
+.tile dd {
+    margin: 0;
+}
+
+.label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var( --color-text-muted );
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.chip {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
+.tileValue {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 36px;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Columns ---------- */
+
+.columns {
+    display: grid;
+    grid-template-columns: minmax( 0, 1fr ) 400px;
+    align-items: start;
+    gap: var( --space-4 );
+}
+
+.side {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+@media ( max-width: 1200px ) {
+    .columns {
+        grid-template-columns: minmax( 0, 1fr );
+    }
+}
+
+@media ( max-width: 600px ) {
+    .tiles {
+        grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+        gap: var( --space-3 );
+    }
+
+    .tileValue {
+        font-size: 24px;
+        line-height: 32px;
+    }
+}
+
+.skeleton {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+/* ---------- Learning paths ---------- */
+
+.paths {
+    display: grid;
+    gap: var( --space-4 );
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.path {
+    display: grid;
+    gap: var( --space-2 );
+    padding-block: var( --space-3 );
+}
+
+.pathHeader {
+    display: flex;
+    align-items: center;
+    gap: var( --space-2 );
+}
+
+.pathTitle {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+.pathLink {
+    color: inherit;
+    text-decoration: none;
+}
+
+.pathLink:hover {
+    color: var( --color-accent-text );
+    text-decoration: underline;
+}
+
+/* ---------- Activity chart ---------- */
+
+.chartHeader {
+    display: grid;
+    gap: var( --space-2 );
+    margin-bottom: var( --space-4 );
+}
+
+.chart {
+    display: grid;
+    grid-template-columns: repeat( 30, 1fr );
+    align-items: end;
+    gap: var( --space-1 );
+    height: 120px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chartDay {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+}
+
+.chartBar,
+.chartBarEmpty {
+    width: 100%;
+    border-radius: 2px 2px 0 0;
+}
+
+.chartBar {
+    min-height: 4px;
+    background: var( --color-accent );
+}
+
+.chartBarEmpty {
+    height: 4px;
+    background: var( --color-bg-muted );
+}
+
+.chartAxis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var( --space-2 );
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+}

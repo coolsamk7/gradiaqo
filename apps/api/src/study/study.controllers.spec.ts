@@ -3,6 +3,8 @@ import { EnrollmentStatus, OrderParentType, ProgressStatus } from '@studylog/dat
 
 import { EnrollmentsController } from './enrollments.controller.js';
 import type { EnrollmentsService } from './enrollments.service.js';
+import { InsightsController } from './insights.controller.js';
+import type { InsightsService } from './insights.service.js';
 import { ProgressController } from './progress.controller.js';
 import type { ProgressService } from './progress.service.js';
 import { StatsController } from './stats.controller.js';
@@ -20,13 +22,16 @@ const enrollments = mocks( 'list', 'create', 'reorder', 'detail', 'updateStatus'
 const progress = mocks( 'list', 'get', 'set' );
 const sessions = mocks( 'list', 'create', 'update', 'remove' );
 const stats = mocks( 'get' );
+const insights = mocks( 'analytics', 'goal', 'setGoal', 'removeGoal', 'readiness' );
 
 const controllers = {
     enrollments: new EnrollmentsController( enrollments as unknown as EnrollmentsService ),
     progress: new ProgressController( progress as unknown as ProgressService ),
     sessions: new StudySessionsController( sessions as unknown as StudySessionsService ),
     stats: new StatsController( stats as unknown as StatsService ),
+    insights: new InsightsController( insights as unknown as InsightsService ),
 };
+const goal = { title: 'SDE interview', targetDate: '2026-11-30', enrollmentIds: [ 'e' ] };
 
 const rules = [];
 const session = { topicId: 't', startedAt: new Date(), durationMinutes: 5 };
@@ -52,6 +57,11 @@ describe( 'study controllers', () => {
         [ 'sessions.update', () => controllers.sessions.update( user, 's', { notes: 'x' } ), sessions.update, [ 'me', 's', { notes: 'x' } ] ],
         [ 'sessions.remove', () => controllers.sessions.remove( user, 's' ), sessions.remove, [ 'me', 's' ] ],
         [ 'stats.get', () => controllers.stats.get( user, { timeZone: 'Asia/Kolkata' } ), stats.get, [ 'me', 'Asia/Kolkata' ] ],
+        [ 'insights.analytics', () => controllers.insights.analytics( user, { period: '90d' } ), insights.analytics, [ 'me', { period: '90d' } ] ],
+        [ 'insights.goal', () => controllers.insights.goal( user ), insights.goal, [ 'me' ] ],
+        [ 'insights.setGoal', () => controllers.insights.setGoal( user, goal ), insights.setGoal, [ 'me', goal ] ],
+        [ 'insights.removeGoal', () => controllers.insights.removeGoal( user ), insights.removeGoal, [ 'me' ] ],
+        [ 'insights.readiness', () => controllers.insights.readiness( user, { timeZone: 'UTC' } ), insights.readiness, [ 'me', 'UTC' ] ],
     ] )( '%s acts for the logged-in user', async ( _, call, method, expected ) => {
         await expect( call() ).resolves.toMatch( /result$/ );
         expect( method ).toHaveBeenLastCalledWith( ...expected );

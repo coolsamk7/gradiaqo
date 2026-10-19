@@ -7,6 +7,7 @@
   "exports": {
     "./eslint/base": "./eslint/base.js",
     "./eslint/node": "./eslint/node.js",
+    "./eslint/react": "./eslint/react.js",
     "./tsconfig/base.json": "./tsconfig/base.json",
     "./tsconfig/nestjs.json": "./tsconfig/nestjs.json",
     "./vitest/coverage": "./vitest/coverage.js",
@@ -21,6 +22,8 @@
   "dependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
     "eslint-plugin-simple-import-sort": "^14.0.0",
     "globals": "^17.12.0",
     "typescript-eslint": "^8.70.1"

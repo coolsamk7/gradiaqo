@@ -23,7 +23,7 @@ export class CatalogAccessService {
     async visiblePaths(
         userId: string,
         { source, search }: ListPublishedPathsQuery = {},
-    ): Promise<PublishedPathSummary[]> {
+    ): Promise<Omit<PublishedPathSummary, 'contents'>[]> {
         const organizationIds = await this.organizationIdsOf( userId );
         const query = this.dataSource.getRepository( LearningPath )
             .createQueryBuilder( 'path' )

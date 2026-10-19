@@ -29,7 +29,7 @@ describe( 'corsOptions', () => {
         expect( corsOptions( [ 'http://localhost:5173' ] ) ).toMatchObject( {
             origin: [ 'http://localhost:5173' ],
             credentials: true,
-            exposedHeaders: [ 'X-Request-Id' ],
+            exposedHeaders: [ 'X-Request-Id', 'WWW-Authenticate' ],
         } );
     } );
 } );

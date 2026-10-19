@@ -1,6 +1,7 @@
 import { Enrollment } from './enrollment.entity.js';
 import { EnrollmentOrder } from './enrollment-order.entity.js';
 import { EnrollmentRule } from './enrollment-rule.entity.js';
+import { InterviewGoal } from './interview-goal.entity.js';
 import { Item } from './item.entity.js';
 import { ItemProgress } from './item-progress.entity.js';
 import { LearningModule } from './learning-module.entity.js';
@@ -33,4 +34,5 @@ export const entities = [
     StudySession,
     OrganizationInvitation,
     PathReport,
+    InterviewGoal,
 ];

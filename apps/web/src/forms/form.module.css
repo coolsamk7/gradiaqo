@@ -1,0 +1,138 @@
+/* Form parts shared by the login and signup pages. */
+
+.formError {
+    margin-top: var( --space-5 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    color: var( --color-danger );
+    background: var( --color-danger-soft );
+}
+
+.form {
+    display: grid;
+    gap: var( --space-5 );
+    margin-top: var( --space-6 );
+}
+
+.field {
+    display: grid;
+    gap: var( --space-1 );
+}
+
+.label {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.input {
+    width: 100%;
+    padding: var( --space-2 ) var( --space-3 );
+    border: 1px solid var( --color-border-strong );
+    border-radius: var( --radius-md );
+    color: var( --color-text );
+    background: var( --color-surface );
+    font: inherit;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.input:hover {
+    border-color: var( --color-text-muted );
+}
+
+.input:focus-visible {
+    border-color: var( --color-border-accent );
+    outline: none;
+    box-shadow: 0 0 0 1px var( --color-border-accent );
+}
+
+select.input {
+    padding-right: var( --space-8 );
+    appearance: none;
+    background: var( --color-surface ) url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6b64' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E" ) no-repeat right 12px center / 16px;
+}
+
+.input:disabled {
+    color: var( --color-text-muted );
+    background-color: var( --color-bg-muted );
+}
+
+.input[aria-invalid='true'] {
+    border-color: var( --color-border-danger );
+}
+
+.passwordRow {
+    position: relative;
+}
+
+.passwordRow .input {
+    padding-right: 72px;
+}
+
+.toggle {
+    position: absolute;
+    top: 50%;
+    right: var( --space-1 );
+    padding: var( --space-1 ) var( --space-2 );
+    border: 0;
+    border-radius: var( --radius-sm );
+    color: var( --color-accent-text );
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transform: translateY( -50% );
+}
+
+.toggle:hover {
+    background: var( --color-accent-soft );
+}
+
+.fieldError {
+    color: var( --color-danger );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.submit {
+    width: 100%;
+}
+
+.submit:disabled {
+    cursor: progress;
+    opacity: 0.75;
+    transform: none;
+}
+
+
+.formError a {
+    color: inherit;
+    font-weight: 600;
+}
+
+/* Two fields side by side (first and last name), stacked on narrow screens. */
+.row {
+    display: grid;
+    gap: var( --space-3 );
+}
+
+@media ( width >= 480px ) {
+    .row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.hint {
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.notice {
+    margin-top: var( --space-5 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}

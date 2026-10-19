@@ -27,11 +27,28 @@ describe( 'PublishedCatalogController', () => {
         items as unknown as ItemsService,
     );
 
-    it( 'adds the user\'s enrollment id to each visible path', async () => {
+    it( 'adds the user\'s enrollment id and what each visible path contains', async () => {
         access.visiblePaths.mockResolvedValue( [ { id: 'a', enrollmentId: null }, { id: 'b', enrollmentId: null } ] );
         db.repo( Enrollment ).find.mockResolvedValue( [ { id: 'enr-b', learningPathId: 'b' } ] );
+        db.query.mockResolvedValueOnce( [ { pathId: 'a', modules: 4, items: 25, estimatedMinutes: 720 } ] );
 
-        expect( ( await controller.list( user, {} ) ).map( ( p ) => p.enrollmentId ) ).toEqual( [ null, 'enr-b' ] );
+        const paths = await controller.list( user, {} );
+
+        expect( paths.map( ( p ) => p.enrollmentId ) ).toEqual( [ null, 'enr-b' ] );
+        // A path with nothing published yet has no row.
+        expect( paths.map( ( p ) => p.contents ) ).toEqual( [
+            { modules: 4, items: 25, estimatedMinutes: 720 },
+            { modules: 0, items: 0, estimatedMinutes: 0 },
+        ] );
+        expect( db.query ).toHaveBeenCalledWith( expect.stringContaining( 'ANY( $1 )' ), [ [ 'a', 'b' ] ] );
+    } );
+
+    it( 'doesn\'t count contents when no path is visible', async () => {
+        access.visiblePaths.mockResolvedValue( [] );
+        db.query.mockClear();
+
+        await expect( controller.list( user, { search: 'nothing' } ) ).resolves.toEqual( [] );
+        expect( db.query ).not.toHaveBeenCalled();
     } );
 
     it( 'hides a path the user can\'t see, as not found', async () => {
@@ -55,7 +72,20 @@ describe( 'PublishedCatalogController', () => {
 
         expect( await controller.findOne( user, 'p' ) ).toEqual( {
             id: 'p', modules: [], organization: null, createdBy: null, enrollmentId: null,
+            contents: { modules: 0, items: 0, estimatedMinutes: 0 },
         } );
+    } );
+
+    it( 'counts a path\'s modules and items, each item once, from its tree', async () => {
+        const item = ( id: string, estimatedMinutes: number | null ) => ( { id, estimatedMinutes } );
+
+        catalogTree.load.mockResolvedValue( { id: 'p', modules: [
+            { topics: [ { items: [ item( 'a', 15 ), item( 'b', null ) ] }, { items: [ item( 'a', 15 ) ] } ] },
+            { topics: [ { items: [ item( 'c', 30 ) ] } ] },
+        ] } );
+        access.canSeePath.mockResolvedValue( true );
+
+        expect( ( await controller.findOne( user, 'p' ) ).contents ).toEqual( { modules: 2, items: 3, estimatedMinutes: 45 } );
     } );
 
     it( 'is "not found" for a missing or unpublished path', async () => {

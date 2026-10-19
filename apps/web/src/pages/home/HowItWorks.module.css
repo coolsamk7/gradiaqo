@@ -1,0 +1,32 @@
+.steps {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax( 260px, 1fr ) );
+    gap: var( --space-6 );
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step {
+    display: grid;
+    align-content: start;
+    gap: var( --space-3 );
+}
+
+.number {
+    color: var( --color-accent-text );
+    font-family: var( --font-mono );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+}
+
+.text {
+    color: var( --color-text-muted );
+}

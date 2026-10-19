@@ -21,9 +21,14 @@ import { UsersModule } from './users/users.module.js';
         // Checks every setting at startup and converts them to numbers/booleans (see config/env.ts).
         ConfigModule.forRoot( { isGlobal: true, validate: validateEnv } ),
         LoggerModule.forRoot( { service: 'studylog-api', ignorePaths: [ '/docs', '/health' ] } ),
-        ThrottlerModule.forRoot( {
-            throttlers: [ { name: 'default', ...RATE_LIMITS.default } ],
-            errorMessage: 'Too many requests; try again later',
+        ThrottlerModule.forRootAsync( {
+            inject: [ ConfigService ],
+            useFactory: ( config: ConfigService ) => ( {
+                throttlers: [ { name: 'default', ...RATE_LIMITS.default } ],
+                errorMessage: 'Too many requests; try again later',
+                // Off only for the UI tests (apps/e2e), which log in far more often than people do.
+                skipIf: () => !config.getOrThrow<boolean>( 'RATE_LIMITS_ENABLED' ),
+            } ),
         } ),
         TypeOrmModule.forRootAsync( {
             inject: [ ConfigService ],

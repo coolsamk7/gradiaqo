@@ -11,7 +11,8 @@
  * `coverage-final.json` (per line) and
  * `coverage-summary.json`, which `yarn test:cov` at the root combines into one table.
  *
- * Wiring that unit tests don't exercise is left out: app entry points (`main.ts`) and Nest modules (`*.module.ts`). Everything else must be fully covered: the run fails below 100% on any metric, so new code
+ * Wiring that unit tests don't exercise is left out: app entry points (`main.ts`, `main.tsx`), Nest modules
+ * (`*.module.ts`) and test setup (`src/test`). Everything else must be fully covered: the run fails below 100% on any metric, so new code
  * comes with its tests. Pass `thresholds` only to relax this for a package, with a reason.
  *
  * @example
@@ -25,12 +26,13 @@
 export function coverageConfig( { thresholds = { lines: 100, branches: 100, functions: 100, statements: 100 }, exclude = [] } = {} ) {
     return {
         provider: /** @type {const} */ ( 'v8' ),
-        include: [ 'src/**/*.ts' ],
+        include: [ 'src/**/*.{ts,tsx}' ],
         exclude: [
-            'src/**/*.spec.ts',
-            'src/**/*.test.ts',
-            'src/main.ts',
+            'src/**/*.{spec,test}.{ts,tsx}',
+            'src/main.{ts,tsx}',
             'src/**/*.module.ts',
+            // Test setup and helpers (the web app keeps them in src/test).
+            'src/test/**',
             ...exclude,
         ],
         reporter: [ 'text-summary', 'html', 'lcov', 'json', 'json-summary' ],

@@ -102,11 +102,15 @@ describe( 'StudySessionsService', () => {
         const FROM = new Date( '2026-09-01T00:00:00Z' );
         const TO = new Date( '2026-09-08T00:00:00Z' );
 
-        it( 'pages through the user\'s sessions, newest first', async () => {
+        it( 'pages through the user\'s sessions, newest first, with what each was about', async () => {
             await service.list( 'me', {} );
 
             expect( db.repo( StudySession ).findAndCount ).toHaveBeenCalledWith( {
-                where: { userId: 'me' }, order: { startedAt: 'DESC', id: 'ASC' }, take: 50, skip: 0,
+                where: { userId: 'me' },
+                relations: { topic: true, item: true },
+                order: { startedAt: 'DESC', id: 'ASC' },
+                take: 50,
+                skip: 0,
             } );
         } );
 

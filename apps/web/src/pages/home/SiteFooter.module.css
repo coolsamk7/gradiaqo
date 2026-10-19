@@ -1,0 +1,35 @@
+.footer {
+    padding-block: var( --space-8 );
+}
+
+.inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var( --space-6 );
+}
+
+.links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var( --space-6 );
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.links a {
+    color: var( --color-text-muted );
+    text-decoration: none;
+}
+
+.links a:hover {
+    color: var( --color-text );
+}
+
+.copyright {
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+}

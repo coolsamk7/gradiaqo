@@ -4,6 +4,7 @@ export { Enrollment } from './entities/enrollment.entity.js';
 export { EnrollmentOrder } from './entities/enrollment-order.entity.js';
 export { EnrollmentRule } from './entities/enrollment-rule.entity.js';
 export { entities } from './entities/index.js';
+export { InterviewGoal } from './entities/interview-goal.entity.js';
 export { Item } from './entities/item.entity.js';
 export { ItemProgress } from './entities/item-progress.entity.js';
 export { LearningModule } from './entities/learning-module.entity.js';

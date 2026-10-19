@@ -1,0 +1,64 @@
+.hero {
+    padding-block: var( --space-20 );
+}
+
+.inner {
+    display: grid;
+    align-items: center;
+    gap: var( --space-16 );
+}
+
+@media ( width >= 960px ) {
+    .inner {
+        grid-template-columns: minmax( 0, 1fr ) 560px;
+    }
+}
+
+.badge {
+    display: inline-block;
+    padding: var( --space-0-5 ) var( --space-2 );
+    border-radius: var( --radius-full );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.title {
+    margin-top: var( --space-6 );
+    font-size: clamp( 32px, 22px + 2.4vw, 48px );
+    font-weight: 600;
+    line-height: 1.17;
+    letter-spacing: -0.02em;
+}
+
+.highlight {
+    display: block;
+    color: var( --color-accent-text );
+}
+
+.lead {
+    max-width: 560px;
+    margin-top: var( --space-6 );
+    color: var( --color-text-muted );
+    font-size: 18px;
+    line-height: 28px;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var( --space-3 );
+    margin-top: var( --space-6 );
+}
+
+@media ( width < 600px ) {
+    .hero {
+        padding-block: var( --space-8 );
+    }
+
+    .actions > * {
+        flex: 1 1 100%;
+    }
+}

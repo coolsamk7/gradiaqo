@@ -1,0 +1,75 @@
+/* Dialogs (Figma: Screens – Web › Dialogs): a white card on a dimmed page. */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: start center;
+    padding: clamp( 16px, 12vh, 200px ) var( --space-4 ) var( --space-4 );
+    overflow-y: auto;
+    background: rgb( 14 14 12 / 40% );
+}
+
+.card {
+    display: grid;
+    gap: var( --space-5 );
+    width: min( 100%, 480px );
+    padding: var( --space-6 );
+    border-radius: var( --radius-xl );
+    background: var( --color-surface );
+    box-shadow: var( --shadow-lg );
+}
+
+.wide {
+    width: min( 100%, 640px );
+}
+
+.head {
+    display: flex;
+    align-items: flex-start;
+    gap: var( --space-4 );
+}
+
+.titles {
+    display: grid;
+    flex: 1;
+    gap: var( --space-1 );
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
+.description {
+    color: var( --color-text-muted );
+}
+
+.close {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin: calc( var( --space-1 ) * -1 ) calc( var( --space-2 ) * -1 ) 0 0;
+    border: 0;
+    border-radius: var( --radius-md );
+    color: var( --color-icon );
+    background: none;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var( --color-text );
+    background: var( --color-bg-muted );
+}
+
+/* Buttons at the bottom, on the right. */
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var( --space-3 );
+}

@@ -162,12 +162,14 @@ export const Item = Type.Object( {
     updatedAt: IsoDate(),
 } );
 export type Item = StaticDecode<typeof Item>;
+export type ItemJson = StaticEncode<typeof Item>;
 
 export const ItemPage = Type.Object( {
     items: Type.Array( Item ),
     total: Type.Integer( { description: 'Matching items across all pages' } ),
 } );
 export type ItemPage = StaticDecode<typeof ItemPage>;
+export type ItemPageJson = StaticEncode<typeof ItemPage>;
 
 /** An item as placed in a topic. */
 export const TopicItem = Type.Object( {
@@ -189,6 +191,7 @@ export const LearningPathTree = Type.Object( {
     modules: Type.Array( LearningModuleTree ),
 } );
 export type LearningPathTree = StaticDecode<typeof LearningPathTree>;
+export type LearningPathTreeJson = StaticEncode<typeof LearningPathTree>;
 
 // ---------- Requests ----------
 

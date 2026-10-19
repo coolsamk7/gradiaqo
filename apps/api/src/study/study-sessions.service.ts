@@ -36,6 +36,8 @@ export class StudySessionsService {
         };
         const [ items, total ] = await this.dataSource.getRepository( StudySession ).findAndCount( {
             where,
+            // Only their titles reach the response (see StudySessionListItem).
+            relations: { topic: true, item: true },
             order: { startedAt: 'DESC', id: 'ASC' },
             take: limit,
             skip: offset,
