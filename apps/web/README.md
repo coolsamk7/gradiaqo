@@ -16,7 +16,8 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
 | `/login` | Log in (`src/pages/login`); logged-in users go straight to `/app` |
 | `/signup` | Create an account (`src/pages/signup`), then straight into `/app`; logged-in users go straight there too |
 | `/app` | Dashboard (`src/pages/dashboard`), logged-in users only (others go to `/login` and come back): study time today, this week and in total, streak, items completed, the last 30 days as a chart, learning paths with progress, and recent sessions |
-| `/app/sessions` | Study sessions (`src/pages/sessions`): history by day with daily totals, a page at a time; log a session (learning path → topic → optional item, date, start, minutes, notes), edit its time, minutes and notes, or delete it. `?log` opens the form (the dashboard's "Log session" button) |
+| `/app/sessions` | Study sessions (`src/pages/sessions`): history by day with daily totals, a page at a time; log a session (learning path → topic → optional item, date, start, minutes, notes), edit its time, minutes and notes, or delete it. `?log` opens the form (the dashboard's "Log session" button); `path`, `topic` and `item` choose what it's about |
+| `/app/paths/:enrollmentId` | A learning path you follow (`src/pages/path`), opened from the dashboard: modules, topics (the first unfinished one open) and items in your order, with progress at every level. Set each item's status, open it (problems, articles, videos…) or read it here (notes, exercises with a hidden answer), and "Log time" on it (the session form opens with the path, topic and item chosen) |
 | anything else | Not found |
 
 ## Talking to the API
@@ -34,8 +35,9 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
   revoked), it logs out and `<RequireAuth>` sends the user to the login page, which says the session ended and
   brings them back after logging in. Only 401s with `WWW-Authenticate: Bearer` trigger a renewal, so a wrong
   password stays a normal error.
-- Pages of the logged-in app share `src/components/AppHeader.tsx` (navigation, log out), `src/styles/app.module.css`
-  (page layout, cards, loading and error states, session rows) and `src/format` (minutes, dates, session titles).
+- Pages of the logged-in app share `src/components/AppHeader.tsx` (navigation, log out) and `ProgressBar.tsx`,
+  `src/styles/app.module.css` (page layout, cards, loading and error states, session rows) and `src/format`
+  (minutes, dates, session titles).
 - Login and signup share `src/components/AuthLayout.tsx` and `src/forms` (fields, password input, error messages).
   Each page checks what it can before calling the API (same limits as the schemas), shows the API's errors on
   their fields, and focuses the first problem. Links between them keep the router state (`from`: where to go next).

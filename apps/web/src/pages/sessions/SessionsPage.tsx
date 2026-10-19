@@ -9,13 +9,18 @@ import { SessionList } from './SessionList.tsx';
 import styles from './Sessions.module.css';
 import { useSessions } from './use-sessions.ts';
 
-/** The user's study history, and where they log new sessions. `?log` opens the form right away. */
+/**
+ * The user's study history, and where they log new sessions. `?log` opens the form right away, and `path`, `topic`
+ * and `item` (ids) choose what the new session is about.
+ */
 export function SessionsPage() {
     const [ params ] = useSearchParams();
     const [ logging, setLogging ] = useState( params.has( 'log' ) );
     const [ notice, setNotice ] = useState<string>();
     const { state, reload, loadMore } = useSessions();
     const now = new Date();
+    // What a new session is about, when coming from "Log time" on an item.
+    const chosen = { path: params.get( 'path' ) ?? '', topic: params.get( 'topic' ) ?? '', item: params.get( 'item' ) ?? '' };
 
     const onChanged = ( message: string ) => {
         setLogging( false );
@@ -54,7 +59,11 @@ export function SessionsPage() {
                         <div className={app.cardHeader}>
                             <h2 id="log-title" className={app.cardTitle}>Log a study session</h2>
                         </div>
-                        <SessionForm onSaved={onChanged} onCancel={() => setLogging( false )} />
+                        <SessionForm
+                            initial={chosen}
+                            onSaved={onChanged}
+                            onCancel={() => setLogging( false )}
+                        />
                     </section>
                 )}
 

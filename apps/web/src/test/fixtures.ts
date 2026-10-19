@@ -47,32 +47,40 @@ export function enrollment(
     };
 }
 
+type ItemJson = EnrollmentDetailJson['modules'][number]['topics'][number]['items'][number];
+
+/** An item in a tree: its id and title, and anything else that differs from a not-started problem. */
+export type ItemSpec = Pick<ItemJson, 'id' | 'title'> & Partial<Omit<ItemJson, 'id' | 'title' | 'isOptional'>> & {
+    optional?: boolean;
+};
+
 export interface TreeSpec {
     title: string;
-    topics: { id: string; title: string; items: { id: string; title: string; optional?: boolean }[] }[];
+    description?: string;
+    topics: { id: string; title: string; description?: string; items: ItemSpec[] }[];
 }
 
-/** An enrollment with its modules, topics and items (nothing started). */
-export function enrollmentDetail( base: EnrollmentJson, modules: TreeSpec[] ): EnrollmentDetailJson {
-    const progress = { completed: 0, total: 0 };
+/** Required items done (or marked for revision) out of all required ones, like the API counts them. */
+function count( items: ItemJson[] ) {
+    const required = items.filter( ( item ) => !item.isOptional );
+    const finished = [ ProgressStatus.Done, ProgressStatus.Revise ] as ProgressStatus[];
 
+    const completed = required.filter( ( item ) => finished.includes( item.progress ) ).length;
+
+    return { completed, total: required.length };
+}
+
+/** An enrollment with its modules, topics and items. Counts follow the items' statuses; the path's is `base`'s. */
+export function enrollmentDetail( base: EnrollmentJson, modules: TreeSpec[] ): EnrollmentDetailJson {
     return {
         ...base,
         rules: [],
         orders: [],
-        modules: modules.map( ( module, m ) => ( {
-            ...node( uuid( 700 + m ), module.title, m ),
-            learningPathId: base.learningPath.id,
-            progress,
-            topics: module.topics.map( ( topic, t ) => ( {
-                ...node( topic.id, topic.title, t ),
-                moduleId: uuid( 700 + m ),
-                progress,
-                items: topic.items.map( ( item, i ) => ( {
-                    id: item.id,
+        modules: modules.map( ( module, m ) => {
+            const topics = module.topics.map( ( topic, t ) => {
+                const items: ItemJson[] = topic.items.map( ( { optional, ...item }, i ) => ( {
                     organizationId: null,
                     type: ItemType.Problem,
-                    title: item.title,
                     description: null,
                     difficulty: null,
                     estimatedMinutes: null,
@@ -82,11 +90,28 @@ export function enrollmentDetail( base: EnrollmentJson, modules: TreeSpec[] ): E
                     createdAt: DATE,
                     updatedAt: DATE,
                     position: i,
-                    isOptional: item.optional ?? false,
+                    isOptional: optional ?? false,
                     progress: ProgressStatus.NotStarted,
-                } ) ),
-            } ) ),
-        } ) ),
+                    ...item,
+                } ) );
+
+                return {
+                    ...node( topic.id, topic.title, t ),
+                    description: topic.description ?? null,
+                    moduleId: uuid( 700 + m ),
+                    progress: count( items ),
+                    items,
+                };
+            } );
+
+            return {
+                ...node( uuid( 700 + m ), module.title, m ),
+                description: module.description ?? null,
+                learningPathId: base.learningPath.id,
+                progress: count( topics.flatMap( ( topic ) => topic.items ) ),
+                topics,
+            };
+        } ),
     };
 }
 

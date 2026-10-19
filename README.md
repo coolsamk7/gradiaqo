@@ -452,5 +452,6 @@ test coverage at 100% (see [Tests](#tests)).
   `POST /auth/refresh` on a 401
 - [x] Dashboard at `/app`: stats, streak, last 30 days, learning paths with progress, recent sessions
 - [x] Study sessions at `/app/sessions`: history by day, log, edit and delete sessions
-- [ ] Learning path, catalog and enrollment pages
+- [x] Learning path page at `/app/paths/:id`: progress at every level, item status, notes and exercises, log time
+- [ ] Catalog and enrollment pages
 - [ ] Mobile app

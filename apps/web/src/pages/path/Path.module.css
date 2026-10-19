@@ -1,0 +1,223 @@
+/* A learning path: its header, modules (cards from app.module.css), collapsible topics and item rows. */
+
+.back {
+    justify-self: start;
+    color: var( --color-brand-strong );
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.back:hover {
+    text-decoration: underline;
+}
+
+.header {
+    display: grid;
+    gap: 10px;
+}
+
+.titleRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+}
+
+.badge {
+    padding: 2px 10px;
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-full );
+    color: var( --color-text-muted );
+    background: var( --color-surface );
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.moduleDescription {
+    margin-bottom: 12px;
+}
+
+/* ---------- Topics ---------- */
+
+.topics {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.topic {
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-sm );
+}
+
+.topicSummary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.topicSummary::-webkit-details-marker {
+    display: none;
+}
+
+/* A chevron that turns when the topic opens. */
+.topicSummary::before {
+    content: '';
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var( --color-text-muted );
+    border-bottom: 2px solid var( --color-text-muted );
+    transform: rotate( -45deg );
+    transition: transform 150ms ease;
+}
+
+.topic[open] > .topicSummary::before {
+    transform: rotate( 45deg );
+}
+
+.topicTitle {
+    flex: 1;
+    font-size: 0.98rem;
+}
+
+.count,
+.countDone {
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.count {
+    color: var( --color-text-muted );
+}
+
+.countDone {
+    color: var( --color-success );
+}
+
+.topicDescription {
+    padding: 0 14px 8px 32px;
+}
+
+.noItems {
+    padding: 0 14px 14px 32px;
+    color: var( --color-text-muted );
+    font-size: 0.9rem;
+}
+
+/* ---------- Items ---------- */
+
+.items {
+    display: grid;
+    margin: 0;
+    padding: 0 14px 6px;
+    list-style: none;
+}
+
+.item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px 12px;
+    padding-block: 12px;
+    border-top: 1px solid var( --color-border );
+}
+
+.dot {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    margin-top: 7px;
+    border: 2px solid var( --color-border );
+    border-radius: 50%;
+}
+
+/* One per ProgressStatus. */
+.not_started {
+    background: transparent;
+}
+
+.in_progress {
+    border-color: var( --color-streak );
+    background: var( --color-streak );
+}
+
+.done {
+    border-color: var( --color-success );
+    background: var( --color-success );
+}
+
+.revise {
+    border-color: var( --color-accent );
+    background: var( --color-accent );
+}
+
+.itemMain {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.itemTitle {
+    font-weight: 600;
+}
+
+.meta {
+    color: var( --color-text-muted );
+    font-size: 0.85rem;
+}
+
+.content {
+    margin-top: 6px;
+    font-size: 0.9rem;
+}
+
+.content summary {
+    color: var( --color-brand-strong );
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.body {
+    margin-top: 6px;
+    padding: 10px 12px;
+    border-radius: var( --radius-sm );
+    background: var( --color-bg-subtle );
+    white-space: pre-wrap;
+}
+
+.itemActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+}
+
+.status {
+    padding: 6px 10px;
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-sm );
+    color: var( --color-text );
+    background: var( --color-bg );
+    font: inherit;
+    font-size: 0.88rem;
+}
+
+.status:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.action {
+    color: var( --color-brand-strong );
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.action:hover {
+    text-decoration: underline;
+}

@@ -6,6 +6,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage.tsx';
 import { HomePage } from './pages/home/HomePage.tsx';
 import { LoginPage } from './pages/login/LoginPage.tsx';
 import { NotFoundPage } from './pages/not-found/NotFoundPage.tsx';
+import { PathPage } from './pages/path/PathPage.tsx';
 import { SessionsPage } from './pages/sessions/SessionsPage.tsx';
 import { SignupPage } from './pages/signup/SignupPage.tsx';
 
@@ -19,6 +20,7 @@ export function App() {
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/app" element={<RequireAuth><DashboardPage /></RequireAuth>} />
                 <Route path="/app/sessions" element={<RequireAuth><SessionsPage /></RequireAuth>} />
+                <Route path="/app/paths/:enrollmentId" element={<RequireAuth><PathPage /></RequireAuth>} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </AuthProvider>

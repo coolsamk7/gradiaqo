@@ -26,8 +26,13 @@ import type { StudyOptions } from './use-study-options.ts';
 import { useStudyOptions } from './use-study-options.ts';
 
 type SessionFormProps =
-    /** Log a new session. */
-    | { session?: undefined; onSaved: ( message: string ) => void; onCancel: () => void }
+    /** Log a new session; `initial` can choose what it's about (e.g. "Log time" on an item). */
+    | {
+        session?: undefined;
+        initial?: Partial<SessionFormValues>;
+        onSaved: ( message: string ) => void;
+        onCancel: () => void;
+    }
     /** Edit when, how long and notes of an existing one; `about` says what it was about. */
     | { session: StudySessionJson; about: string; onSaved: ( message: string ) => void; onCancel: () => void };
 
@@ -36,7 +41,9 @@ export function SessionForm( props: SessionFormProps ) {
     const { request } = useAuth();
     const editing = props.session !== undefined;
     const [ values, setValues ] = useState<SessionFormValues>( () =>
-        ( props.session ? editSessionValues( props.session ) : newSessionValues( new Date() ) ) );
+        props.session
+            ? editSessionValues( props.session )
+            : { ...newSessionValues( new Date() ), ...props.initial } );
     const [ fieldErrors, setFieldErrors ] = useState<FieldErrors<Field>>( {} );
     const [ formError, setFormError ] = useState<string>();
     const [ saving, setSaving ] = useState( false );
