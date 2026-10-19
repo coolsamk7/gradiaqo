@@ -15,6 +15,7 @@ describe( 'validateEnv', () => {
             TRUST_PROXY: 1,
             JWT_EXPIRES_IN_SECONDS: 900,
             LOG_LEVEL: 'info',
+            RATE_LIMITS_ENABLED: true,
         } );
     } );
 
@@ -34,6 +35,12 @@ describe( 'validateEnv', () => {
     it( 'rejects a non-postgres database URL and bad CORS origins', () => {
         expect( () => validateEnv( { ...valid, DATABASE_URL: 'mysql://x' } ) ).toThrow( 'DATABASE_URL: must be a postgres:// URL' );
         expect( () => validateEnv( { ...valid, CORS_ORIGINS: '*' } ) ).toThrow( 'CORS_ORIGINS: Invalid CORS_ORIGINS entry' );
+    } );
+
+    it( 'allows turning rate limits off, except in production', () => {
+        expect( validateEnv( { ...valid, RATE_LIMITS_ENABLED: 'false' } ).RATE_LIMITS_ENABLED ).toBe( false );
+        expect( () => validateEnv( { ...valid, NODE_ENV: 'production', COOKIE_SECURE: 'true', RATE_LIMITS_ENABLED: 'false' } ) )
+            .toThrow( 'RATE_LIMITS_ENABLED: must be true in production' );
     } );
 
     it( 'requires secure cookies in production', () => {

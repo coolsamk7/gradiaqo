@@ -31,6 +31,8 @@ export const Env = Type.Object( {
         { default: 'info' },
     ),
     LOG_PRETTY: Flag( false ),
+    // Turned off only by the UI tests (apps/e2e), which log in far more often than people do. Never off in production.
+    RATE_LIMITS_ENABLED: Flag( true ),
 } );
 export type Env = Static<typeof Env>;
 
@@ -59,6 +61,9 @@ export function validateEnv( raw: Record<string, unknown> ): Env {
 
         if ( env.NODE_ENV === 'production' && !env.COOKIE_SECURE ) {
             problems.set( 'COOKIE_SECURE', 'must be true in production (the refresh cookie must only travel over HTTPS)' );
+        }
+        if ( env.NODE_ENV === 'production' && !env.RATE_LIMITS_ENABLED ) {
+            problems.set( 'RATE_LIMITS_ENABLED', 'must be true in production' );
         }
         try {
             parseCorsOrigins( env.CORS_ORIGINS );
