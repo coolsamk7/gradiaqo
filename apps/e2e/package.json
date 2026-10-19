@@ -1,0 +1,28 @@
+{
+  "name": "@studylog/e2e",
+  "version": "0.0.1",
+  "description": "StudyLog UI tests: the web app in a real browser against the real API and a test database (Playwright)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "lint": "tsc --noEmit && eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "eslint . --fix"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@studylog/api": "workspace:*",
+    "@studylog/cli": "workspace:*",
+    "@studylog/common": "workspace:*",
+    "@studylog/schemas": "workspace:*",
+    "@studylog/web": "workspace:*",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
+    "eslint": "^10.11.0",
+    "pg": "^8.23.0",
+    "typescript": "^6.0.2"
+  }
+}

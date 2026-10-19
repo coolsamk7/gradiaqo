@@ -1868,6 +1868,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@playwright/test@npm:^1.64.1":
+  version: 1.64.1
+  resolution: "@playwright/test@npm:1.64.1"
+  dependencies:
+    playwright: "npm:1.64.1"
+  bin:
+    playwright: cli.js
+  checksum: 10c0/0a1a853d76d6c532cafaf0366a5448584b766737ebd39bbd23dc0580f3d3b6ef4c833082af47a792e7fc2501f444debdfaad37a87a76cc5b195f3803fc80ea3c
+  languageName: node
+  linkType: hard
+
 "@remix-run/route-pattern@npm:^0.22.1":
   version: 0.22.1
   resolution: "@remix-run/route-pattern@npm:0.22.1"
@@ -2249,7 +2260,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@studylog/api@workspace:apps/api":
+"@studylog/api@workspace:*, @studylog/api@workspace:apps/api":
   version: 0.0.0-use.local
   resolution: "@studylog/api@workspace:apps/api"
   dependencies:
@@ -2329,7 +2340,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@studylog/cli@workspace:apps/cli":
+"@studylog/cli@workspace:*, @studylog/cli@workspace:apps/cli":
   version: 0.0.0-use.local
   resolution: "@studylog/cli@workspace:apps/cli"
   dependencies:
@@ -2401,6 +2412,24 @@ __metadata:
   peerDependencies:
     typebox: ^1.3.0
     typeorm: ^1.1.1
+  languageName: unknown
+  linkType: soft
+
+"@studylog/e2e@workspace:apps/e2e":
+  version: 0.0.0-use.local
+  resolution: "@studylog/e2e@workspace:apps/e2e"
+  dependencies:
+    "@playwright/test": "npm:^1.64.1"
+    "@studylog/api": "workspace:*"
+    "@studylog/cli": "workspace:*"
+    "@studylog/common": "workspace:*"
+    "@studylog/schemas": "workspace:*"
+    "@studylog/web": "workspace:*"
+    "@types/node": "npm:^24.0.0"
+    "@types/pg": "npm:^8.23.1"
+    eslint: "npm:^10.11.0"
+    pg: "npm:^8.23.0"
+    typescript: "npm:^6.0.2"
   languageName: unknown
   linkType: soft
 
@@ -2477,7 +2506,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@studylog/web@workspace:apps/web":
+"@studylog/web@workspace:*, @studylog/web@workspace:apps/web":
   version: 0.0.0-use.local
   resolution: "@studylog/web@workspace:apps/web"
   dependencies:
@@ -7335,6 +7364,26 @@ __metadata:
     "@napi-rs/nice":
       optional: true
   checksum: 10c0/599c1e5ffe85b04064805906da38b3c0386f4fa1f4390333f7992842680610859bd93ce4b1372794f6ab794bf409e8bc64bdbcb136d9f22688fd6df1367a21e3
+  languageName: node
+  linkType: hard
+
+"playwright-core@npm:1.64.1":
+  version: 1.64.1
+  resolution: "playwright-core@npm:1.64.1"
+  bin:
+    playwright-core: cli.js
+  checksum: 10c0/91c4f5ed1cff4b0e18b6ac62f66770f5f1b6c204d4aebd6a321c07466dca18a70822ac692597c6059705a703f9768097ac551df179fb49294d639509148e04f3
+  languageName: node
+  linkType: hard
+
+"playwright@npm:1.64.1":
+  version: 1.64.1
+  resolution: "playwright@npm:1.64.1"
+  dependencies:
+    playwright-core: "npm:1.64.1"
+  bin:
+    playwright: cli.js
+  checksum: 10c0/edf52d0a79feca37bf383e841a467aa68750684128218eac560063991c9e4b615a94901f580cd8a088bb05fd53008ab4a0e5e8d976067698b60ae5d1de2459f3
   languageName: node
   linkType: hard
 

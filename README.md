@@ -5,6 +5,7 @@ Study time tracker. Turborepo monorepo using Yarn workspaces.
 - `apps/api`: NestJS backend
 - `apps/web`: React web app (Vite), at http://localhost:5173; empty for now (see `apps/web/README.md`)
 - `apps/cli`: command-line tools (database migrations), built with nest-commander (`@studylog/cli`)
+- `apps/e2e`: UI tests: the web app in a real browser against the real API and a test database (Playwright, `@studylog/e2e`)
 - `packages/common`: shared configs for every app/package: ESLint rules (`@studylog/common/eslint/*`, with `react` for the web app), tsconfigs (`@studylog/common/tsconfig/*`), coverage and mutation testing settings
 - `packages/schemas`: the API contract as TypeBox schemas + types + role enums, no framework deps (`@studylog/schemas`); shareable with web/mobile
 - `packages/nestjs`: those schemas wired into NestJS: request bodies and documented responses (`@studylog/nestjs`)
@@ -83,6 +84,26 @@ yarn workspace @studylog/api test:e2e # end-to-end tests against the database fr
 - Unit tests sit next to the code (`*.spec.ts`, Vitest). Services are tested against an in-memory stand-in for
   TypeORM (`apps/api/test/unit/fake-data-source.ts`): each test sets up only the database answers its rule depends
   on and checks the calls it expects. Permission tests use the real CASL rules.
+
+### UI tests (Playwright)
+
+```sh
+yarn test:ui:install   # once: download the Chromium that Playwright drives
+yarn db:up
+yarn test:ui           # build, then run every test in apps/e2e/tests
+yarn workspace @studylog/e2e test:e2e:ui   # Playwright's UI mode: pick tests, watch them, time-travel through steps
+yarn workspace @studylog/e2e report        # the HTML report of the last run (traces and screenshots of failures)
+```
+
+- Each run starts its own API (port 3100) and web app (port 5174), so `yarn dev` can keep running.
+- They use a separate database, `studylog_e2e` on the `yarn db:up` server: created if missing, migrated, then emptied
+  and filled with the dummy data (`db:seed --reset`) before every run. Your development data is never touched; the
+  name must end in `_e2e` (override with `E2E_DATABASE_URL`).
+- Tests log in as the dummy users, or set up a new user through the API (`tests/support`): a test that changes
+  data uses its own user, since tests run in parallel against the same database.
+- The test API runs with `RATE_LIMITS_ENABLED=false`, because tests log in far more often than people do. The API
+  refuses that setting in production.
+- Not part of `yarn test` (it needs the database and a browser), nor of coverage or mutation testing.
 
 ### Coverage
 

@@ -12,6 +12,8 @@
     "test": "turbo run test",
     "test:cov": "turbo run test:cov --concurrency=2 --output-logs=errors-only && node scripts/coverage-summary.mjs",
     "test:mutation": "turbo run test:mutation --concurrency=1 && node scripts/mutation-summary.mjs",
+    "test:ui": "turbo run test:e2e --filter=@studylog/e2e",
+    "test:ui:install": "yarn workspace @studylog/e2e playwright install chromium",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
     "lint:fix": "turbo run lint:fix",
