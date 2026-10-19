@@ -1,31 +1,54 @@
 /*
- * Parts shared by the pages of the logged-in app: page layout, cards, loading and error states, and study session
- * rows. Cards follow the homepage's dashboard preview.
+ * Parts shared by the pages of the logged-in app (Figma: Screens – Web): page headers, cards, badges, loading and
+ * error states, and study session rows. The frame around them (sidebar) is components/AppLayout.
  */
 
-.page {
-    min-height: 100dvh;
-    background: var( --color-bg-subtle );
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var( --space-4 );
 }
 
-.main {
+.titleBlock {
     display: grid;
-    gap: 20px;
-    padding-block: 32px 64px;
+    gap: var( --space-1 );
+}
+
+.overline {
+    color: var( --color-text-muted );
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
 .title {
-    font-size: clamp( 1.6rem, 1.2rem + 1.5vw, 2.2rem );
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+    letter-spacing: -0.01em;
 }
 
 .muted {
     margin: 0;
     color: var( --color-text-muted );
-    font-size: 0.9rem;
 }
 
+.small {
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.mono {
+    font-family: var( --font-mono );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    font-variant-numeric: tabular-nums;
+}
 
 /* ---------- Loading and errors ---------- */
 
@@ -33,11 +56,7 @@
 .error {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 20px;
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-md );
-    background: var( --color-surface );
+    gap: var( --space-3 );
 }
 
 .status {
@@ -45,10 +64,10 @@
 }
 
 .spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid var( --color-brand-soft );
-    border-top-color: var( --color-brand );
+    width: 18px;
+    height: 18px;
+    border: 3px solid var( --color-border );
+    border-top-color: var( --color-accent );
     border-radius: 50%;
     animation: spin 800ms linear infinite;
 }
@@ -62,24 +81,28 @@
 .error {
     flex-wrap: wrap;
     justify-content: space-between;
-    border-color: var( --color-danger );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    color: var( --color-danger );
+    background: var( --color-danger-soft );
 }
 
 .retry {
-    padding: 8px 16px;
     font: inherit;
-    font-weight: 600;
-    cursor: pointer;
+}
+
+.skeleton {
+    border-radius: var( --radius-sm );
+    background: var( --color-bg-muted );
 }
 
 /* ---------- Cards ---------- */
 
 .card {
-    padding: 20px;
+    padding: var( --space-5 );
     border: 1px solid var( --color-border );
-    border-radius: var( --radius-md );
+    border-radius: var( --radius-lg );
     background: var( --color-surface );
-    box-shadow: var( --shadow-sm );
 }
 
 .cardHeader {
@@ -87,18 +110,21 @@
     flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 4px 12px;
-    margin-bottom: 16px;
+    gap: var( --space-1 ) var( --space-3 );
+    margin-bottom: var( --space-4 );
 }
 
 .cardTitle {
-    font-size: 1.05rem;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
 }
 
 .cardLink {
-    color: var( --color-brand-strong );
-    font-size: 0.9rem;
-    font-weight: 600;
+    color: var( --color-accent-text );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
     text-decoration: none;
 }
 
@@ -107,11 +133,34 @@
 }
 
 .empty {
-    padding: 24px 12px;
-    border: 1px dashed var( --color-border );
-    border-radius: var( --radius-sm );
+    padding: var( --space-8 ) var( --space-6 );
     color: var( --color-text-muted );
     text-align: center;
+}
+
+/* ---------- Badges ---------- */
+
+.badge {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    padding: var( --space-0-5 ) var( --space-2 );
+    border-radius: var( --radius-full );
+    color: var( --color-text-muted );
+    background: var( --color-bg-muted );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.badgeSuccess {
+    color: var( --color-success );
+    background: var( --color-success-soft );
+}
+
+.badgeAccent {
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
 }
 
 /* ---------- Study session rows ---------- */
@@ -126,41 +175,53 @@
 .session {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding-block: 12px;
-    border-top: 1px solid var( --color-border );
+    gap: var( --space-3 );
+    padding-block: var( --space-3 );
 }
 
 .session:first-child {
     padding-top: 0;
-    border-top: 0;
+}
+
+.session:last-child {
+    padding-bottom: 0;
+}
+
+.sessionIcon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var( --radius-md );
+    color: var( --color-icon );
+    background: var( --color-bg-muted );
 }
 
 .sessionMain {
+    display: grid;
     flex: 1;
+    gap: var( --space-0-5 );
     min-width: 0;
 }
 
 .sessionTitle {
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .notes {
-    margin-top: 4px;
     overflow: hidden;
-    font-size: 0.9rem;
-    font-style: italic;
+    font-size: 12px;
+    line-height: 16px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .duration {
     flex: none;
-    padding: 2px 10px;
-    border-radius: var( --radius-full );
-    color: var( --color-brand-strong );
-    background: var( --color-brand-soft );
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-family: var( --font-mono );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px;
     font-variant-numeric: tabular-nums;
 }

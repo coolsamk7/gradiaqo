@@ -3,31 +3,32 @@
     top: 0;
     z-index: 10;
     border-bottom: 1px solid var( --color-border );
-    background: color-mix( in srgb, var( --color-bg ) 82%, transparent );
-    backdrop-filter: saturate( 180% ) blur( 12px );
+    background: color-mix( in srgb, var( --color-bg ) 90%, transparent );
+    backdrop-filter: blur( 12px );
 }
 
 .inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    min-height: 68px;
+    gap: var( --space-6 );
+    min-height: 64px;
 }
 
 .home {
+    color: inherit;
     text-decoration: none;
 }
 
 .nav {
     display: flex;
     align-items: center;
-    gap: clamp( 12px, 2.5vw, 28px );
+    gap: var( --space-6 );
 }
 
 .links {
     display: flex;
-    gap: clamp( 12px, 2.5vw, 28px );
+    gap: var( --space-6 );
     margin: 0;
     padding: 0;
     list-style: none;
@@ -35,7 +36,6 @@
 
 .link {
     color: var( --color-text-muted );
-    font-weight: 500;
     text-decoration: none;
 }
 
@@ -43,9 +43,12 @@
     color: var( --color-text );
 }
 
-/* Small screens: keep the logo and the two account actions. */
-@media ( width < 640px ) {
+@media ( width < 720px ) {
     .links {
         display: none;
+    }
+
+    .nav {
+        gap: var( --space-3 );
     }
 }

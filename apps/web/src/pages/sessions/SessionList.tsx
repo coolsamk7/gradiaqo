@@ -2,9 +2,11 @@ import { useState } from 'react';
 
 import { ApiError } from '../../api/client.ts';
 import { useAuth } from '../../auth/auth-context.ts';
+import { Icon } from '../../components/Icon.tsx';
 import { describeSession, formatMinutes, formatTime, relativeDay, toDateInput } from '../../format/format.ts';
 import form from '../../forms/form.module.css';
 import app from '../../styles/app.module.css';
+import shared from '../../styles/shared.module.css';
 import { SessionForm } from './SessionForm.tsx';
 import styles from './Sessions.module.css';
 import type { Session } from './use-sessions.ts';
@@ -15,6 +17,8 @@ interface SessionListProps {
     /** A session was changed or deleted: show `message` and reload the list. */
     onChanged: ( message: string ) => void;
 }
+
+const ghost = `${shared.button} ${shared.ghost} ${shared.small}`;
 
 /** Sessions grouped by local day, newest first, each with its day's total. */
 export function SessionList( { items, now, onChanged }: SessionListProps ) {
@@ -30,7 +34,7 @@ export function SessionList( { items, now, onChanged }: SessionListProps ) {
                     <section key={day.key} className={app.card} aria-label={heading}>
                         <div className={app.cardHeader}>
                             <h2 className={app.cardTitle}>{heading}</h2>
-                            <p className={app.muted}>{`${formatMinutes( minutes )} studied`}</p>
+                            <p className={`${app.muted} ${app.small}`}>{`${formatMinutes( minutes )} studied`}</p>
                         </div>
                         <ol className={app.sessions}>
                             {day.sessions.map( ( session ) => (
@@ -84,24 +88,25 @@ function SessionItem( { session, onChanged }: { session: Session; onChanged: ( m
 
     return (
         <li className={app.session}>
+            <span className={app.sessionIcon} aria-hidden="true"><Icon name="book-open" /></span>
             <div className={app.sessionMain}>
                 <p className={app.sessionTitle}>{title}</p>
-                <p className={app.muted}>{context ? `${context} · ${time}` : time}</p>
+                <p className={`${app.muted} ${app.small}`}>{context ? `${context} · ${time}` : time}</p>
                 {session.notes && <p className={app.notes}>{session.notes}</p>}
                 {error && <p className={form.fieldError} role="alert">{error}</p>}
                 {mode === 'view' && (
                     <div className={styles.rowActions}>
-                        <button type="button" className={styles.textButton} onClick={() => setMode( 'edit' )}>Edit</button>
-                        <button type="button" className={styles.textButton} onClick={() => setMode( 'confirmDelete' )}>Delete</button>
+                        <button type="button" className={ghost} onClick={() => setMode( 'edit' )}>Edit</button>
+                        <button type="button" className={ghost} onClick={() => setMode( 'confirmDelete' )}>Delete</button>
                     </div>
                 )}
                 {mode !== 'view' && (
                     <div className={styles.rowActions} role="group" aria-label="Delete this session?">
                         <span className={styles.confirm}>Delete this session?</span>
-                        <button type="button" className={styles.dangerButton} disabled={mode === 'deleting'} onClick={() => void onDelete()}>
+                        <button type="button" className={`${shared.button} ${shared.danger} ${shared.small}`} disabled={mode === 'deleting'} onClick={() => void onDelete()}>
                             Delete
                         </button>
-                        <button type="button" className={styles.textButton} disabled={mode === 'deleting'} onClick={() => setMode( 'view' )}>
+                        <button type="button" className={ghost} disabled={mode === 'deleting'} onClick={() => setMode( 'view' )}>
                             Keep
                         </button>
                     </div>

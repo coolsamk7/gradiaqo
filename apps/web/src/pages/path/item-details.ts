@@ -40,7 +40,21 @@ export function itemLink( details: Record<string, unknown> ): { url: string; lab
 
     const platform = text( details.platform );
 
-    return { url, label: platform ? `Open on ${platform}` : 'Open' };
+    return { url, label: platform ? `Open on ${platformName( platform )}` : 'Open' };
+}
+
+/** How platforms write their own names; others get a capital first letter ("leetcode" → "LeetCode"). */
+const PLATFORM_NAMES: Record<string, string> = {
+    leetcode: 'LeetCode',
+    hackerrank: 'HackerRank',
+    codeforces: 'Codeforces',
+    geeksforgeeks: 'GeeksforGeeks',
+    youtube: 'YouTube',
+    neetcode: 'NeetCode',
+};
+
+function platformName( platform: string ): string {
+    return PLATFORM_NAMES[platform.toLowerCase()] ?? platform.charAt( 0 ).toUpperCase() + platform.slice( 1 );
 }
 
 /** Written content shown in the app: a note's text, or an exercise's instructions and (hidden) answer. */

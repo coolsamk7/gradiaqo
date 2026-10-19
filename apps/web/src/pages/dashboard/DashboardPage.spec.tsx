@@ -69,7 +69,7 @@ describe( 'DashboardPage', () => {
         api();
         renderApp( '/app' );
 
-        expect( await screen.findByRole( 'heading', { level: 1 } ) ).toHaveTextContent( 'Good morning, Sam!' );
+        expect( await screen.findByRole( 'heading', { level: 1 } ) ).toHaveTextContent( 'Good morning, Sam' );
         await screen.findByText( 'Items completed' );
 
         // A tile is the term (its label) with its values, e.g. "Today" and "45m".
@@ -80,13 +80,54 @@ describe( 'DashboardPage', () => {
         };
 
         expect( tile( 'Today' ) ).toHaveTextContent( '45m' );
-        expect( tile( 'Today' )?.querySelectorAll( 'dd' ) ).toHaveLength( 1 );
-        expect( tile( 'Streak' )?.querySelectorAll( 'dd' ) ).toHaveLength( 2 );
+        // Each tile: value and a detail line.
+        expect( tile( 'Today' )?.querySelectorAll( 'dd' ) ).toHaveLength( 2 );
+        expect( tile( 'Today' ) ).toHaveTextContent( '45m−15m vs yesterday' );
         expect( screen.queryByText( 'Loading your dashboard…' ) ).not.toBeInTheDocument();
-        expect( tile( 'This week' ) ).toHaveTextContent( '1h 35m' );
+        expect( tile( 'This week' ) ).toHaveTextContent( '1h 35mMon–Sun' );
         expect( tile( 'Streak' ) ).toHaveTextContent( '1 dayBest: 12 days' );
-        expect( tile( 'Total' ) ).toHaveTextContent( '27h 40m' );
-        expect( tile( 'Items completed' ) ).toHaveTextContent( '13' );
+        expect( tile( 'Total' ) ).toHaveTextContent( '27h 40mAll time' );
+        expect( tile( 'Items completed' ) ).toHaveTextContent( '13Across 0 paths' );
+    } );
+
+    it( 'says how the week is going, or how to start', async () => {
+        const active = enrollment( 'Data Structures & Algorithms', EnrollmentStatus.Active, 2, 7 );
+        const dropped = enrollment( 'Old Path', EnrollmentStatus.Dropped, 0, 3 );
+
+        // While loading.
+        mockApi( { ...loggedIn, 'GET /me/stats': pending, 'GET /me/enrollments': pending, 'GET /me/study-sessions': pending } );
+        const loading = renderApp( '/app' );
+
+        expect( await screen.findByText( 'Here\'s how your studying is going.' ) ).toBeInTheDocument();
+        loading.unmount();
+
+        // Someone without paths (dropped ones don't count).
+        api();
+        const first = renderApp( '/app' );
+
+        expect( await screen.findByText( 'Welcome to StudyLog. Pick a learning path to get started.' ) ).toBeInTheDocument();
+        first.unmount();
+
+        api( { enrollments: [ active, dropped ] } );
+        const second = renderApp( '/app' );
+
+        expect( await screen.findByText( 'You\'ve studied 1h 35m this week. Keep the streak going.' ) ).toBeInTheDocument();
+        expect( screen.getByText( 'Across 1 path' ) ).toBeInTheDocument();
+        second.unmount();
+
+        api( { enrollments: [ active, enrollment( 'Graphs', EnrollmentStatus.Paused, 1, 4 ) ], stats: { ...STATS, weekMinutes: 0, todayMinutes: 0, last30Days: [] } } );
+        renderApp( '/app' );
+
+        expect( await screen.findByText( 'Nothing logged this week yet. A short session keeps the streak going.' ) ).toBeInTheDocument();
+        expect( screen.getByText( 'Same as yesterday' ) ).toBeInTheDocument();
+        expect( screen.getByText( 'Across 2 paths' ) ).toBeInTheDocument();
+    } );
+
+    it( 'compares today with yesterday', async () => {
+        api( { stats: { ...STATS, todayMinutes: 95, last30Days: last30Days( { '2026-09-28': 65, '2026-09-29': 95 } ) } } );
+        renderApp( '/app' );
+
+        expect( await screen.findByText( '+30m vs yesterday' ) ).toBeInTheDocument();
     } );
 
     it( 'asks for stats in the browser\'s time zone, and a few recent sessions', async () => {
@@ -98,7 +139,7 @@ describe( 'DashboardPage', () => {
         const call = ( path: string ) => calls.find( ( recorded ) => recorded.path === path );
 
         expect( call( '/me/stats' ) ).toMatchObject( { query: '?timeZone=UTC', headers: { Authorization: 'Bearer restored-token' } } );
-        expect( call( '/me/study-sessions' )?.query ).toBe( '?limit=5' );
+        expect( call( '/me/study-sessions' )?.query ).toBe( '?limit=3' );
         expect( call( '/me/enrollments' ) ).toBeDefined();
     } );
 
@@ -246,7 +287,8 @@ describe( 'DashboardPage', () => {
 
         renderApp( '/app' );
         expect( await screen.findByText( 'Sam Khan' ) ).toBeInTheDocument();
-        expect( screen.getByText( 'Sam Khan' ).previousElementSibling ).toHaveTextContent( /^S$/ );
+        expect( within( screen.getByRole( 'banner' ) ).getByText( /^SK$/ ) ).toBeInTheDocument();
+        expect( screen.getByText( 'sam@example.com' ) ).toBeInTheDocument();
         await userEvent.setup().click( screen.getByRole( 'button', { name: 'Log out' } ) );
 
         await waitFor( () => expect( screen.getByTestId( 'location' ) ).toHaveTextContent( /^\/$/ ) );

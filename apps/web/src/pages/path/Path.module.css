@@ -1,62 +1,64 @@
-/* A learning path: its header, modules (cards from app.module.css), collapsible topics and item rows. */
+/* A learning path (Figma: Current · App › Path): header, module cards, collapsible topics and item rows. */
 
 .back {
     justify-self: start;
-    color: var( --color-brand-strong );
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.back:hover {
-    text-decoration: underline;
+    margin-left: calc( -1 * var( --space-3 ) );
 }
 
 .header {
     display: grid;
-    gap: 10px;
+    gap: var( --space-2 );
 }
 
 .titleRow {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px 12px;
+    gap: var( --space-2 ) var( --space-3 );
 }
 
-.badge {
-    padding: 2px 10px;
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-full );
-    color: var( --color-text-muted );
-    background: var( --color-surface );
-    font-size: 0.8rem;
+.moduleTitle {
+    font-size: 18px;
     font-weight: 600;
+    line-height: 26px;
+    letter-spacing: -0.005em;
 }
 
-.moduleDescription {
-    margin-bottom: 12px;
+.moduleHead {
+    display: grid;
+    gap: var( --space-2 );
+}
+
+.moduleTitleRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var( --space-1 ) var( --space-3 );
 }
 
 /* ---------- Topics ---------- */
 
 .topics {
     display: grid;
-    gap: 10px;
-    margin-top: 16px;
+    margin: var( --space-3 ) calc( -1 * var( --space-5 ) ) calc( -1 * var( --space-5 ) );
 }
 
-.topic {
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-sm );
+.topic:last-child {
+    padding-bottom: var( --space-2 );
 }
 
 .topicSummary {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
+    gap: var( --space-3 );
+    padding: var( --space-3 ) var( --space-5 );
     cursor: pointer;
     list-style: none;
+}
+
+.topicSummary:hover {
+    background: color-mix( in srgb, var( --color-bg-muted ) 50%, transparent );
 }
 
 .topicSummary::-webkit-details-marker {
@@ -67,10 +69,11 @@
 .topicSummary::before {
     content: '';
     flex: none;
-    width: 8px;
-    height: 8px;
-    border-right: 2px solid var( --color-text-muted );
-    border-bottom: 2px solid var( --color-text-muted );
+    width: 7px;
+    height: 7px;
+    margin-inline: 4px;
+    border-right: 2px solid var( --color-icon );
+    border-bottom: 2px solid var( --color-icon );
     transform: rotate( -45deg );
     transition: transform 150ms ease;
 }
@@ -81,14 +84,9 @@
 
 .topicTitle {
     flex: 1;
-    font-size: 0.98rem;
-}
-
-.count,
-.countDone {
-    font-size: 0.85rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
 }
 
 .count {
@@ -100,13 +98,12 @@
 }
 
 .topicDescription {
-    padding: 0 14px 8px 32px;
+    padding: 0 var( --space-5 ) var( --space-2 ) 47px;
 }
 
 .noItems {
-    padding: 0 14px 14px 32px;
+    padding: 0 var( --space-5 ) var( --space-4 ) 47px;
     color: var( --color-text-muted );
-    font-size: 0.9rem;
 }
 
 /* ---------- Items ---------- */
@@ -114,78 +111,87 @@
 .items {
     display: grid;
     margin: 0;
-    padding: 0 14px 6px;
+    padding: 0 var( --space-5 ) var( --space-2 ) 47px;
     list-style: none;
 }
 
 .item {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 10px 12px;
-    padding-block: 12px;
-    border-top: 1px solid var( --color-border );
+    align-items: center;
+    gap: var( --space-2 ) var( --space-3 );
+    padding-block: var( --space-3 );
 }
 
-.dot {
+.statusIcon {
     flex: none;
-    width: 10px;
-    height: 10px;
-    margin-top: 7px;
-    border: 2px solid var( --color-border );
-    border-radius: 50%;
+    align-self: flex-start;
+    margin-top: 2px;
 }
 
 /* One per ProgressStatus. */
 .not_started {
-    background: transparent;
+    color: var( --color-icon );
 }
 
 .in_progress {
-    border-color: var( --color-streak );
-    background: var( --color-streak );
+    color: var( --color-warning );
 }
 
 .done {
-    border-color: var( --color-success );
-    background: var( --color-success );
+    color: var( --color-success );
 }
 
 .revise {
-    border-color: var( --color-accent );
-    background: var( --color-accent );
+    color: var( --color-accent-text );
 }
 
 .itemMain {
+    display: grid;
     flex: 1 1 240px;
+    gap: var( --space-0-5 );
     min-width: 0;
-}
-
-.itemTitle {
-    font-weight: 600;
 }
 
 .meta {
     color: var( --color-text-muted );
-    font-size: 0.85rem;
+    font-size: 12px;
+    line-height: 16px;
 }
 
 .content {
-    margin-top: 6px;
-    font-size: 0.9rem;
+    font-size: 12px;
+    line-height: 16px;
 }
 
 .content summary {
-    color: var( --color-brand-strong );
-    font-weight: 600;
+    color: var( --color-accent-text );
+    font-weight: 500;
     cursor: pointer;
+    list-style: none;
+}
+
+.content summary::-webkit-details-marker {
+    display: none;
+}
+
+/* "Show …" while closed, "Hide …" while open. */
+.whenOpen,
+.content[open] > summary .whenClosed {
+    display: none;
+}
+
+.content[open] > summary .whenOpen {
+    display: inline;
 }
 
 .body {
-    margin-top: 6px;
-    padding: 10px 12px;
-    border-radius: var( --radius-sm );
-    background: var( --color-bg-subtle );
+    margin-top: var( --space-2 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    background: var( --color-bg-muted );
+    font-size: 14px;
+    line-height: 20px;
     white-space: pre-wrap;
 }
 
@@ -193,17 +199,19 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px 14px;
+    gap: var( --space-1 );
 }
 
 .status {
-    padding: 6px 10px;
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-sm );
+    padding: var( --space-1 ) var( --space-6 ) var( --space-1 ) var( --space-2 );
+    appearance: none;
+    background: var( --color-surface ) url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6b64' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E" ) no-repeat right 6px center / 14px;
+    border: 1px solid var( --color-border-strong );
+    border-radius: var( --radius-md );
     color: var( --color-text );
-    background: var( --color-bg );
-    font: inherit;
-    font-size: 0.88rem;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
 }
 
 .status:disabled {
@@ -211,13 +219,13 @@
     cursor: progress;
 }
 
-.action {
-    color: var( --color-brand-strong );
-    font-size: 0.88rem;
-    font-weight: 600;
-    text-decoration: none;
-}
+@media ( max-width: 600px ) {
+    .items {
+        padding-left: var( --space-5 );
+    }
 
-.action:hover {
-    text-decoration: underline;
+    .itemActions {
+        width: 100%;
+        padding-left: 28px;
+    }
 }

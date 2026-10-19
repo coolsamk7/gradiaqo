@@ -3,9 +3,21 @@ import { ItemType, ProgressStatus } from '@studylog/schemas/enums';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
+import type { IconName } from '../../components/Icon.tsx';
+import { Icon } from '../../components/Icon.tsx';
 import form from '../../forms/form.module.css';
+import shared from '../../styles/shared.module.css';
 import { DIFFICULTY_LABELS, itemContent, itemFacts, itemLink, STATUS_LABELS, TYPE_LABELS } from './item-details.ts';
 import styles from './Path.module.css';
+
+const STATUS_ICONS: Record<ProgressStatus, IconName> = {
+    [ProgressStatus.NotStarted]: 'circle',
+    [ProgressStatus.InProgress]: 'clock',
+    [ProgressStatus.Done]: 'check-circle',
+    [ProgressStatus.Revise]: 'flag',
+};
+
+const action = `${shared.button} ${shared.ghost} ${shared.small}`;
 
 export type PathItem = EnrollmentDetailJson['modules'][number]['topics'][number]['items'][number];
 
@@ -47,17 +59,17 @@ export function ItemRow( { item, enrollmentId, topicId, onStatus }: ItemRowProps
 
     return (
         <li className={styles.item}>
-            <span className={`${styles.dot} ${styles[item.progress]}`} aria-hidden="true" />
+            <Icon name={STATUS_ICONS[item.progress]} className={`${styles.statusIcon} ${styles[item.progress]}`} />
             <div className={styles.itemMain}>
-                <p className={styles.itemTitle}>{item.title}</p>
+                <p>{item.title}</p>
                 <p className={styles.meta}>{facts.join( ' · ' )}</p>
                 {content && (
                     <details className={styles.content}>
-                        <summary>{item.type === ItemType.Note ? 'Show note' : 'Show instructions'}</summary>
+                        <Toggle what={item.type === ItemType.Note ? 'note' : 'instructions'} />
                         <p className={styles.body}>{content.body}</p>
                         {content.answer && (
                             <details className={styles.content}>
-                                <summary>Show answer</summary>
+                                <Toggle what="answer" />
                                 <p className={styles.body}>{content.answer}</p>
                             </details>
                         )}
@@ -79,13 +91,27 @@ export function ItemRow( { item, enrollmentId, topicId, onStatus }: ItemRowProps
                     ) )}
                 </select>
                 {link && (
-                    <a href={link.url} target="_blank" rel="noreferrer" className={styles.action}>
+                    <a href={link.url} target="_blank" rel="noreferrer" className={action}>
+                        <Icon name="external-link" />
                         {`${link.label} `}
                         <span className="visually-hidden">(opens in a new tab)</span>
                     </a>
                 )}
-                <Link to={logTime} className={styles.action}>Log time</Link>
+                <Link to={logTime} className={action}>
+                    <Icon name="clock" />
+                    Log time
+                </Link>
             </div>
         </li>
+    );
+}
+
+/** "Show note" while closed, "Hide note" while open (the details element's own state, switched in CSS). */
+function Toggle( { what }: { what: string } ) {
+    return (
+        <summary>
+            <span className={styles.whenClosed}>{`Show ${what}`}</span>
+            <span className={styles.whenOpen}>{`Hide ${what}`}</span>
+        </summary>
     );
 }

@@ -1,6 +1,7 @@
 import type { StudySessionPageJson } from '@studylog/schemas';
 import { Link } from 'react-router';
 
+import { Icon } from '../../components/Icon.tsx';
 import { describeSession, formatMinutes, formatSessionStart } from '../../format/format.ts';
 import app from '../../styles/app.module.css';
 
@@ -34,9 +35,10 @@ function SessionRow( { session, now }: { session: Session; now: Date } ) {
 
     return (
         <li className={app.session}>
+            <span className={app.sessionIcon} aria-hidden="true"><Icon name="book-open" /></span>
             <div className={app.sessionMain}>
                 <p className={app.sessionTitle}>{title}</p>
-                <p className={app.muted}>{context ? `${context} · ${when}` : when}</p>
+                <p className={`${app.muted} ${app.small}`}>{context ? `${context} · ${when}` : when}</p>
                 {session.notes && <p className={app.notes}>{session.notes}</p>}
             </div>
             <span className={app.duration}>{formatMinutes( session.durationMinutes )}</span>

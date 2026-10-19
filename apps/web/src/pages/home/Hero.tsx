@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 
+import { Icon } from '../../components/Icon.tsx';
 import shared from '../../styles/shared.module.css';
 import { DashboardPreview } from './DashboardPreview.tsx';
 import styles from './Hero.module.css';
@@ -21,10 +22,11 @@ export function Hero() {
                         and keep your streak going.
                     </p>
                     <div className={styles.actions}>
-                        <Link to="/signup" className={`${shared.button} ${shared.primary} ${shared.large}`}>
+                        <Link to="/signup" className={`${shared.button} ${shared.primary}`}>
+                            <Icon name="arrow-right" />
                             Get started
                         </Link>
-                        <a href="#how-it-works" className={`${shared.button} ${shared.secondary} ${shared.large}`}>
+                        <a href="#how-it-works" className={`${shared.button} ${shared.secondary}`}>
                             See how it works
                         </a>
                     </div>

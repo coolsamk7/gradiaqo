@@ -4,7 +4,8 @@ import { EnrollmentStatus } from '@studylog/schemas/enums';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 
-import { AppHeader } from '../../components/AppHeader.tsx';
+import { AppLayout } from '../../components/AppLayout.tsx';
+import { Icon } from '../../components/Icon.tsx';
 import { ProgressBar } from '../../components/ProgressBar.tsx';
 import { percent } from '../../format/format.ts';
 import app from '../../styles/app.module.css';
@@ -28,32 +29,32 @@ export function PathPage() {
     const { state, reload, setStatus } = usePath( enrollmentId );
 
     return (
-        <div className={app.page}>
-            <AppHeader />
-            <main className={`${shared.container} ${app.main}`}>
-                <Link to="/app" className={styles.back}>← Dashboard</Link>
+        <AppLayout>
+            <Link to="/app" className={`${shared.button} ${shared.ghost} ${shared.small} ${styles.back}`} aria-label="Back to dashboard">
+                <Icon name="chevron-left" />
+                Dashboard
+            </Link>
 
-                {state.status === 'loading' && (
-                    <div className={app.status}>
-                        <span className={app.spinner} aria-hidden="true" />
-                        Loading the learning path…
-                    </div>
-                )}
+            {state.status === 'loading' && (
+                <div className={app.status}>
+                    <span className={app.spinner} aria-hidden="true" />
+                    Loading the learning path…
+                </div>
+            )}
 
-                {state.status === 'error' && (
-                    <div className={app.error} role="alert">
-                        <p>{state.message}</p>
-                        {!state.notFound && (
-                            <button type="button" className={`${shared.button} ${shared.secondary} ${app.retry}`} onClick={reload}>
-                                Try again
-                            </button>
-                        )}
-                    </div>
-                )}
+            {state.status === 'error' && (
+                <div className={app.error} role="alert">
+                    <p>{state.message}</p>
+                    {!state.notFound && (
+                        <button type="button" className={`${shared.button} ${shared.secondary} ${shared.small}`} onClick={reload}>
+                            Try again
+                        </button>
+                    )}
+                </div>
+            )}
 
-                {state.status === 'ready' && <PathView path={state.path} onStatus={setStatus} />}
-            </main>
-        </div>
+            {state.status === 'ready' && <PathView path={state.path} onStatus={setStatus} />}
+        </AppLayout>
     );
 }
 
@@ -77,23 +78,25 @@ function PathView( { path, onStatus }: PathViewProps ) {
             <div className={styles.header}>
                 <div className={styles.titleRow}>
                     <h1 className={app.title}>{title}</h1>
-                    {status && <span className={styles.badge}>{status}</span>}
+                    {status && <span className={`${app.badge} ${path.status === EnrollmentStatus.Completed ? app.badgeSuccess : ''}`}>{status}</span>}
                 </div>
                 {description && <p className={app.muted}>{description}</p>}
                 <ProgressBar label={`${title} progress`} percent={percent( completed, total )} />
-                <p className={app.muted}>{`${completed} of ${total} items done · ${percent( completed, total )}%`}</p>
+                <p className={`${app.muted} ${app.small}`}>{`${completed} of ${total} items done · ${percent( completed, total )}%`}</p>
             </div>
 
             {path.modules.length === 0 && <p className={app.empty}>This path has no content yet.</p>}
 
             {path.modules.map( ( module ) => (
                 <section key={module.id} className={app.card} aria-labelledby={`module-${module.id}`}>
-                    <div className={app.cardHeader}>
-                        <h2 id={`module-${module.id}`} className={app.cardTitle}>{module.title}</h2>
-                        <p className={app.muted}>{`${module.progress.completed} of ${module.progress.total} done`}</p>
+                    <div className={styles.moduleHead}>
+                        <div className={styles.moduleTitleRow}>
+                            <h2 id={`module-${module.id}`} className={styles.moduleTitle}>{module.title}</h2>
+                            <p className={`${app.mono} ${app.muted}`}>{`${module.progress.completed} of ${module.progress.total} done`}</p>
+                        </div>
+                        {module.description && <p className={`${app.muted} ${app.small}`}>{module.description}</p>}
+                        <ProgressBar label={`${module.title} progress`} percent={percent( module.progress.completed, module.progress.total )} />
                     </div>
-                    {module.description && <p className={`${app.muted} ${styles.moduleDescription}`}>{module.description}</p>}
-                    <ProgressBar label={`${module.title} progress`} percent={percent( module.progress.completed, module.progress.total )} />
                     <div className={styles.topics}>
                         {module.topics.map( ( topic ) => (
                             <TopicSection
@@ -126,7 +129,7 @@ function TopicSection( { topic, enrollmentId, initiallyOpen, onStatus }: TopicSe
         <details className={styles.topic} open={initiallyOpen}>
             <summary className={styles.topicSummary}>
                 <h3 className={styles.topicTitle}>{topic.title}</h3>
-                <span className={total > 0 && completed === total ? styles.countDone : styles.count}>{`${completed}/${total}`}</span>
+                <span className={`${app.mono} ${total > 0 && completed === total ? styles.countDone : styles.count}`}>{`${completed}/${total}`}</span>
             </summary>
             {topic.description && <p className={`${app.muted} ${styles.topicDescription}`}>{topic.description}</p>}
             {topic.items.length === 0 && <p className={styles.noItems}>No items in this topic yet.</p>}

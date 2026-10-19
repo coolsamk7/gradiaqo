@@ -43,11 +43,11 @@ function PathRow( { enrollment }: { enrollment: EnrollmentJson } ) {
                 <h3 className={styles.pathTitle}>
                     <Link to={`/app/paths/${enrollment.id}`} className={styles.pathLink}>{title}</Link>
                 </h3>
-                {status && <span className={styles.badge}>{status}</span>}
-                <span className={styles.percent}>{`${done}%`}</span>
+                {status && <span className={`${app.badge} ${enrollment.status === EnrollmentStatus.Completed ? app.badgeSuccess : ''}`}>{status}</span>}
+                <span className={`${app.mono} ${app.muted}`}>{`${done}%`}</span>
             </div>
             <ProgressBar label={`${title} progress`} percent={done} />
-            <p className={app.muted}>{`${completed} of ${total} items done`}</p>
+            <p className={`${app.muted} ${app.small}`}>{`${completed} of ${total} items done`}</p>
         </li>
     );
 }

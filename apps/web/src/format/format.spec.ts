@@ -1,6 +1,7 @@
 import {
     describeSession,
     formatDays,
+    formatLongDate,
     formatMinutes,
     formatSessionStart,
     formatStatsDate,
@@ -122,5 +123,11 @@ describe( 'date and time inputs', () => {
         expect( fromDateTimeInputs( '2026-01-05', '07:03x' ) ).toBeUndefined();
         expect( fromDateTimeInputs( '2026-13-45', '07:03' ) ).toBeUndefined();
         expect( fromDateTimeInputs( '2026-01-05', '25:99' ) ).toBeUndefined();
+    } );
+} );
+
+describe( 'formatLongDate', () => {
+    it( 'shows the weekday, month and day', () => {
+        expect( formatLongDate( new Date( 2026, 9, 19, 9 ) ) ).toBe( 'Monday, 19 October' );
     } );
 } );

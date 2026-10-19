@@ -140,11 +140,11 @@ export function SessionForm( props: SessionFormProps ) {
 
             <div className={styles.actions}>
                 {canSave && (
-                    <button type="submit" className={`${shared.button} ${shared.primary} ${styles.button}`} disabled={saving}>
+                    <button type="submit" className={`${shared.button} ${shared.primary}`} disabled={saving}>
                         {editing ? 'Save changes' : 'Log session'}
                     </button>
                 )}
-                <button type="button" className={`${shared.button} ${shared.secondary} ${styles.button}`} onClick={props.onCancel}>
+                <button type="button" className={`${shared.button} ${shared.secondary}`} onClick={props.onCancel}>
                     Cancel
                 </button>
             </div>

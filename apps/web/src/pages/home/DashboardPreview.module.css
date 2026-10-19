@@ -1,217 +1,118 @@
+/* Figma: Current · Public › Home › Product preview. */
+
 .preview {
-    position: relative;
     margin: 0;
 }
 
-/* Soft glow behind the window. */
-.preview::before {
-    content: '';
-    position: absolute;
-    inset: 8% -4% -6% 6%;
-    z-index: -1;
-    border-radius: var( --radius-lg );
-    background: var( --gradient-brand );
-    opacity: 0.25;
-    filter: blur( 48px );
-}
-
 .window {
-    overflow: hidden;
+    display: grid;
+    gap: var( --space-4 );
+    padding: var( --space-6 );
     border: 1px solid var( --color-border );
-    border-radius: var( --radius-lg );
-    background: var( --color-bg-subtle );
+    border-radius: var( --radius-xl );
+    background: var( --color-surface );
     box-shadow: var( --shadow-lg );
 }
 
-.titleBar {
-    display: flex;
-    gap: 7px;
-    padding: 14px 18px;
-    border-bottom: 1px solid var( --color-border );
-    background: var( --color-surface );
+.greeting {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
 }
 
-.titleBar span {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var( --color-border );
-}
-
-.body {
+.stats {
     display: grid;
-    gap: 14px;
-    padding: 18px;
+    grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+    gap: var( --space-3 );
 }
 
-.pathCard,
-.stat,
-.chartCard {
+.stat {
+    display: grid;
+    gap: var( --space-2 );
+    padding: var( --space-5 );
     border: 1px solid var( --color-border );
-    border-radius: var( --radius-md );
-    background: var( --color-surface );
-    box-shadow: var( --shadow-sm );
+    border-radius: var( --radius-lg );
 }
 
-.pathCard {
-    padding: 18px;
-}
-
-.pathHeader {
+.statHead {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 12px;
 }
 
 .label {
     color: var( --color-text-muted );
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
 }
 
+.chip {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
+.statValue {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 36px;
+    letter-spacing: -0.02em;
+}
+
+.path {
+    display: grid;
+    gap: var( --space-2 );
+    padding-block: var( --space-3 );
+}
+
+.pathHead {
+    display: flex;
+    justify-content: space-between;
+    gap: var( --space-2 );
+}
+
 .pathTitle {
-    margin-top: 2px;
-    font-weight: 700;
+    font-weight: 500;
+}
+
+.percent,
+.count {
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
 }
 
 .percent {
-    padding: 4px 10px;
-    border-radius: var( --radius-full );
-    color: var( --color-brand-strong );
-    background: var( --color-brand-soft );
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-family: var( --font-mono );
+    font-weight: 500;
 }
 
 .track {
-    height: 8px;
-    margin: 14px 0 16px;
+    height: 6px;
     overflow: hidden;
     border-radius: var( --radius-full );
-    background: var( --color-brand-soft );
+    background: var( --color-bg-muted );
 }
 
 .fill {
     height: 100%;
     border-radius: inherit;
-    background: var( --gradient-brand );
+    background: var( --color-accent );
 }
 
-.modules {
-    display: grid;
-    gap: 10px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
+@media ( width < 600px ) {
+    .stats {
+        grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+    }
 
-.module {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.92rem;
-}
-
-.check,
-.checkDone {
-    flex: none;
-    width: 18px;
-    height: 18px;
-    border: 2px solid var( --color-border );
-    border-radius: 6px;
-}
-
-.checkDone {
-    border-color: var( --color-success );
-    background:
-        url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" )
-        center / 14px no-repeat,
-        var( --color-success );
-}
-
-.moduleTitle {
-    flex: 1;
-}
-
-.count {
-    color: var( --color-text-muted );
-    font-variant-numeric: tabular-nums;
-}
-
-.stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-
-.stat {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-}
-
-.statValue {
-    font-size: 1.15rem;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-}
-
-.flame,
-.clock {
-    flex: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-}
-
-.flame {
-    background:
-        url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.3 1.6 1.2 2.5 2 2.5-1-3 0-6 1-8z' fill='white'/%3E%3C/svg%3E" )
-        center / 22px no-repeat,
-        linear-gradient( 135deg, #fbbf24, #f97316 );
-}
-
-.clock {
-    background:
-        url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Cpath d='M12 8v4l2.5 2'/%3E%3C/svg%3E" )
-        center / 22px no-repeat,
-        var( --gradient-brand );
-}
-
-.chartCard {
-    padding: 16px 18px 12px;
-}
-
-.chart {
-    display: grid;
-    grid-template-columns: repeat( 7, 1fr );
-    gap: 10px;
-    height: 110px;
-    margin-top: 12px;
-}
-
-.barColumn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-}
-
-.bar {
-    width: 100%;
-    max-width: 26px;
-    border-radius: 6px 6px 3px 3px;
-    background: var( --gradient-brand );
-    opacity: 0.9;
-}
-
-.day {
-    color: var( --color-text-muted );
-    font-size: 0.72rem;
-    font-weight: 600;
+    .stat:last-child {
+        display: none;
+    }
 }

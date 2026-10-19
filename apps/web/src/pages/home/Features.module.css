@@ -1,54 +1,47 @@
 .features {
-    background: var( --color-bg-subtle );
-    border-block: 1px solid var( --color-border );
+    background: var( --color-surface );
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat( auto-fit, minmax( min( 100%, 300px ), 1fr ) );
-    gap: 20px;
+    grid-template-columns: repeat( auto-fit, minmax( 280px, 1fr ) );
+    gap: var( --space-6 );
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
 .card {
-    padding: 28px;
+    display: grid;
+    align-content: start;
+    gap: var( --space-3 );
+    padding: var( --space-5 );
     border: 1px solid var( --color-border );
     border-radius: var( --radius-lg );
     background: var( --color-surface );
-    box-shadow: var( --shadow-sm );
-    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
-}
-
-.card:hover {
-    transform: translateY( -3px );
-    border-color: color-mix( in srgb, var( --color-brand ) 40%, var( --color-border ) );
-    box-shadow: var( --shadow-md );
 }
 
 .icon {
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    color: var( --color-brand );
-    background: var( --color-brand-soft );
+    width: 36px;
+    height: 36px;
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
 }
 
 .icon svg {
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
 }
 
 .title {
-    margin-top: 20px;
-    font-size: 1.15rem;
-    letter-spacing: -0.01em;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
 }
 
 .text {
-    margin-top: 8px;
     color: var( --color-text-muted );
 }

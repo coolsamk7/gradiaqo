@@ -1,16 +1,21 @@
 .logo {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: var( --space-3 );
 }
 
 .mark {
-    width: 32px;
-    height: 32px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var( --radius-md );
+    color: var( --color-on-accent );
+    background: var( --color-accent );
 }
 
 .name {
-    font-size: 1.2rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
 }

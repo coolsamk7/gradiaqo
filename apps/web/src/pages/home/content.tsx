@@ -91,20 +91,15 @@ export const STEPS = [
     },
 ] as const;
 
-// ---------- Dashboard preview (example data) ----------
+// ---------- Dashboard preview (example data, as in the Figma home screen) ----------
 
-export const MODULES = [
-    { title: 'Arrays & Hashing', done: 3, total: 3 },
-    { title: 'Two Pointers', done: 2, total: 3 },
-    { title: 'Binary Search', done: 0, total: 2 },
+export const PREVIEW_STATS = [
+    { label: 'Today', value: '1h 35m', icon: 'clock' },
+    { label: 'Streak', value: '12 days', icon: 'flame' },
+    { label: 'Done', value: '42', icon: 'check-circle' },
 ] as const;
 
-/** Minutes studied per day this week, Monday first. */
-export const WEEK = [ 30, 45, 20, 60, 45, 0, 0 ] as const;
-export const DAYS = [ 'M', 'T', 'W', 'T', 'F', 'S', 'S' ] as const;
-export const MAX_MINUTES = Math.max( ...WEEK );
-
-const DONE = MODULES.reduce( ( sum, module ) => sum + module.done, 0 );
-const TOTAL = MODULES.reduce( ( sum, module ) => sum + module.total, 0 );
-
-export const PATH_PERCENT = Math.round( ( DONE / TOTAL ) * 100 );
+export const PREVIEW_PATHS = [
+    { title: 'Data Structures & Algorithms', done: 15, total: 25 },
+    { title: 'System Design Fundamentals', done: 3, total: 15 },
+] as const;

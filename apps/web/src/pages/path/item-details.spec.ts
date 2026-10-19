@@ -5,7 +5,10 @@ import { itemContent, itemFacts, itemLink } from './item-details.ts';
 describe( 'itemLink', () => {
     it( 'links to where the item lives, naming the platform when known', () => {
         expect( itemLink( { url: 'https://leetcode.com/problems/two-sum/', platform: 'leetcode' } ) )
-            .toEqual( { url: 'https://leetcode.com/problems/two-sum/', label: 'Open on leetcode' } );
+            .toEqual( { url: 'https://leetcode.com/problems/two-sum/', label: 'Open on LeetCode' } );
+        // Known platforms are written their own way; others get a capital first letter.
+        expect( itemLink( { url: 'https://youtu.be/x', platform: 'YouTube' } )?.label ).toBe( 'Open on YouTube' );
+        expect( itemLink( { url: 'https://udemy.com/x', platform: 'udemy' } )?.label ).toBe( 'Open on Udemy' );
         expect( itemLink( { url: 'https://example.com/article' } ) ).toEqual( { url: 'https://example.com/article', label: 'Open' } );
         expect( itemLink( { url: 'https://example.com/article', platform: '' } )?.label ).toBe( 'Open' );
     } );

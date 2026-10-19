@@ -1,107 +1,96 @@
-/* The dashboard's own sections. Page layout, cards and session rows are shared: see src/styles/app.module.css. */
-
-.intro {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.label {
-    color: var( --color-text-muted );
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
+/* The dashboard's own sections (Figma: Current · App › Dashboard). Cards, badges and session rows: styles/app.module.css. */
 
 /* ---------- Stat tiles ---------- */
 
 .tiles {
     display: grid;
     grid-template-columns: repeat( auto-fit, minmax( 180px, 1fr ) );
-    gap: 14px;
+    gap: var( --space-4 );
     margin: 0;
 }
 
 .tile {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 18px;
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-md );
-    background: var( --color-surface );
-    box-shadow: var( --shadow-sm );
+    display: grid;
+    align-content: start;
+    gap: var( --space-2 );
 }
 
 .tile dd {
     margin: 0;
 }
 
+.label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var( --color-text-muted );
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.chip {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
 .tileValue {
-    font-size: 1.35rem;
-    font-weight: 800;
-    letter-spacing: -0.01em;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 36px;
+    letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
-}
-
-.icon {
-    flex: none;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 22px;
-}
-
-.clock {
-    background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Cpath d='M12 8v4l2.5 2'/%3E%3C/svg%3E" ), var( --gradient-brand );
-}
-
-.week {
-    background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round'%3E%3Crect x='4' y='5' width='16' height='15' rx='3'/%3E%3Cpath d='M4 10h16M9 3v4M15 3v4'/%3E%3C/svg%3E" ), var( --gradient-brand );
-}
-
-.flame {
-    background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.3 1.6 1.2 2.5 2 2.5-1-3 0-6 1-8z' fill='white'/%3E%3C/svg%3E" ), linear-gradient( 135deg, #fbbf24, #f97316 );
-}
-
-.total {
-    background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M5 19V11M12 19V5M19 19v-6'/%3E%3C/svg%3E" ), var( --gradient-brand );
-}
-
-.check {
-    background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" ), linear-gradient( 135deg, #34d399, #059669 );
 }
 
 /* ---------- Columns ---------- */
 
 .columns {
     display: grid;
-    grid-template-columns: minmax( 0, 3fr ) minmax( 0, 2fr );
+    grid-template-columns: minmax( 0, 1fr ) 400px;
     align-items: start;
-    gap: 20px;
+    gap: var( --space-4 );
 }
 
 .side {
     display: grid;
-    gap: 20px;
+    gap: var( --space-4 );
 }
 
-@media ( max-width: 900px ) {
+@media ( max-width: 1200px ) {
     .columns {
         grid-template-columns: minmax( 0, 1fr );
     }
+}
+
+@media ( max-width: 600px ) {
+    .tiles {
+        grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+        gap: var( --space-3 );
+    }
+
+    .tileValue {
+        font-size: 24px;
+        line-height: 32px;
+    }
+}
+
+.skeleton {
+    display: grid;
+    gap: var( --space-4 );
 }
 
 /* ---------- Learning paths ---------- */
 
 .paths {
     display: grid;
-    gap: 12px;
+    gap: var( --space-4 );
     margin: 0;
     padding: 0;
     list-style: none;
@@ -109,21 +98,21 @@
 
 .path {
     display: grid;
-    gap: 10px;
-    padding: 16px;
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-sm );
+    gap: var( --space-2 );
+    padding-block: var( --space-3 );
 }
 
 .pathHeader {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var( --space-2 );
 }
 
 .pathTitle {
     flex: 1;
-    font-size: 1rem;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
 }
 
 .pathLink {
@@ -132,37 +121,23 @@
 }
 
 .pathLink:hover {
-    color: var( --color-brand-strong );
+    color: var( --color-accent-text );
     text-decoration: underline;
 }
 
-.badge {
-    padding: 2px 10px;
-    border-radius: var( --radius-full );
-    color: var( --color-text-muted );
-    background: var( --color-bg-subtle );
-    border: 1px solid var( --color-border );
-    font-size: 0.78rem;
-    font-weight: 600;
-}
-
-.percent {
-    padding: 3px 10px;
-    border-radius: var( --radius-full );
-    color: var( --color-brand-strong );
-    background: var( --color-brand-soft );
-    font-size: 0.85rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-}
-
 /* ---------- Activity chart ---------- */
+
+.chartHeader {
+    display: grid;
+    gap: var( --space-2 );
+    margin-bottom: var( --space-4 );
+}
 
 .chart {
     display: grid;
     grid-template-columns: repeat( 30, 1fr );
     align-items: end;
-    gap: 3px;
+    gap: var( --space-1 );
     height: 120px;
     margin: 0;
     padding: 0;
@@ -178,24 +153,24 @@
 .chartBar,
 .chartBarEmpty {
     width: 100%;
-    border-radius: 4px 4px 2px 2px;
+    border-radius: 2px 2px 0 0;
 }
 
 .chartBar {
-    min-height: 6px;
-    background: var( --gradient-brand );
+    min-height: 4px;
+    background: var( --color-accent );
 }
 
 .chartBarEmpty {
     height: 4px;
-    background: var( --color-border );
+    background: var( --color-bg-muted );
 }
 
 .chartAxis {
     display: flex;
     justify-content: space-between;
-    margin-top: 8px;
+    margin-top: var( --space-2 );
     color: var( --color-text-muted );
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 12px;
+    line-height: 16px;
 }

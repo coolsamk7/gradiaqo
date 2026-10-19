@@ -1,12 +1,14 @@
+/* Login and signup (Figma: Current · Public › Log in / Sign up). */
+
 .page {
     display: grid;
     min-height: 100dvh;
-    background: var( --color-bg-subtle );
+    background: var( --color-bg );
 }
 
 @media ( width >= 960px ) {
     .page {
-        grid-template-columns: minmax( 380px, 0.9fr ) 1.1fr;
+        grid-template-columns: 560px minmax( 0, 1fr );
     }
 }
 
@@ -14,14 +16,12 @@
 
 .brand {
     display: none;
-    position: relative;
-    overflow: hidden;
     flex-direction: column;
-    justify-content: center;
-    gap: 28px;
-    padding: 64px clamp( 40px, 5vw, 80px );
-    color: var( --color-on-brand );
-    background: var( --gradient-brand );
+    justify-content: space-between;
+    gap: var( --space-6 );
+    padding: var( --space-12 );
+    color: var( --color-text-on-sidebar );
+    background: var( --color-sidebar );
 }
 
 @media ( width >= 960px ) {
@@ -30,111 +30,92 @@
     }
 }
 
-.brand::before,
-.brand::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    background: rgb( 255 255 255 / 10% );
-}
-
-.brand::before {
-    width: 420px;
-    height: 420px;
-    top: -180px;
-    right: -160px;
-}
-
-.brand::after {
-    width: 300px;
-    height: 300px;
-    bottom: -140px;
-    left: -100px;
-}
-
-/* The logo mark is already a gradient; on the gradient panel, frame it in white. */
-.brand svg {
-    border-radius: 9px;
-    box-shadow: 0 0 0 2px rgb( 255 255 255 / 60% );
+.pitch {
+    display: grid;
+    gap: var( --space-6 );
 }
 
 .brandTitle {
-    position: relative;
-    max-width: 420px;
-    font-size: clamp( 2rem, 1.2rem + 1.8vw, 2.75rem );
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
+    max-width: 440px;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 40px;
+    letter-spacing: -0.015em;
 }
 
 .highlights {
-    position: relative;
     display: grid;
-    gap: 14px;
+    gap: var( --space-3 );
     margin: 0;
     padding: 0;
+    color: var( --color-text-on-sidebar-muted );
+    font-size: 16px;
+    line-height: 24px;
     list-style: none;
-    font-size: 1.05rem;
 }
 
 .highlights li {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var( --space-3 );
 }
 
-.highlights li::before {
-    content: '';
+.check {
     flex: none;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background:
-        url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%234f46e5' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" )
-        center / 14px no-repeat,
-        #ffffff;
+    color: var( --color-accent-text );
 }
 
-/* ---------- Card ---------- */
+.copyright {
+    color: var( --color-text-on-sidebar-muted );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* ---------- Form ---------- */
 
 .main {
     display: grid;
     place-items: center;
-    padding: clamp( 24px, 6vw, 64px ) var( --gutter );
+    padding: var( --space-10 ) var( --space-5 );
 }
 
 .card {
-    width: min( 100%, 420px );
-    padding: clamp( 28px, 5vw, 40px );
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-lg );
-    background: var( --color-surface );
-    box-shadow: var( --shadow-md );
+    width: min( 100%, 400px );
 }
 
+/* The brand panel shows the logo on wide screens; narrow ones show it above the form. */
 .logoLink {
     display: inline-block;
-    margin-bottom: 28px;
+    margin-bottom: var( --space-8 );
     text-decoration: none;
 }
 
+@media ( width >= 960px ) {
+    .logoLink {
+        display: none;
+    }
+}
+
 .title {
-    font-size: 1.9rem;
-    letter-spacing: -0.02em;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+    letter-spacing: -0.01em;
 }
 
 .subtitle {
-    margin-top: 6px;
+    margin-top: var( --space-1 );
     color: var( --color-text-muted );
 }
 
 .alternative {
-    margin-top: 24px;
+    margin-top: var( --space-6 );
     color: var( --color-text-muted );
     text-align: center;
 }
 
 .alternative a {
-    color: var( --color-brand-strong );
-    font-weight: 600;
+    color: var( --color-accent-text );
+    font-weight: 500;
+    text-decoration: none;
 }

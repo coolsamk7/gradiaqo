@@ -1,6 +1,5 @@
 .footer {
-    border-top: 1px solid var( --color-border );
-    padding-block: 36px;
+    padding-block: var( --space-8 );
 }
 
 .inner {
@@ -8,12 +7,13 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: var( --space-6 );
 }
 
 .links {
     display: flex;
-    gap: 24px;
+    flex-wrap: wrap;
+    gap: var( --space-6 );
     margin: 0;
     padding: 0;
     list-style: none;
@@ -30,5 +30,6 @@
 
 .copyright {
     color: var( --color-text-muted );
-    font-size: 0.9rem;
+    font-size: 12px;
+    line-height: 16px;
 }

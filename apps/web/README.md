@@ -18,6 +18,7 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
 | `/app` | Dashboard (`src/pages/dashboard`), logged-in users only (others go to `/login` and come back): study time today, this week and in total, streak, items completed, the last 30 days as a chart, learning paths with progress, and recent sessions |
 | `/app/sessions` | Study sessions (`src/pages/sessions`): history by day with daily totals, a page at a time; log a session (learning path → topic → optional item, date, start, minutes, notes), edit its time, minutes and notes, or delete it. `?log` opens the form (the dashboard's "Log session" button); `path`, `topic` and `item` choose what it's about |
 | `/app/paths/:enrollmentId` | A learning path you follow (`src/pages/path`), opened from the dashboard: modules, topics (the first unfinished one open) and items in your order, with progress at every level. Set each item's status, open it (problems, articles, videos…) or read it here (notes, exercises with a hidden answer), and "Log time" on it (the session form opens with the path, topic and item chosen) |
+| `/app/catalog`, `/app/analytics`, `/app/interview-ready`, `/app/my-paths`, `/app/organizations`, `/app/admin`, `/app/settings` | In the sidebar, designed in Figma, not built yet: a "Coming soon" page (`src/pages/coming-soon`; remove a section from `upcoming.ts` when its page exists). Admin shows only for superadmins |
 | anything else | Not found |
 
 ## Talking to the API
@@ -35,9 +36,13 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
   revoked), it logs out and `<RequireAuth>` sends the user to the login page, which says the session ended and
   brings them back after logging in. Only 401s with `WWW-Authenticate: Bearer` trigger a renewal, so a wrong
   password stays a normal error.
-- Pages of the logged-in app share `src/components/AppHeader.tsx` (navigation, log out) and `ProgressBar.tsx`,
-  `src/styles/app.module.css` (page layout, cards, loading and error states, session rows) and `src/format`
-  (minutes, dates, session titles).
+- The look follows the Figma file "StudyLog – App Design" (https://www.figma.com/design/OtHkuUtj5AK1MYZYgMEJRH).
+  `src/index.css` holds its tokens under the same CSS names as the Figma variables (colors with dark values, spacing,
+  radius, shadows, fonts: Inter and JetBrains Mono); components use only these. Icons: `src/components/Icon.tsx`.
+- Pages of the logged-in app share `src/components/AppLayout.tsx` (dark sidebar with navigation and log out; a top bar
+  with a menu below 900px) and `ProgressBar.tsx`, `src/styles/shared.module.css` (buttons: primary, accent, secondary,
+  ghost, danger, small), `src/styles/app.module.css` (page headers, cards, badges, loading and error states, session
+  rows) and `src/format` (minutes, dates, session titles).
 - Login and signup share `src/components/AuthLayout.tsx` and `src/forms` (fields, password input, error messages).
   Each page checks what it can before calling the API (same limits as the schemas), shows the API's errors on
   their fields, and focuses the first problem. Links between them keep the router state (`from`: where to go next).

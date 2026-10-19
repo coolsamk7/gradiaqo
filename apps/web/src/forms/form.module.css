@@ -1,54 +1,64 @@
 /* Form parts shared by the login and signup pages. */
 
 .formError {
-    margin-top: 20px;
-    padding: 12px 14px;
-    border: 1px solid color-mix( in srgb, var( --color-danger ) 35%, transparent );
-    border-radius: var( --radius-sm );
+    margin-top: var( --space-5 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
     color: var( --color-danger );
-    background: color-mix( in srgb, var( --color-danger ) 8%, transparent );
-    font-size: 0.95rem;
+    background: var( --color-danger-soft );
 }
 
 .form {
     display: grid;
-    gap: 18px;
-    margin-top: 24px;
+    gap: var( --space-5 );
+    margin-top: var( --space-6 );
 }
 
 .field {
     display: grid;
-    gap: 6px;
+    gap: var( --space-1 );
 }
 
 .label {
-    font-size: 0.92rem;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
 }
 
 .input {
     width: 100%;
-    padding: 12px 14px;
-    border: 1px solid var( --color-border );
-    border-radius: var( --radius-sm );
+    padding: var( --space-2 ) var( --space-3 );
+    border: 1px solid var( --color-border-strong );
+    border-radius: var( --radius-md );
     color: var( --color-text );
-    background: var( --color-bg );
+    background: var( --color-surface );
     font: inherit;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .input:hover {
-    border-color: color-mix( in srgb, var( --color-brand ) 35%, var( --color-border ) );
+    border-color: var( --color-text-muted );
 }
 
 .input:focus-visible {
-    border-color: var( --color-brand );
+    border-color: var( --color-border-accent );
     outline: none;
-    box-shadow: 0 0 0 4px var( --color-brand-soft );
+    box-shadow: 0 0 0 1px var( --color-border-accent );
+}
+
+select.input {
+    padding-right: var( --space-8 );
+    appearance: none;
+    background: var( --color-surface ) url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6b64' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E" ) no-repeat right 12px center / 16px;
+}
+
+.input:disabled {
+    color: var( --color-text-muted );
+    background-color: var( --color-bg-muted );
 }
 
 .input[aria-invalid='true'] {
-    border-color: var( --color-danger );
+    border-color: var( --color-border-danger );
 }
 
 .passwordRow {
@@ -62,36 +72,31 @@
 .toggle {
     position: absolute;
     top: 50%;
-    right: 8px;
-    padding: 6px 10px;
+    right: var( --space-1 );
+    padding: var( --space-1 ) var( --space-2 );
     border: 0;
-    border-radius: 6px;
-    color: var( --color-brand-strong );
+    border-radius: var( --radius-sm );
+    color: var( --color-accent-text );
     background: transparent;
     font: inherit;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
     transform: translateY( -50% );
 }
 
 .toggle:hover {
-    background: var( --color-brand-soft );
+    background: var( --color-accent-soft );
 }
 
 .fieldError {
     color: var( --color-danger );
-    font-size: 0.88rem;
+    font-size: 12px;
+    line-height: 16px;
 }
 
 .submit {
-    margin-top: 6px;
     width: 100%;
-    padding-block: 13px;
-    border: 0;
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
 }
 
 .submit:disabled {
@@ -109,7 +114,7 @@
 /* Two fields side by side (first and last name), stacked on narrow screens. */
 .row {
     display: grid;
-    gap: 18px;
+    gap: var( --space-3 );
 }
 
 @media ( width >= 480px ) {
@@ -120,15 +125,14 @@
 
 .hint {
     color: var( --color-text-muted );
-    font-size: 0.88rem;
+    font-size: 12px;
+    line-height: 16px;
 }
 
 .notice {
-    margin-top: 20px;
-    padding: 12px 14px;
-    border: 1px solid color-mix( in srgb, var( --color-brand ) 30%, transparent );
-    border-radius: var( --radius-sm );
-    color: var( --color-brand-strong );
-    background: var( --color-brand-soft );
-    font-size: 0.95rem;
+    margin-top: var( --space-5 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
 }

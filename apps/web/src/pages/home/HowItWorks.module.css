@@ -1,37 +1,32 @@
 .steps {
     display: grid;
-    grid-template-columns: repeat( auto-fit, minmax( min( 100%, 280px ), 1fr ) );
-    gap: 28px;
+    grid-template-columns: repeat( auto-fit, minmax( 260px, 1fr ) );
+    gap: var( --space-6 );
     margin: 0;
     padding: 0;
     list-style: none;
-    counter-reset: step;
 }
 
 .step {
-    position: relative;
-    padding: 8px 4px;
+    display: grid;
+    align-content: start;
+    gap: var( --space-3 );
 }
 
 .number {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    color: var( --color-on-brand );
-    background: var( --gradient-brand );
-    font-weight: 800;
-    box-shadow: 0 8px 20px rgb( 79 70 229 / 25% );
+    color: var( --color-accent-text );
+    font-family: var( --font-mono );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
 }
 
 .title {
-    margin-top: 18px;
-    font-size: 1.2rem;
-    letter-spacing: -0.01em;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
 }
 
 .text {
-    margin-top: 8px;
     color: var( --color-text-muted );
 }

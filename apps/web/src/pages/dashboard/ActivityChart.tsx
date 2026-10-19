@@ -15,9 +15,9 @@ export function ActivityChart( { days }: { days: StudyStats['last30Days'] } ) {
 
     return (
         <section className={app.card} aria-labelledby="activity-title">
-            <div className={app.cardHeader}>
+            <div className={styles.chartHeader}>
                 <h2 id="activity-title" className={app.cardTitle}>Last 30 days</h2>
-                <p className={app.muted}>{summary}</p>
+                <p className={`${app.muted} ${app.small}`}>{summary}</p>
             </div>
             <ol className={styles.chart} aria-label="Minutes studied per day">
                 {days.map( ( day ) => {

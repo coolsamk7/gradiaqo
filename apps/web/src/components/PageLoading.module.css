@@ -7,8 +7,8 @@
 .spinner {
     width: 36px;
     height: 36px;
-    border: 3px solid var( --color-brand-soft );
-    border-top-color: var( --color-brand );
+    border: 3px solid var( --color-accent-soft );
+    border-top-color: var( --color-accent );
     border-radius: 50%;
     animation: spin 800ms linear infinite;
 }

@@ -152,9 +152,9 @@ describe( 'PathPage', () => {
         expect( module( 'Arrays & Hashing' ) ).toHaveTextContent( 'Most problems start here.' );
         expect( screen.getByRole( 'progressbar', { name: 'Arrays & Hashing progress' } ) ).toHaveAttribute( 'aria-valuenow', '67' );
         expect( module( 'Linked Lists' ).querySelectorAll( 'p' )[0] ).toHaveTextContent( '0 of 1 done' );
-        // No description: no empty line either.
-        expect( module( 'Linked Lists' ).querySelectorAll( ':scope > p' ) ).toHaveLength( 0 );
-        expect( module( 'Arrays & Hashing' ).querySelectorAll( ':scope > p' ) ).toHaveLength( 1 );
+        // The description sits under the title row; no description, no empty line.
+        expect( module( 'Linked Lists' ).querySelectorAll( ':scope > div > p' ) ).toHaveLength( 0 );
+        expect( module( 'Arrays & Hashing' ).querySelectorAll( ':scope > div > p' ) ).toHaveLength( 1 );
 
         // Optional items don't count; a finished topic's count stands out.
         expect( topic( 'Hashing Basics' ).querySelector( 'summary' ) ).toHaveTextContent( 'Hashing Basics2/2' );
@@ -191,7 +191,7 @@ describe( 'PathPage', () => {
         await screen.findByRole( 'heading', { level: 1 } );
 
         expect( item( 'Two Sum' ) ).toHaveTextContent( 'Problem · Easy · 15 min' );
-        expect( within( item( 'Two Sum' ) ).getByRole( 'link', { name: 'Open on leetcode (opens in a new tab)' } ) ).toMatchObject( {
+        expect( within( item( 'Two Sum' ) ).getByRole( 'link', { name: 'Open on LeetCode (opens in a new tab)' } ) ).toMatchObject( {
             href: 'https://leetcode.com/problems/two-sum/',
             target: '_blank',
             rel: 'noreferrer',
@@ -233,7 +233,7 @@ describe( 'PathPage', () => {
             .toEqual( [ 'Not started', 'In progress', 'Done', 'Revise' ] );
         // Each status looks different.
         const dots = [ 'Two Sum', '3Sum', 'Contains Duplicate', 'Hash Tables Explained' ]
-            .map( ( title ) => item( title ).querySelector( 'span' )?.className );
+            .map( ( title ) => item( title ).querySelector( 'svg' )?.getAttribute( 'class' ) );
 
         expect( new Set( dots ).size ).toBe( 4 );
 
@@ -311,11 +311,20 @@ describe( 'PathPage', () => {
         api( { [`GET /me/enrollments/${paused.id}`]: () => json( 200, enrollmentDetail( paused, [] ) ) } );
         renderApp( `/app/paths/${paused.id}` );
 
-        expect( await screen.findByText( 'Paused' ) ).toBeInTheDocument();
+        expect( await screen.findByText( 'Paused' ) ).not.toHaveClass( /badgeSuccess/ );
         expect( screen.getByText( 'This path has no content yet.' ) ).toBeInTheDocument();
         expect( screen.getByText( '0 of 0 items done · 0%' ) ).toBeInTheDocument();
         // The two lines are the counts and "no content": no empty description line.
         expect( screen.getByRole( 'main' ).querySelectorAll( 'p' ) ).toHaveLength( 2 );
+    } );
+
+    it( 'marks a completed path in green, unlike a paused one', async () => {
+        const done = enrollment( 'Finished Path', EnrollmentStatus.Completed, 0, 0, uuid( 203 ) );
+
+        api( { [`GET /me/enrollments/${done.id}`]: () => json( 200, enrollmentDetail( done, [] ) ) } );
+        renderApp( `/app/paths/${done.id}` );
+
+        expect( await screen.findByText( 'Completed' ) ).toHaveClass( /badgeSuccess/ );
     } );
 
     it( 'shows the path\'s description when it has one', async () => {
@@ -333,7 +342,7 @@ describe( 'PathPage', () => {
         renderApp( `/app/paths/${DSA.id}` );
 
         expect( await screen.findByText( 'Loading the learning path…' ) ).toBeInTheDocument();
-        expect( screen.getByRole( 'link', { name: '← Dashboard' } ) ).toHaveAttribute( 'href', '/app' );
+        expect( screen.getByRole( 'link', { name: 'Back to dashboard' } ) ).toHaveAttribute( 'href', '/app' );
     } );
 
     it.each( [ 404, 400 ] )( 'says when the path isn\'t on the user\'s list (%i)', async ( status ) => {

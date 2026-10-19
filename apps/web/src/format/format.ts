@@ -29,6 +29,14 @@ const time = new Intl.DateTimeFormat( 'en-US', { hour: 'numeric', minute: '2-dig
 const weekdayDate = new Intl.DateTimeFormat( 'en-US', { weekday: 'short', month: 'short', day: 'numeric' } );
 const shortDate = new Intl.DateTimeFormat( 'en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' } );
 
+const weekday = new Intl.DateTimeFormat( 'en-US', { weekday: 'long' } );
+const dayMonth = new Intl.DateTimeFormat( 'en-GB', { day: 'numeric', month: 'long' } );
+
+/** Today's date above a page title: "Monday, 19 October". */
+export function formatLongDate( date: Date ): string {
+    return `${weekday.format( date )}, ${dayMonth.format( date )}`;
+}
+
 /** When a session started: "Today, 9:30 AM", "Yesterday, 6:00 PM" or "Mon, Sep 22, 8:15 AM". */
 export function formatSessionStart( startedAt: Date, now: Date ): string {
     return `${relativeDay( startedAt, now )}, ${formatTime( startedAt )}`;

@@ -1,29 +1,29 @@
+/* Figma: Current · Public › Not found. */
+
 .page {
     display: grid;
     place-content: center;
     justify-items: center;
-    gap: 12px;
+    gap: var( --space-4 );
     min-height: 100dvh;
-    padding: var( --gutter );
+    padding: var( --space-5 );
     text-align: center;
 }
 
 .code {
-    background: var( --gradient-brand );
-    background-clip: text;
-    color: transparent;
-    font-size: 4.5rem;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.04em;
-}
-
-.title {
-    font-size: 1.8rem;
+    color: var( --color-accent-text );
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 36px;
     letter-spacing: -0.02em;
 }
 
+.title {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+}
+
 .text {
-    margin-bottom: 12px;
     color: var( --color-text-muted );
 }

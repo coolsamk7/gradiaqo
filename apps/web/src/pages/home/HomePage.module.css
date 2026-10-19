@@ -5,9 +5,9 @@
     left: 12px;
     z-index: 100;
     padding: 10px 16px;
-    border-radius: var( --radius-sm );
-    color: var( --color-on-brand );
-    background: var( --color-brand );
+    border-radius: var( --radius-md );
+    color: var( --color-on-accent );
+    background: var( --color-accent );
     font-weight: 600;
     transform: translateY( -200% );
 }

@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
-import { FEATURES, PATH_PERCENT, STEPS, WEEK } from './content.tsx';
+import { FEATURES, PREVIEW_PATHS, PREVIEW_STATS, STEPS } from './content.tsx';
 import { HomePage } from './HomePage.tsx';
 
 describe( 'HomePage', () => {
@@ -57,7 +57,7 @@ describe( 'HomePage', () => {
         const steps = within( screen.getByRole( 'region', { name: 'Three steps to a study habit' } ) ).getAllByRole( 'listitem' );
 
         expect( steps.map( ( step ) => within( step ).getByRole( 'heading' ).textContent ) ).toEqual( STEPS.map( ( step ) => step.title ) );
-        expect( steps.map( ( step ) => step.textContent?.charAt( 0 ) ) ).toEqual( [ '1', '2', '3' ] );
+        expect( steps.map( ( step ) => step.textContent?.slice( 0, 2 ) ) ).toEqual( [ '01', '02', '03' ] );
     } );
 
     it( 'shows the footer links and the current year', () => {
@@ -77,31 +77,20 @@ describe( 'DashboardPreview', () => {
     it( 'summarizes the example for screen readers and hides the drawing', () => {
         const preview = screen.getByRole( 'figure' );
 
-        expect( PATH_PERCENT ).toBe( 63 ); // 5 of 8 items done
         expect( within( preview ).getByText(
-            'Example dashboard: Data Structures & Algorithms 63% complete, a 5-day streak and 45 minutes studied today.',
+            'Example dashboard: 1 hour 35 minutes studied today, a 12-day streak, and Data Structures & Algorithms 60% complete.',
         ) ).toBeInTheDocument();
-        expect( preview.querySelector( '[aria-hidden="true"]' ) ).toHaveTextContent( 'Data Structures & Algorithms' );
+        expect( preview.querySelector( '[aria-hidden="true"]' ) ).toHaveTextContent( 'Good morning, Alice' );
     } );
 
-    it( 'fills the progress bar and marks finished modules', () => {
+    it( 'shows the stats and fills each path\'s bar to its share done', () => {
         const drawing = screen.getByRole( 'figure' ).querySelector( '[aria-hidden="true"]' )!;
 
-        expect( drawing ).toHaveTextContent( '63%' );
-        expect( drawing ).toHaveTextContent( '3/3' );
-        expect( drawing ).toHaveTextContent( '2/3' );
-        expect( drawing ).toHaveTextContent( '0/2' );
-        expect( drawing.querySelector( '[style*="width"]' ) ).toHaveStyle( { width: '63%' } );
-    } );
-
-    it( 'scales the week\'s bars to the busiest day, keeping a sliver for days without study', () => {
-        const bars = [ ...screen.getByRole( 'figure' ).querySelectorAll<HTMLElement>( '[style*="height"]' ) ];
-        const busiest = Math.max( ...WEEK );
-
-        expect( bars ).toHaveLength( 7 );
-        expect( bars.map( ( bar ) => bar.style.height ) ).toEqual( WEEK.map( ( minutes ) =>
-            `${Math.max( 6, ( minutes / busiest ) * 100 )}%` ) );
-        expect( bars[3].style.height ).toBe( '100%' );
-        expect( bars[6].style.height ).toBe( '6%' );
+        for ( const stat of PREVIEW_STATS ) {
+            expect( drawing ).toHaveTextContent( stat.value );
+        }
+        expect( drawing ).toHaveTextContent( '15 of 25 items done' );
+        expect( [ ...drawing.querySelectorAll<HTMLElement>( '[style*="width"]' ) ].map( ( bar ) => bar.style.width ) )
+            .toEqual( PREVIEW_PATHS.map( ( path ) => `${Math.round( ( path.done / path.total ) * 100 )}%` ) );
     } );
 } );

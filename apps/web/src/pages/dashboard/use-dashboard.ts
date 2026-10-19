@@ -5,7 +5,7 @@ import { NetworkError } from '../../api/client.ts';
 import { useAuth } from '../../auth/auth-context.ts';
 
 /** How many recent sessions the dashboard lists. */
-export const RECENT_SESSIONS = 5;
+export const RECENT_SESSIONS = 3;
 
 export interface DashboardData {
     stats: StudyStats;
