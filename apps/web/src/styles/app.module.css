@@ -163,6 +163,16 @@
     background: var( --color-accent-soft );
 }
 
+.badgeInverse {
+    color: var( --color-on-inverse );
+    background: var( --color-bg-inverse );
+}
+
+.badgeWarning {
+    color: var( --color-warning );
+    background: var( --color-warning-soft );
+}
+
 /* ---------- Study session rows ---------- */
 
 .sessions {

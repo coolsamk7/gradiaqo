@@ -1,9 +1,17 @@
 /*
  * API answers for tests, typed with the API's own contract so they can't drift from it.
  */
-import type { EnrollmentDetailJson, EnrollmentJson, StudySessionPageJson } from '@studylog/schemas';
+import type {
+    EnrollmentDetailJson,
+    EnrollmentJson,
+    ItemJson as CatalogItemJson,
+    LearningPathTreeJson,
+    MyOrganizationJson,
+    PublishedPathSummaryJson,
+    StudySessionPageJson,
+} from '@studylog/schemas';
 import type { EnrollmentStatus } from '@studylog/schemas/enums';
-import { CatalogStatus, ItemType, PathVisibility, ProgressStatus } from '@studylog/schemas/enums';
+import { CatalogStatus, ItemType, OrganizationRole, PathVisibility, ProgressStatus } from '@studylog/schemas/enums';
 
 const DATE = '2026-09-01T09:00:00.000Z';
 
@@ -136,5 +144,93 @@ export function session(
         createdAt: startedAt,
         updatedAt: startedAt,
         ...about,
+    };
+}
+
+/** A path in the catalog: official, with nothing in it, not enrolled, unless `overrides` say otherwise. */
+export function catalogPath(
+    title: string,
+    overrides: Partial<PublishedPathSummaryJson> = {},
+): PublishedPathSummaryJson {
+    return {
+        ...node( overrides.id ?? uuid( 300 + title.length ), title, 0 ),
+        description: null,
+        organizationId: null,
+        visibility: PathVisibility.Public,
+        publicBlockedAt: null,
+        organization: null,
+        createdBy: null,
+        enrollmentId: null,
+        contents: { modules: 0, items: 0, estimatedMinutes: 0 },
+        ...overrides,
+    };
+}
+
+/** The user's personal workspace, or (with overrides) an organization they're in. */
+export function organization( overrides: Partial<MyOrganizationJson> = {} ): MyOrganizationJson {
+    return {
+        id: uuid( 4 ),
+        name: 'Sam\'s Workspace',
+        slug: 'sams-workspace',
+        isPersonal: true,
+        role: OrganizationRole.Owner,
+        createdAt: DATE,
+        updatedAt: DATE,
+        ...overrides,
+    };
+}
+
+/** An item in the catalog: an official problem unless `overrides` say otherwise. */
+export function catalogItem( id: string, title: string, overrides: Partial<CatalogItemJson> = {} ): CatalogItemJson {
+    return {
+        id,
+        organizationId: null,
+        type: ItemType.Problem,
+        title,
+        description: null,
+        difficulty: null,
+        estimatedMinutes: null,
+        tags: [],
+        details: {},
+        status: CatalogStatus.Published,
+        createdAt: DATE,
+        updatedAt: DATE,
+        ...overrides,
+    };
+}
+
+export interface BuilderModuleSpec {
+    title: string;
+    topics: { title: string; items: ( CatalogItemJson & { isOptional?: boolean } )[] }[];
+}
+
+/**
+ * A path as the builder loads it, in the personal workspace (uuid( 4 )). Ids: path uuid( 400 ), module m uuid( 500 + m ),
+ * topic t of module m uuid( 600 + 10 * m + t ).
+ */
+export function pathTree(
+    title: string,
+    modules: BuilderModuleSpec[],
+    overrides: Partial<Omit<LearningPathTreeJson, 'modules'>> = {},
+): LearningPathTreeJson {
+    const id = overrides.id ?? uuid( 400 );
+
+    return {
+        ...node( id, title, 0 ),
+        organizationId: uuid( 4 ),
+        visibility: PathVisibility.Private,
+        publicBlockedAt: null,
+        ...overrides,
+        modules: modules.map( ( module, m ) => ( {
+            ...node( uuid( 500 + m ), module.title, m ),
+            learningPathId: id,
+            topics: module.topics.map( ( topic, t ) => ( {
+                ...node( uuid( 600 + 10 * m + t ), topic.title, t ),
+                moduleId: uuid( 500 + m ),
+                items: topic.items.map( ( { isOptional = false, ...item }, i ) => (
+                    { ...item, position: i, isOptional }
+                ) ),
+            } ) ),
+        } ) ),
     };
 }

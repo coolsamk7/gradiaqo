@@ -29,7 +29,11 @@ async function fill( details: Partial<Details> ) {
 
     for ( const [ field, value ] of Object.entries( details ) as [ keyof Details, string ][] ) {
         await typing.clear( input( labels[field] ) );
-        if ( value ) {
+        if ( value.length > 40 ) {
+            // Typing hundreds of characters key by key is slow enough to time out on a busy machine.
+            await typing.click( input( labels[field] ) );
+            await typing.paste( value );
+        } else if ( value ) {
             await typing.type( input( labels[field] ), value );
         }
     }

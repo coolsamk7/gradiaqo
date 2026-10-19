@@ -396,7 +396,7 @@ What a logged-in user does with the catalog. Everything under `/me` only ever to
 
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/catalog/paths` | Paths you can see, with your `enrollmentId` in each |
+| GET | `/catalog/paths` | Paths you can see, with your `enrollmentId` and `contents` (published modules, items, estimated minutes) in each |
 | GET | `/catalog/paths/:pathId` | A path you can see, with its published content |
 | GET | `/catalog/items` | Search published global items (to link into your own paths) |
 | GET / POST | `/me/enrollments` | Your paths with progress / enroll (`{ learningPathId, rules? }`) |
