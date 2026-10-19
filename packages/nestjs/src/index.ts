@@ -2,6 +2,8 @@ import { typebox } from '@gradiaqo/nestjs-typebox';
 import type { ItemType } from '@studylog/schemas';
 import {
     AccessTokenResponse,
+    Analytics,
+    AnalyticsQuery,
     AuthResponse,
     ChangePasswordRequest,
     CreateEnrollmentRequest,
@@ -17,6 +19,7 @@ import {
     Enrollment,
     EnrollmentDetail,
     HealthResponse,
+    InterviewGoal,
     Invitation,
     Item,
     ItemDetailsSchemas,
@@ -38,11 +41,14 @@ import {
     MyOrganization,
     PublishedPath,
     PublishedPathSummary,
+    Readiness,
+    ReadinessQuery,
     ReorderRequest,
     ReplaceRulesRequest,
     Report,
     ReportPage,
     ResolveReportRequest,
+    SetInterviewGoalRequest,
     SignupRequest,
     StatsQuery,
     StudySession,
@@ -101,6 +107,7 @@ export const ReplaceRulesBody = typebox( ReplaceRulesRequest, { name: 'ReplaceRu
 export const UpdateProgressBody = typebox( UpdateProgressRequest, { name: 'UpdateProgressRequest' } );
 export const CreateStudySessionBody = typebox( CreateStudySessionRequest, { name: 'CreateStudySessionRequest' } );
 export const UpdateStudySessionBody = typebox( UpdateStudySessionRequest, { name: 'UpdateStudySessionRequest' } );
+export const SetInterviewGoalBody = typebox( SetInterviewGoalRequest, { name: 'SetInterviewGoalRequest' } );
 
 // ---------- Query strings: `@Query( { schema: ListItemsQueryParams } ) query: ListItemsQuery` ----------
 
@@ -110,6 +117,8 @@ export const ListStudySessionsQueryParams = typebox( ListStudySessionsQuery, { c
 export const ListPublishedPathsQueryParams = typebox( ListPublishedPathsQuery, { coerce: true, location: 'query' } );
 export const ListReportsQueryParams = typebox( ListReportsQuery, { coerce: true, location: 'query' } );
 export const StatsQueryParams = typebox( StatsQuery, { coerce: true, location: 'query' } );
+export const AnalyticsQueryParams = typebox( AnalyticsQuery, { coerce: true, location: 'query' } );
+export const ReadinessQueryParams = typebox( ReadinessQuery, { coerce: true, location: 'query' } );
 
 // ---------- Item details, checked against the item's type: `ItemDetails[ type ].safeParse( details )` ----------
 
@@ -147,6 +156,9 @@ export const Responses = {
     StudySession: typebox( StudySession, { name: 'StudySession', direction: 'response' } ),
     StudySessionPage: typebox( StudySessionPage, { name: 'StudySessionPage', direction: 'response' } ),
     StudyStats: typebox( StudyStats, { name: 'StudyStats', direction: 'response' } ),
+    Analytics: typebox( Analytics, { name: 'Analytics', direction: 'response' } ),
+    InterviewGoal: typebox( InterviewGoal, { name: 'InterviewGoal', direction: 'response' } ),
+    Readiness: typebox( Readiness, { name: 'Readiness', direction: 'response' } ),
     HealthResponse: typebox( HealthResponse, { name: 'HealthResponse', direction: 'response' } ),
     InvitationList: typebox( Type.Array( Invitation ), { name: 'InvitationList', direction: 'response' } ),
     Invitation: typebox( Invitation, { name: 'Invitation', direction: 'response' } ),

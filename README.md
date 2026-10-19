@@ -409,6 +409,29 @@ What a logged-in user does with the catalog. Everything under `/me` only ever to
 | GET / POST | `/me/study-sessions` | Filter: `from`, `to`, `topicId`, `itemId`, `limit`, `offset` |
 | PATCH / DELETE | `/me/study-sessions/:id` | |
 | GET | `/me/stats` | Today, this week, total, streaks, items completed, last 30 days |
+| GET | `/me/analytics` | `?period=30d\|90d\|all&enrollmentId=&timeZone=`: see "Insights" below |
+| GET / PUT / DELETE | `/me/interview-goal` | Your goal: `{ title, targetDate, enrollmentIds }` (404 before you set one) |
+| GET | `/me/readiness` | `?timeZone=`: how ready you are for the goal (`{ goal: null, readiness: null }` without one) |
+
+### Insights
+
+Computed from what users already record (enrollments, progress, sessions) in `apps/api/src/study/insights.ts`, pure
+functions with the rules spelled out in their comments.
+
+- **Analytics:** time in the period and in the one before it, sessions, items first finished in the period
+  (`completedAt`), topics completed, items to revise, study time per week (12 weeks for 30 days, 13 for 90, up to 52
+  for all time) and per path, item status and difficulty mix (each item once), habits (average session, best
+  weekday, busiest 3-hour window) and up to four topics that need focus (items to revise first, then the least done,
+  then the longest unstudied) with the next items to do. With `enrollmentId`, only that path and its sessions count.
+- **Interview goal:** one per user (`interview_goals`): a title, a date (today or later) and the paths that count.
+  Paths the user has left since are ignored.
+- **Readiness:** a score out of 100 from coverage 40% (required items finished), depth 25% (easy, medium and hard
+  weighted 20/40/40; follows coverage when the goal has no difficulties), revision 15% (10 points off per item to
+  revise, 20 more if one waits over 14 days) and consistency 20% (days studied in the last 14, the streak). Each
+  category lists its checks. Pace compares items finished per day over the last 14 days with what the date needs.
+  Next steps (up to five): finish the least done module, do a mock interview (exercise items named "mock"), clear
+  items to revise, resume paused paths, try a hard problem. Labels: Ready (85+), Almost ready (65+), Getting there
+  (40+), Just started.
 
 ## Roadmap
 
@@ -476,4 +499,5 @@ test coverage at 100% (see [Tests](#tests)).
 - [x] Learning path page at `/app/paths/:id`: progress at every level, item status, notes and exercises, log time
 - [ ] Catalog and enrollment pages
 - [x] Redesign to the Figma file (tokens, sidebar, restyled pages)
+- [ ] Analytics and Interview ready pages (the API is done: `/me/analytics`, `/me/interview-goal`, `/me/readiness`)
 - [ ] Mobile app
