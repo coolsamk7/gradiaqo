@@ -13,6 +13,8 @@ import { LoginPage } from './pages/login/LoginPage.tsx';
 import { MyPathsPage } from './pages/my-paths/MyPathsPage.tsx';
 import { PathBuilderPage } from './pages/my-paths/PathBuilderPage.tsx';
 import { NotFoundPage } from './pages/not-found/NotFoundPage.tsx';
+import { ForgotPasswordPage } from './pages/password-reset/ForgotPasswordPage.tsx';
+import { ResetPasswordPage } from './pages/password-reset/ResetPasswordPage.tsx';
 import { PathPage } from './pages/path/PathPage.tsx';
 import { PathPreviewPage } from './pages/path-preview/PathPreviewPage.tsx';
 import { PathSettingsPage } from './pages/path-settings/PathSettingsPage.tsx';
@@ -20,6 +22,7 @@ import { ReadinessPage } from './pages/readiness/ReadinessPage.tsx';
 import { SessionsPage } from './pages/sessions/SessionsPage.tsx';
 import { SettingsPage } from './pages/settings/SettingsPage.tsx';
 import { SignupPage } from './pages/signup/SignupPage.tsx';
+import { VerifyEmailPage } from './pages/verify-email/VerifyEmailPage.tsx';
 
 /** The routes. The router itself is set up in main.tsx (tests use a MemoryRouter). */
 export function App() {
@@ -29,6 +32,9 @@ export function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/verify-email" element={<RequireAuth><VerifyEmailPage /></RequireAuth>} />
                 <Route path="/app" element={<RequireAuth><DashboardPage /></RequireAuth>} />
                 <Route path="/app/sessions" element={<RequireAuth><SessionsPage /></RequireAuth>} />
                 <Route path="/app/catalog" element={<RequireAuth><CatalogPage /></RequireAuth>} />

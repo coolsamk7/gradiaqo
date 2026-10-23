@@ -31,6 +31,15 @@ export const Env = Type.Object( {
         { default: 'info' },
     ),
     LOG_PRETTY: Flag( false ),
+    // Outgoing email (verification and password-reset codes) over SMTP. Development uses Mailpit from
+    // docker-compose.yml (http://localhost:8025 shows what was sent); production uses the provider's SMTP relay.
+    SMTP_HOST: Type.String( { default: 'localhost' } ),
+    SMTP_PORT: Type.Integer( { minimum: 1, maximum: 65_535, default: 1025 } ),
+    // true for implicit TLS (usually port 465); with false, STARTTLS is used when the server offers it (587).
+    SMTP_SECURE: Flag( false ),
+    SMTP_USER: Type.String( { default: '' } ),
+    SMTP_PASSWORD: Type.String( { default: '' } ),
+    MAIL_FROM: Type.String( { minLength: 3, default: 'StudyLog <no-reply@studylog.local>' } ),
     // Turned off only by the UI tests (apps/e2e), which log in far more often than people do. Never off in production.
     RATE_LIMITS_ENABLED: Flag( true ),
 } );
@@ -61,6 +70,9 @@ export function validateEnv( raw: Record<string, unknown> ): Env {
 
         if ( env.NODE_ENV === 'production' && !env.COOKIE_SECURE ) {
             problems.set( 'COOKIE_SECURE', 'must be true in production (the refresh cookie must only travel over HTTPS)' );
+        }
+        if ( env.NODE_ENV === 'production' && ( env.SMTP_HOST === 'localhost' || !env.SMTP_USER ) ) {
+            problems.set( 'SMTP_HOST', 'must point at the email provider\'s SMTP relay, with SMTP_USER and SMTP_PASSWORD, in production' );
         }
         if ( env.NODE_ENV === 'production' && !env.RATE_LIMITS_ENABLED ) {
             problems.set( 'RATE_LIMITS_ENABLED', 'must be true in production' );

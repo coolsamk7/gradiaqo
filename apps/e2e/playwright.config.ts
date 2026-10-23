@@ -37,6 +37,9 @@ export default defineConfig( {
                 // Tests log in far more often than people do; everything else stays as in production.
                 RATE_LIMITS_ENABLED: 'false',
                 LOG_LEVEL: 'warn',
+                // Mailpit from `yarn db:up`; tests read the codes through its API (see support/mailpit.ts).
+                SMTP_HOST: 'localhost',
+                SMTP_PORT: '1025',
             },
         },
         {

@@ -10,6 +10,7 @@ import type { OrganizationsService } from '../organizations/organizations.servic
 import type { UsersService } from '../users/users.service.js';
 import { AuthService } from './auth.service.js';
 import type { SessionsService } from './sessions.service.js';
+import type { VerificationService } from './verification.service.js';
 
 const signup = { email: 'sam@example.com', firstName: 'Sam', lastName: 'K', password: 'supersecret1' };
 
@@ -18,6 +19,7 @@ describe( 'AuthService', () => {
     let sessions: Record<string, ReturnType<typeof vi.fn>>;
     let organizations: Record<string, ReturnType<typeof vi.fn>>;
     let jwt: { signAsync: ReturnType<typeof vi.fn> };
+    let verification: { welcome: ReturnType<typeof vi.fn> };
     let service: AuthService;
 
     beforeEach( () => {
@@ -30,12 +32,14 @@ describe( 'AuthService', () => {
         sessions = { create: vi.fn().mockResolvedValue( 'session.secret' ), rotate: vi.fn(), revoke: vi.fn() };
         organizations = { createPersonal: vi.fn() };
         jwt = { signAsync: vi.fn().mockResolvedValue( 'access-token' ) };
+        verification = { welcome: vi.fn() };
         service = new AuthService(
             users as unknown as UsersService,
             jwt as unknown as JwtService,
             sessions as unknown as SessionsService,
             organizations as unknown as OrganizationsService,
             fakeDataSource() as unknown as DataSource,
+            verification as unknown as VerificationService,
         );
     } );
 
@@ -50,6 +54,8 @@ describe( 'AuthService', () => {
             expect( organizations.createPersonal ).toHaveBeenCalledOnce();
             expect( result ).toMatchObject( { accessToken: 'access-token', refreshToken: 'session.secret' } );
             expect( result.user ).not.toHaveProperty( 'passwordHash' );
+            // The verification code goes out right away.
+            expect( verification.welcome ).toHaveBeenCalledWith( expect.objectContaining( { id: 'user-1', email: signup.email } ) );
         } );
 
         it( 'rejects a registered email', async () => {

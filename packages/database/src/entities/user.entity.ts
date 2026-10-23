@@ -36,6 +36,10 @@ export class User {
     } )
     platformRole: PlatformRole;
 
+    // Set when the user enters the code emailed to them (or resets their password with one).
+    @Column( { name: 'email_verified_at', type: 'timestamptz', nullable: true } )
+    emailVerifiedAt: Date | null;
+
     @CreateDateColumn( { name: 'created_at', type: 'timestamptz' } )
     createdAt: Date;
 

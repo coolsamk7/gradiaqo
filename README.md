@@ -13,15 +13,15 @@ Study time tracker. Turborepo monorepo using Yarn workspaces.
 - `packages/casl`: authorization: CASL rules per role + NestJS guards/decorators (`@studylog/casl`)
 - `packages/logger`: pino logging for NestJS apps (`@studylog/logger`)
 - `packages/database`: TypeORM entities, migrations and the shared connection config (`createDataSourceOptions`)
-- `docker-compose.yml`: local PostgreSQL
+- `docker-compose.yml`: local PostgreSQL, and Mailpit to catch the emails the API sends
 
 ```sh
 yarn install
-yarn db:up                 # start Postgres on localhost:5432
+yarn db:up                 # start Postgres on localhost:5432, and Mailpit (emails: http://localhost:8025)
 yarn cli migration:run     # create/update the tables
 yarn cli db:seed           # optional: dummy users, catalog and study history (see below)
 yarn dev                   # start the API and the web app
-yarn db:down               # stop Postgres (data is kept)
+yarn db:down               # stop Postgres and Mailpit (data is kept)
 ```
 
 Database URL: `postgresql://studylog:studylog@localhost:5432/studylog`
@@ -262,6 +262,10 @@ Log in via `/auth/login`, click **Authorize**, and paste the `accessToken`.
 | PATCH | `/auth/me` | `firstName?, lastName?` | Update your name |
 | POST | `/auth/change-password` | `currentPassword, newPassword` | Signs out your other devices |
 | POST | `/auth/delete-account` | `password` | See "Accounts" below |
+| POST | `/auth/verify-email` | `code` | Verifies your email with the emailed code; returns the user |
+| POST | `/auth/verify-email/resend` | none | Emails a new code (not within a minute of the last one) |
+| POST | `/auth/forgot-password` | `email` | Emails a reset code if the email has an account (always 204) |
+| POST | `/auth/reset-password` | `email, code, newPassword` | Sets the new password and signs out every device |
 
 ## Accounts
 
@@ -270,7 +274,23 @@ Log in via `/auth/login`, click **Authorize**, and paste the `accessToken`.
 - Deleting your account deletes your personal workspace (your own paths and items), organizations where you're the only
   member, and your enrollments, progress and study sessions. It's refused while you're the only owner of an
   organization with other members: make someone else owner, or delete the organization, first.
-- Not yet (they need email codes): password reset, email verification, changing your email.
+- Email codes: 6 digits, valid for 15 minutes, used once, thrown away after 5 wrong guesses; a new one can be asked
+  for after a minute and replaces the old one. Only their hash is stored (`email_codes`).
+  - **Verifying the email:** a code goes out at signup. Until it's entered, `emailVerifiedAt` is null and the web app
+    shows a reminder; everything else works as usual.
+  - **Forgotten password:** `forgot-password` answers the same whether or not the email has an account. Resetting
+    signs out every device and also verifies the email.
+- Not yet: changing your email.
+
+### Email
+
+The API sends email over SMTP, so any provider works (set `SMTP_*` and `MAIL_FROM` in `apps/api/.env`):
+
+- **Development and UI tests:** Mailpit from `yarn db:up` catches everything; read it at http://localhost:8025.
+  Nothing reaches real inboxes.
+- **Production:** the provider's SMTP relay; the API refuses to start in production without one. We use Brevo for
+  now: `smtp-relay.brevo.com`, port 587, your Brevo login as `SMTP_USER` and an SMTP key as `SMTP_PASSWORD`.
+  `MAIL_FROM` must be an address on a domain verified in Brevo (SPF and DKIM records), or mail lands in spam.
 
 ## Organizations
 
@@ -440,9 +460,9 @@ test coverage at 100% (see [Tests](#tests)).
 
 ### Backend features
 
-- [ ] **OTP and email** (needs an email provider, e.g. Resend, SendGrid, Amazon SES, or SMTP for development)
-  - [ ] Email verification at signup
-  - [ ] Password reset
+- [ ] **OTP and email** (SMTP; Brevo in production, Mailpit locally)
+  - [x] Email verification at signup
+  - [x] Password reset
   - [ ] Changing your email (verify the new address first)
   - [ ] Send invitation emails (today invited people only see them in `GET /me/invitations`)
 - [ ] **Moderation:** let a superadmin un-hide a path hidden by mistake (clear `publicBlockedAt`)

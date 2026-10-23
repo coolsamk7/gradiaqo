@@ -19,5 +19,15 @@ services:
       timeout: 5s
       retries: 10
 
+  # Catches every email the API sends in development (and the UI tests): nothing reaches real inboxes.
+  # See them at http://localhost:8025.
+  mail:
+    image: axllent/mailpit:v1.27
+    container_name: studylog-mail
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_WEB_PORT:-8025}:8025"
+
 volumes:
   db-data:

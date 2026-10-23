@@ -16,6 +16,7 @@ import {
     CreateStudySessionRequest,
     CreateTopicRequest,
     DeleteAccountRequest,
+    ForgotPasswordRequest,
     Enrollment,
     EnrollmentDetail,
     HealthResponse,
@@ -44,6 +45,7 @@ import {
     Readiness,
     ReadinessQuery,
     ReorderRequest,
+    ResetPasswordRequest,
     ReplaceRulesRequest,
     Report,
     ReportPage,
@@ -66,6 +68,7 @@ import {
     UpdateProgressRequest,
     UpdateStudySessionRequest,
     UpdateTopicRequest,
+    VerifyEmailRequest,
     User,
 } from '@studylog/schemas';
 import Type from 'typebox';
@@ -98,6 +101,9 @@ export const CreateInvitationBody = typebox( CreateInvitationRequest, { name: 'C
 export const UpdateProfileBody = typebox( UpdateProfileRequest, { name: 'UpdateProfileRequest' } );
 export const ChangePasswordBody = typebox( ChangePasswordRequest, { name: 'ChangePasswordRequest' } );
 export const DeleteAccountBody = typebox( DeleteAccountRequest, { name: 'DeleteAccountRequest' } );
+export const VerifyEmailBody = typebox( VerifyEmailRequest, { name: 'VerifyEmailRequest' } );
+export const ForgotPasswordBody = typebox( ForgotPasswordRequest, { name: 'ForgotPasswordRequest' } );
+export const ResetPasswordBody = typebox( ResetPasswordRequest, { name: 'ResetPasswordRequest' } );
 export const CreateReportBody = typebox( CreateReportRequest, { name: 'CreateReportRequest' } );
 export const ResolveReportBody = typebox( ResolveReportRequest, { name: 'ResolveReportRequest' } );
 

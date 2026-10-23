@@ -14,6 +14,8 @@ export const RATE_LIMITS = {
     signup: { limit: 10, ttl: HOUR },
     refresh: { limit: 60, ttl: MINUTE },
     sensitive: { limit: 5, ttl: 15 * MINUTE },
+    // Entering emailed codes: room for typos; each code also stops working after a few wrong guesses.
+    code: { limit: 20, ttl: 15 * MINUTE },
     invite: { limit: 30, ttl: HOUR },
     report: { limit: 10, ttl: HOUR },
 } as const;

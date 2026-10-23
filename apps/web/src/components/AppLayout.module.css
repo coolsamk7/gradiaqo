@@ -145,6 +145,32 @@
     max-width: var( --content-width );
 }
 
+/* Until the email is verified: a reminder above every page. */
+.verify {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-2 ) var( --space-3 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
+.verify svg {
+    flex: none;
+}
+
+.verifyText {
+    flex: 1;
+    min-width: min( 100%, 240px );
+}
+
+.verifyLink {
+    color: inherit;
+    font-weight: 600;
+}
+
 @media ( max-width: 900px ) {
     .page {
         grid-template-columns: minmax( 0, 1fr );

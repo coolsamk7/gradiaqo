@@ -20,26 +20,34 @@ import {
     ApiCookieAuth,
     ApiNoContentResponse,
     ApiOperation,
+    ApiServiceUnavailableResponse,
     ApiTags,
+    ApiTooManyRequestsResponse,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { AccessTokenPayload } from '@studylog/casl';
 import {
     ChangePasswordBody,
     DeleteAccountBody,
+    ForgotPasswordBody,
     LoginBody,
+    ResetPasswordBody,
     Responses,
     SignupBody,
     UpdateProfileBody,
+    VerifyEmailBody,
 } from '@studylog/nestjs';
 import type {
     AccessTokenResponse,
     ChangePasswordRequest,
     DeleteAccountRequest,
+    ForgotPasswordRequest,
     LoginRequest,
+    ResetPasswordRequest,
     SignupRequest,
     UpdateProfileRequest,
     User,
+    VerifyEmailRequest,
 } from '@studylog/schemas';
 import type { CookieOptions, Request, Response } from 'express';
 
@@ -51,6 +59,7 @@ import { AuthGuard, CurrentUser } from './auth.guard.js';
 import type { AuthResult } from './auth.service.js';
 import { AuthService } from './auth.service.js';
 import type { ClientMeta } from './sessions.service.js';
+import { VerificationService } from './verification.service.js';
 
 export const REFRESH_COOKIE = 'refresh_token';
 
@@ -63,6 +72,7 @@ export class AuthController {
         private readonly authService: AuthService,
         private readonly usersService: UsersService,
         private readonly accountService: AccountService,
+        private readonly verification: VerificationService,
         config: ConfigService,
     ) {
         this.cookieOptions = {
@@ -202,6 +212,62 @@ export class AuthController {
             dto.newPassword,
             readRefreshCookie( req ),
         );
+    }
+
+    @Post( 'verify-email' )
+    @RateLimit( 'code' )
+    @UseGuards( AuthGuard )
+    @HttpCode( HttpStatus.OK )
+    @ApiBearerAuth()
+    @ApiOperation( { summary: 'Verify your email with the 6-digit code emailed to you' } )
+    @TypeboxResponse( Responses.User, { description: 'Verified; the user with emailVerifiedAt set' } )
+    @ApiBadRequestResponse( { description: 'Wrong or expired code (after 5 wrong codes it stops working)' } )
+    @ApiUnauthorizedResponse( { description: 'Missing or invalid access token' } )
+    verifyEmail(
+        @CurrentUser() current: AccessTokenPayload,
+        @Body( { schema: VerifyEmailBody } ) dto: VerifyEmailRequest,
+    ): Promise<User> {
+        return this.verification.verify( current.sub, dto.code );
+    }
+
+    @Post( 'verify-email/resend' )
+    @RateLimit( 'sensitive' )
+    @UseGuards( AuthGuard )
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiBearerAuth()
+    @ApiOperation( { summary: 'Email a new verification code (the old one stops working)' } )
+    @ApiNoContentResponse( { description: 'Sent' } )
+    @ApiConflictResponse( { description: 'Your email is already verified' } )
+    @ApiTooManyRequestsResponse( { description: 'The last code was sent less than a minute ago' } )
+    @ApiServiceUnavailableResponse( { description: 'The email couldn\'t be sent; try again later' } )
+    resendVerification( @CurrentUser() current: AccessTokenPayload ): Promise<void> {
+        return this.verification.resend( current.sub );
+    }
+
+    @Post( 'forgot-password' )
+    @RateLimit( 'sensitive' )
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiOperation( {
+        summary: 'Email a code to reset a forgotten password',
+        description: 'Answers the same whether or not the email has an account, so it can\'t be used to find out.',
+    } )
+    @ApiNoContentResponse( { description: 'If the email has an account, a code is on its way' } )
+    @ApiBadRequestResponse( { description: 'Invalid input' } )
+    forgotPassword( @Body( { schema: ForgotPasswordBody } ) dto: ForgotPasswordRequest ): Promise<void> {
+        return this.verification.forgotPassword( dto.email );
+    }
+
+    @Post( 'reset-password' )
+    @RateLimit( 'code' )
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiOperation( {
+        summary: 'Choose a new password with the emailed code',
+        description: 'Signs out every device; log in again with the new password. Also verifies the email.',
+    } )
+    @ApiNoContentResponse( { description: 'Password changed' } )
+    @ApiBadRequestResponse( { description: 'Invalid input, or a wrong or expired code' } )
+    resetPassword( @Body( { schema: ResetPasswordBody } ) dto: ResetPasswordRequest ): Promise<void> {
+        return this.verification.resetPassword( dto.email, dto.code, dto.newPassword );
     }
 
     @Post( 'delete-account' )

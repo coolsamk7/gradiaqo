@@ -1,0 +1,133 @@
+import {
+    BadRequestException,
+    ConflictException,
+    Injectable,
+    Logger,
+    ServiceUnavailableException,
+} from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { EmailCodePurpose, User } from '@studylog/database';
+import * as argon2 from 'argon2';
+import { DataSource } from 'typeorm';
+
+import { MailService } from '../mail/mail.service.js';
+import { resetPasswordMail, verifyEmailMail } from '../mail/templates.js';
+import type { PublicUser } from '../users/public-user.js';
+import { toPublicUser } from '../users/public-user.js';
+import { UsersService } from '../users/users.service.js';
+import { CODE_TTL_MINUTES, EmailCodesService, WRONG_CODE } from './email-codes.service.js';
+import { SessionsService } from './sessions.service.js';
+
+type Recipient = Pick<User, 'id' | 'email' | 'firstName'>;
+
+/** Proving the email is the user's with an emailed code: after signup, and to reset a forgotten password. */
+@Injectable()
+export class VerificationService {
+    private readonly logger = new Logger( VerificationService.name );
+
+    constructor(
+        @InjectDataSource() private readonly dataSource: DataSource,
+        private readonly usersService: UsersService,
+        private readonly sessionsService: SessionsService,
+        private readonly codes: EmailCodesService,
+        private readonly mail: MailService,
+    ) {}
+
+    private get users() {
+        return this.dataSource.getRepository( User );
+    }
+
+    /** After signup. Never throws: the account exists either way, and the user can ask for the code again. */
+    async welcome( user: Recipient ): Promise<void> {
+        try {
+            await this.sendVerification( user );
+        } catch ( err ) {
+            this.logger.error( `Couldn't send the verification email: ${( err as Error ).message}` );
+        }
+    }
+
+    /** "Resend code". Refused once verified (409), or within a minute of the last code (429). */
+    async resend( userId: string ): Promise<void> {
+        const user = await this.usersService.findByIdOrFail( userId );
+
+        if ( user.emailVerifiedAt ) {
+            throw new ConflictException( 'Your email is already verified' );
+        }
+
+        await this.sendVerification( user );
+    }
+
+    /** Checks the code and marks the email verified. Already verified: nothing to do. */
+    async verify( userId: string, code: string ): Promise<PublicUser> {
+        const user = await this.usersService.findByIdOrFail( userId );
+
+        if ( user.emailVerifiedAt ) {
+            return toPublicUser( user );
+        }
+
+        await this.codes.consume( userId, EmailCodePurpose.VerifyEmail, code );
+        await this.users.update( { id: userId }, { emailVerifiedAt: new Date() } );
+
+        return toPublicUser( await this.usersService.findByIdOrFail( userId ) );
+    }
+
+    /**
+     * Emails a reset code if there's an account with this email. Always answers the same way, so it can't be
+     * used to find out who has an account; problems are only logged.
+     */
+    async forgotPassword( email: string ): Promise<void> {
+        const user = await this.users.findOneBy( { email } );
+
+        if ( !user ) {
+            return;
+        }
+
+        try {
+            await this.send( user, EmailCodePurpose.ResetPassword );
+        } catch ( err ) {
+            this.logger.warn( `No password reset email sent: ${( err as Error ).message}` );
+        }
+    }
+
+    /**
+     * Sets a new password with a reset code, signs out every device and, since the code proved the email is
+     * theirs, marks it verified. An unknown email gets the same answer as a wrong code.
+     */
+    async resetPassword( email: string, code: string, newPassword: string ): Promise<void> {
+        const user = await this.users.findOneBy( { email } );
+
+        if ( !user ) {
+            throw new BadRequestException( WRONG_CODE );
+        }
+
+        await this.codes.consume( user.id, EmailCodePurpose.ResetPassword, code );
+        await this.users.update( { id: user.id }, {
+            passwordHash: await argon2.hash( newPassword ),
+            ...( user.emailVerifiedAt ? {} : { emailVerifiedAt: new Date() } ),
+        } );
+        await this.sessionsService.revokeOthers( user.id, undefined );
+    }
+
+    private sendVerification( user: Recipient ): Promise<void> {
+        return this.send( user, EmailCodePurpose.VerifyEmail );
+    }
+
+    /**
+     * Issues a code and emails it. If the email can't be sent, the code is thrown away (so asking again isn't
+     * refused) and it fails with 503.
+     */
+    private async send( user: Recipient, purpose: EmailCodePurpose ): Promise<void> {
+        const code = await this.codes.issue( user.id, purpose );
+        const mail = purpose === EmailCodePurpose.VerifyEmail
+            ? verifyEmailMail( user.email, user.firstName, code, CODE_TTL_MINUTES )
+            : resetPasswordMail( user.email, user.firstName, code, CODE_TTL_MINUTES );
+
+        try {
+            await this.mail.send( mail );
+        } catch ( err ) {
+            await this.codes.discard( user.id, purpose );
+            this.logger.error( `Email to user ${user.id} failed: ${( err as Error ).message}` );
+            throw new ServiceUnavailableException( 'We couldn\'t send the email. Please try again in a minute.' );
+        }
+    }
+}

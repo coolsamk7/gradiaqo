@@ -8,6 +8,8 @@ export interface AuthPageState {
     email?: string;
     /** The session ended while using the app; the login page says so. */
     expired?: boolean;
+    /** Good news for the login page to show, e.g. that the password was changed. */
+    notice?: string;
 }
 
 export function useAuthPageState(): AuthPageState {

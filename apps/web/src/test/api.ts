@@ -66,6 +66,8 @@ export const USER = {
     firstName: 'Sam',
     lastName: 'Khan',
     platformRole: 'application_user',
+    // Verified, so pages don't show the "Verify your email" banner unless a test wants it.
+    emailVerifiedAt: '2026-01-01T00:05:00.000Z',
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
 };

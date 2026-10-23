@@ -12,5 +12,8 @@ export const WEB_URL = `http://localhost:${WEB_PORT}`;
 /** The database from `yarn db:up`, under another name. Override with E2E_DATABASE_URL (its name must end in _e2e). */
 export const DATABASE_URL = process.env.E2E_DATABASE_URL ?? 'postgresql://studylog:studylog@localhost:5432/studylog_e2e';
 
+/** Mailpit's web API (docker-compose.yml), where the emails the API sends end up. */
+export const MAILPIT_URL = process.env.E2E_MAILPIT_URL ?? 'http://localhost:8025';
+
 /** Every dummy user's password (see `yarn cli db:seed`). */
 export const PASSWORD = 'password123';

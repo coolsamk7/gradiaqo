@@ -2,7 +2,7 @@ import type { StaticDecode, StaticEncode } from 'typebox';
 import Type from 'typebox';
 
 import { PlatformRole } from './enums.js';
-import { IsoDate, TrimmedText, Uuid } from './primitives.js';
+import { IsoDate, NullableIsoDate, TrimmedText, Uuid } from './primitives.js';
 
 /** A user as returned by the API. Never includes the password hash. */
 export const User = Type.Object( {
@@ -11,6 +11,7 @@ export const User = Type.Object( {
     firstName: Type.String( { examples: [ 'Sameer' ] } ),
     lastName: Type.String( { examples: [ 'Khandke' ] } ),
     platformRole: Type.Enum( PlatformRole ),
+    emailVerifiedAt: NullableIsoDate( { description: 'When the user confirmed their email with a code; null until then' } ),
     createdAt: IsoDate(),
     updatedAt: IsoDate(),
 } );

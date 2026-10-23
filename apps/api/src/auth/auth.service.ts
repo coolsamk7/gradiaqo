@@ -13,6 +13,7 @@ import { toPublicUser } from '../users/public-user.js';
 import { UsersService } from '../users/users.service.js';
 import type { ClientMeta } from './sessions.service.js';
 import { SessionsService } from './sessions.service.js';
+import { VerificationService } from './verification.service.js';
 
 export interface AuthResponse {
     accessToken: string;
@@ -34,6 +35,7 @@ export class AuthService {
         private readonly sessionsService: SessionsService,
         private readonly organizationsService: OrganizationsService,
         private readonly dataSource: DataSource,
+        private readonly verification: VerificationService,
     ) {}
 
     async signup( dto: SignupRequest, meta: ClientMeta ): Promise<AuthResult> {
@@ -73,6 +75,8 @@ export class AuthService {
             }
             throw err;
         }
+
+        await this.verification.welcome( user );
 
         return this.startSession( user, meta );
     }

@@ -94,3 +94,9 @@ export enum ReportStatus {
     /** A moderator acted on it, e.g. took the path out of the public catalog. */
     Actioned = 'actioned',
 }
+
+/** What an emailed code is for. Each user has at most one live code per purpose. */
+export enum EmailCodePurpose {
+    VerifyEmail = 'verify_email',
+    ResetPassword = 'reset_password',
+}
