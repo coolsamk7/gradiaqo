@@ -40,6 +40,12 @@ export const Env = Type.Object( {
     SMTP_USER: Type.String( { default: '' } ),
     SMTP_PASSWORD: Type.String( { default: '' } ),
     MAIL_FROM: Type.String( { minLength: 3, default: 'StudyLog <no-reply@studylog.local>' } ),
+    // The web app's address, for links in emails (e.g. an invitation). No trailing slash needed.
+    APP_URL: Type.String( {
+        pattern: '^https?://[^\\s]+$',
+        default: 'http://localhost:5173',
+        errorMessage: 'must be the web app\'s address, e.g. https://app.example.com',
+    } ),
     // Turned off only by the UI tests (apps/e2e), which log in far more often than people do. Never off in production.
     RATE_LIMITS_ENABLED: Flag( true ),
 } );
@@ -73,6 +79,9 @@ export function validateEnv( raw: Record<string, unknown> ): Env {
         }
         if ( env.NODE_ENV === 'production' && ( env.SMTP_HOST === 'localhost' || !env.SMTP_USER ) ) {
             problems.set( 'SMTP_HOST', 'must point at the email provider\'s SMTP relay, with SMTP_USER and SMTP_PASSWORD, in production' );
+        }
+        if ( env.NODE_ENV === 'production' && !env.APP_URL.startsWith( 'https://' ) ) {
+            problems.set( 'APP_URL', 'must be an https:// address in production' );
         }
         if ( env.NODE_ENV === 'production' && !env.RATE_LIMITS_ENABLED ) {
             problems.set( 'RATE_LIMITS_ENABLED', 'must be true in production' );

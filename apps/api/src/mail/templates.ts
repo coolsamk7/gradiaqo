@@ -75,3 +75,33 @@ export function emailChangedMail( to: string, firstName: string, newEmail: strin
         html: `<p>Hi ${escape( firstName )},</p><p>${escape( body )}</p><p>${escape( outro )}</p><p>StudyLog</p>`,
     };
 }
+
+export interface InvitationDetails {
+    /** Who invited them, or null if that account is gone. */
+    inviter: string | null;
+    organization: string;
+    role: string;
+    /** Where to accept it. */
+    url: string;
+    days: number;
+}
+
+/** To someone invited to an organization, who may not have an account yet. */
+export function invitationMail( to: string, { inviter, organization, role, url, days }: InvitationDetails ): Mail {
+    const who = inviter ?? 'Someone';
+    const body = `${who} invited you to join ${organization} on StudyLog as ${role === 'member' ? 'a' : 'an'} ${role}.`;
+    const how = `Log in with this email address, or sign up with it if you're new, to accept: ${url}`;
+    const outro = `The invitation expires in ${days} days. If you weren't expecting it, you can ignore this email.`;
+
+    return {
+        to,
+        subject: `${who} invited you to ${organization} on StudyLog`,
+        text: `Hi,\n\n${body}\n\n${how}\n\n${outro}\n\nStudyLog`,
+        html: '<p>Hi,</p>'
+            + `<p>${escape( body )}</p>`
+            + '<p>Log in with this email address, or sign up with it if you\'re new, to accept:</p>'
+            + `<p><a href="${escape( url )}">Open StudyLog</a></p>`
+            + `<p>${escape( outro )}</p>`
+            + '<p>StudyLog</p>',
+    };
+}

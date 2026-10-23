@@ -101,6 +101,13 @@ export class Api {
         } );
     }
 
+    /** Creates an organization owned by `owner` and invites `email` to it. */
+    async invite( owner: TestUser, organization: string, email: string ): Promise<void> {
+        const { id } = await this.call<{ id: string }>( 'POST', '/organizations', owner.token, { name: organization } );
+
+        await this.call( 'POST', `/organizations/${id}/invitations`, owner.token, { email } );
+    }
+
     private async call<T>( method: string, url: string, token?: string, data?: unknown ): Promise<T> {
         const response = await this.request.fetch( url, {
             method,

@@ -40,6 +40,7 @@ export default defineConfig( {
                 // Mailpit from `yarn db:up`; tests read the codes through its API (see support/mailpit.ts).
                 SMTP_HOST: 'localhost',
                 SMTP_PORT: '1025',
+                APP_URL: WEB_URL,
             },
         },
         {

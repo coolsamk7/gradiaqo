@@ -1,10 +1,12 @@
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Logger, NotFoundException } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
 import type { User } from '@studylog/database';
 import { Membership, OrganizationInvitation, OrganizationRole } from '@studylog/database';
 import type { DataSource } from 'typeorm';
 
 import type { FakeDataSource } from '../../test/unit/fake-data-source.js';
 import { fakeDataSource } from '../../test/unit/fake-data-source.js';
+import type { MailService } from '../mail/mail.service.js';
 import { InvitationsService } from './invitations.service.js';
 
 const ORG = 'org-1';
@@ -17,16 +19,25 @@ const invitation = ( overrides: object = {} ) => ( {
     expiresAt: new Date( Date.now() + 60_000 ),
     createdAt: new Date(),
     invitedBy: { id: 'sam', firstName: 'Sam', lastName: 'K', email: 'sam@example.com' },
+    organization: { id: ORG, name: 'Study Group' },
     ...overrides,
 } );
 
 describe( 'InvitationsService', () => {
     let db: FakeDataSource;
+    let mail: { send: ReturnType<typeof vi.fn> };
     let service: InvitationsService;
 
     beforeEach( () => {
         db = fakeDataSource();
-        service = new InvitationsService( db as unknown as DataSource );
+        mail = { send: vi.fn() };
+        const config = { getOrThrow: () => 'https://app.example.com/' };
+
+        service = new InvitationsService(
+            db as unknown as DataSource,
+            mail as unknown as MailService,
+            config as unknown as ConfigService,
+        );
     } );
 
     describe( 'create', () => {
@@ -54,7 +65,48 @@ describe( 'InvitationsService', () => {
                 [ 'organizationId', 'email' ],
             );
             expect( view.invitedBy ).toEqual( { id: 'sam', firstName: 'Sam', lastName: 'K' } );
+            expect( view ).not.toHaveProperty( 'organization' );
             vi.useRealTimers();
+        } );
+
+        it( 'emails the invited person a link to the app', async () => {
+            db.repo( OrganizationInvitation ).findOneOrFail.mockResolvedValue( invitation() );
+
+            await service.create( ORG, 'sam', { email: priya.email, role: OrganizationRole.Admin } );
+
+            expect( db.repo( OrganizationInvitation ).findOneOrFail ).toHaveBeenCalledWith( expect.objectContaining( {
+                relations: { invitedBy: true, organization: true },
+            } ) );
+            const [ sent ] = mail.send.mock.calls[0] as [ { to: string; subject: string; text: string; html: string } ];
+
+            expect( sent.to ).toBe( 'priya@example.com' );
+            expect( sent.subject ).toBe( 'Sam K invited you to Study Group on StudyLog' );
+            expect( sent.text ).toContain( 'Sam K invited you to join Study Group on StudyLog as an admin.' );
+            expect( sent.text ).toContain( 'to accept: https://app.example.com/app/organizations' );
+            expect( sent.text ).toContain( 'expires in 14 days' );
+            expect( sent.html ).toContain( '<a href="https://app.example.com/app/organizations">Open StudyLog</a>' );
+        } );
+
+        it( 'says "someone" when the inviter\'s account is gone, and "a member"', async () => {
+            db.repo( OrganizationInvitation ).findOneOrFail
+                .mockResolvedValue( invitation( { invitedBy: null, role: OrganizationRole.Member } ) );
+
+            await service.create( ORG, 'sam', { email: priya.email } );
+
+            const [ sent ] = mail.send.mock.calls[0] as [ { subject: string; text: string } ];
+
+            expect( sent.subject ).toBe( 'Someone invited you to Study Group on StudyLog' );
+            expect( sent.text ).toContain( 'as a member.' );
+        } );
+
+        it( 'still invites when the email can\'t be sent', async () => {
+            const warn = vi.spyOn( Logger.prototype, 'warn' ).mockImplementation( () => undefined );
+
+            db.repo( OrganizationInvitation ).findOneOrFail.mockResolvedValue( invitation() );
+            mail.send.mockRejectedValue( new Error( 'SMTP down' ) );
+
+            await expect( service.create( ORG, 'sam', { email: priya.email } ) ).resolves.toMatchObject( { id: 'inv-1' } );
+            expect( warn ).toHaveBeenCalledWith( 'Couldn\'t email the invitation to Study Group: SMTP down' );
         } );
     } );
 
