@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { useAuth } from '../../auth/auth-context.ts';
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { LoadError, Loading } from '../../components/LoadStates.tsx';
 import { formatLongDate, formatMinutes, greeting } from '../../format/format.ts';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
@@ -40,23 +41,10 @@ export function DashboardPage() {
             </div>
 
             {state.status === 'loading' && (
-                <>
-                    <div className={app.status} role="status">
-                        <span className={app.spinner} aria-hidden="true" />
-                        Loading your dashboard…
-                    </div>
-                    <DashboardSkeleton />
-                </>
+                <Loading text="Loading your dashboard…"><DashboardSkeleton /></Loading>
             )}
 
-            {state.status === 'error' && (
-                <div className={app.error} role="alert">
-                    <p>{state.message}</p>
-                    <button type="button" className={`${shared.button} ${shared.secondary} ${shared.small}`} onClick={reload}>
-                        Try again
-                    </button>
-                </div>
-            )}
+            {state.status === 'error' && <LoadError message={state.message} retry={reload} />}
 
             {state.status === 'ready' && (
                 <>

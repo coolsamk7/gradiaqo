@@ -136,6 +136,11 @@
     text-align: center;
 }
 
+.emptyText {
+    max-width: 360px;
+    margin-bottom: var( --space-1 );
+}
+
 .chip {
     display: grid;
     place-items: center;

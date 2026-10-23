@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useAuth } from '../../auth/auth-context.ts';
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { BrowsePathsLink, LoadError, Loading, PathSkeleton } from '../../components/LoadStates.tsx';
 import { formatMonth } from '../../format/format.ts';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
@@ -34,22 +35,12 @@ export function PathPreviewPage() {
                 Browse paths
             </Link>
 
-            {state.status === 'loading' && (
-                <div className={app.status} role="status">
-                    <span className={app.spinner} aria-hidden="true" />
-                    Loading the path…
-                </div>
-            )}
+            {state.status === 'loading' && <Loading text="Loading the path…"><PathSkeleton /></Loading>}
 
             {state.status === 'error' && (
-                <div className={app.error} role="alert">
-                    <p>{state.message}</p>
-                    {!state.notFound && (
-                        <button type="button" className={`${shared.button} ${shared.secondary} ${shared.small}`} onClick={reload}>
-                            Try again
-                        </button>
-                    )}
-                </div>
+                <LoadError message={state.message} retry={state.notFound ? undefined : reload}>
+                    {state.notFound && <BrowsePathsLink />}
+                </LoadError>
             )}
 
             {state.status === 'ready' && <Preview path={state.path} />}

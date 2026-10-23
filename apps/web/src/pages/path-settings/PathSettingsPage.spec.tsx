@@ -308,6 +308,7 @@ describe( 'PathSettingsPage', () => {
         renderApp( `/app/paths/${DETAIL.id}/settings` );
 
         expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'This learning path isn\'t on your list.' );
+        expect( within( screen.getByRole( 'main' ) ).getByRole( 'link', { name: 'Browse paths' } ) ).toHaveAttribute( 'href', '/app/catalog' );
         expect( screen.getByRole( 'link', { name: 'Back to Learning path' } ) ).toBeInTheDocument();
         expect( screen.queryByRole( 'button', { name: 'Try again' } ) ).not.toBeInTheDocument();
     } );

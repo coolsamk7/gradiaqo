@@ -1,0 +1,38 @@
+/* Loading and load-error states (Figma: Screens – Web › States). Status line and alert: styles/app.module.css. */
+
+/* The alert with its button underneath. */
+.failed {
+    display: grid;
+    justify-items: start;
+    gap: var( --space-3 );
+}
+
+.failed > [role='alert'] {
+    justify-self: stretch;
+    justify-content: flex-start;
+}
+
+.failed svg {
+    flex: none;
+}
+
+/* Grey blocks in the shape of the page; decorative (the status line says what's happening). */
+.skeleton {
+    display: grid;
+    gap: var( --space-6 );
+}
+
+.bar {
+    display: block;
+    max-width: 100%;
+}
+
+.header {
+    display: grid;
+    gap: var( --space-3 );
+}
+
+.card {
+    display: grid;
+    gap: var( --space-4 );
+}

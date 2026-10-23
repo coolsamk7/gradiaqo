@@ -6,6 +6,7 @@ import { Link, useParams, useSearchParams } from 'react-router';
 
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { BrowsePathsLink, LoadError, Loading, PathSkeleton } from '../../components/LoadStates.tsx';
 import { ProgressBar } from '../../components/ProgressBar.tsx';
 import { percent } from '../../format/format.ts';
 import app from '../../styles/app.module.css';
@@ -38,22 +39,12 @@ export function PathPage() {
                 Dashboard
             </Link>
 
-            {state.status === 'loading' && (
-                <div className={app.status}>
-                    <span className={app.spinner} aria-hidden="true" />
-                    Loading the learning path…
-                </div>
-            )}
+            {state.status === 'loading' && <Loading text="Loading the learning path…"><PathSkeleton /></Loading>}
 
             {state.status === 'error' && (
-                <div className={app.error} role="alert">
-                    <p>{state.message}</p>
-                    {!state.notFound && (
-                        <button type="button" className={`${shared.button} ${shared.secondary} ${shared.small}`} onClick={reload}>
-                            Try again
-                        </button>
-                    )}
-                </div>
+                <LoadError message={state.message} retry={state.notFound ? undefined : reload}>
+                    {state.notFound && <BrowsePathsLink />}
+                </LoadError>
             )}
 
             {state.status === 'ready' && <PathView path={state.path} onStatus={setStatus} />}

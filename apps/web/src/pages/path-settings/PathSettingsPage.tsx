@@ -7,6 +7,7 @@ import { AppLayout } from '../../components/AppLayout.tsx';
 import dialog from '../../components/Dialog.module.css';
 import { Dialog } from '../../components/Dialog.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { BrowsePathsLink, CardSkeleton, LoadError, Loading } from '../../components/LoadStates.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import { ChoosePartsDialog } from '../path-preview/ChoosePartsDialog.tsx';
@@ -38,21 +39,16 @@ export function PathSettingsPage() {
             </Link>
 
             {state.status === 'loading' && (
-                <div className={app.status} role="status">
-                    <span className={app.spinner} aria-hidden="true" />
-                    Loading the settings…
-                </div>
+                <Loading text="Loading the settings…">
+                    <CardSkeleton />
+                    <CardSkeleton lines={4} />
+                </Loading>
             )}
 
             {state.status === 'error' && (
-                <div className={app.error} role="alert">
-                    <p>{state.message}</p>
-                    {!state.notFound && (
-                        <button type="button" className={`${shared.button} ${shared.secondary} ${shared.small}`} onClick={reload}>
-                            Try again
-                        </button>
-                    )}
-                </div>
+                <LoadError message={state.message} retry={state.notFound ? undefined : reload}>
+                    {state.notFound && <BrowsePathsLink />}
+                </LoadError>
             )}
 
             {state.status === 'ready' && <Settings data={state.data} onChanged={refresh} />}

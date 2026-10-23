@@ -55,7 +55,7 @@ export function usePathSettings( enrollmentId: string ) {
 
 function describeError( error: unknown ): SettingsState {
     if ( error instanceof ApiError && ( error.status === 404 || error.status === 400 ) ) {
-        return { status: 'error', message: 'This learning path isn\'t on your list.', notFound: true };
+        return { status: 'error', message: 'This learning path isn\'t on your list. The link may be wrong, or you left the path.', notFound: true };
     }
 
     return {

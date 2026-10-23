@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { CardSkeleton, LoadError, Loading } from '../../components/LoadStates.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import { Categories } from './Categories.tsx';
@@ -43,20 +44,14 @@ export function ReadinessPage() {
             </div>
 
             {state.status === 'loading' && (
-                <div className={app.status} role="status">
-                    <span className={app.spinner} aria-hidden="true" />
-                    Loading your readiness…
-                </div>
+                <Loading text="Loading your readiness…">
+                    <CardSkeleton lines={4} />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                </Loading>
             )}
 
-            {state.status === 'error' && (
-                <div className={app.error} role="alert">
-                    <p>{state.message}</p>
-                    <button type="button" className={`${shared.button} ${shared.secondary} ${shared.small}`} onClick={reload}>
-                        Try again
-                    </button>
-                </div>
-            )}
+            {state.status === 'error' && <LoadError message={state.message} retry={reload} />}
 
             {data && !data.readiness.readiness && (
                 <section className={`${app.card} ${styles.empty}`} aria-labelledby="no-goal-title">

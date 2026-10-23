@@ -371,16 +371,20 @@ describe( 'PathPage', () => {
         api( { [`GET ${URL}`]: pending } );
         renderApp( `/app/paths/${DSA.id}` );
 
-        expect( await screen.findByText( 'Loading the learning path…' ) ).toBeInTheDocument();
+        expect( await screen.findByText( 'Loading the learning path…' ) ).toHaveAttribute( 'role', 'status' );
         expect( screen.getByRole( 'link', { name: 'Back to dashboard' } ) ).toHaveAttribute( 'href', '/app' );
+        // Grey blocks in the shape of the page, hidden from screen readers.
+        expect( document.querySelector( '[aria-hidden="true"] [class*="card"]' ) ).toBeInTheDocument();
     } );
 
     it.each( [ 404, 400 ] )( 'says when the path isn\'t on the user\'s list (%i)', async ( status ) => {
         api( { [`GET ${URL}`]: () => json( status, { message: 'Enrollment not found' } ) } );
         renderApp( `/app/paths/${DSA.id}` );
 
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'This learning path isn\'t on your list.' );
+        expect( await screen.findByRole( 'alert' ) )
+            .toHaveTextContent( 'This learning path isn\'t on your list. The link may be wrong, or you left the path.' );
         expect( screen.queryByRole( 'button', { name: 'Try again' } ) ).not.toBeInTheDocument();
+        expect( within( screen.getByRole( 'main' ) ).getByRole( 'link', { name: 'Browse paths' } ) ).toHaveAttribute( 'href', '/app/catalog' );
     } );
 
     it( 'says when the API can\'t be reached, and loads again on retry', async () => {

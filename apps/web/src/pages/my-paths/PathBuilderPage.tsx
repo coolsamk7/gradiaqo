@@ -6,12 +6,12 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useAuth } from '../../auth/auth-context.ts';
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { CardSkeleton, LoadError, Loading } from '../../components/LoadStates.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import styles from './Builder.module.css';
 import type { Selection } from './builder-tree.ts';
 import { resolveSelection } from './builder-tree.ts';
-import { LoadError, Loading } from './LoadStates.tsx';
 import { NodeEditor } from './NodeEditor.tsx';
 import { saveErrorMessage } from './problems.ts';
 import { StructureCard } from './StructureCard.tsx';
@@ -38,7 +38,7 @@ export function PathBuilderPage() {
                 My paths
             </Link>
 
-            {state.status === 'loading' && <Loading text="Loading the path…" />}
+            {state.status === 'loading' && <Loading text="Loading the path…"><CardSkeleton lines={5} /></Loading>}
             {state.status === 'error' && <LoadError message={state.message} retry={reload} />}
             {state.status === 'ready' && <Builder path={state.path} organization={state.organization} send={send} />}
         </AppLayout>

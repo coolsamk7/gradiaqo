@@ -15,6 +15,7 @@ const rect = ( x: number, y: number, width: number, height: number, rx = 0 ): Sh
 
 /* The outline icons from the Figma file (Feather/Lucide shapes on a 24px grid), drawn in the current text color. */
 const ICONS = {
+    'alert-circle': [ circle( 12, 12, 10 ), line( 12, 8, 12, 12 ), line( 12, 16, 12.01, 16 ) ],
     'arrow-right': [ line( 5, 12, 19, 12 ), polyline( '12 5 19 12 12 19' ) ],
     'bar-chart': [ line( 18, 20, 18, 10 ), line( 12, 20, 12, 4 ), line( 6, 20, 6, 14 ) ],
     'book-open': [ path( 'M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z' ), path( 'M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z' ) ],

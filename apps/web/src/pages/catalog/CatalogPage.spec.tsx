@@ -91,6 +91,8 @@ describe( 'CatalogPage', () => {
 
         await user.type( screen.getByRole( 'searchbox', { name: 'Search paths' } ), 'graph' );
         expect( await screen.findByRole( 'heading', { name: 'No paths match “graph”' } ) ).toBeInTheDocument();
+        expect( screen.getByText( /or build your own path from your notes and problems\.$/ ) ).toBeInTheDocument();
+        expect( screen.getByRole( 'link', { name: 'Build a path' } ) ).toHaveAttribute( 'href', '/app/my-paths' );
         // One request for the whole word, not one per letter.
         expect( catalogCalls( calls ) ).toEqual( [ '', '?search=graph' ] );
 

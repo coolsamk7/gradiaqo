@@ -2,11 +2,11 @@ import type { AnalyticsJson, AnalyticsPeriod } from '@studylog/schemas';
 import { useSearchParams } from 'react-router';
 
 import { AppLayout } from '../../components/AppLayout.tsx';
+import { LoadError, Loading } from '../../components/LoadStates.tsx';
 import { StatTiles } from '../../components/StatTiles.tsx';
 import { formatMinutes } from '../../format/format.ts';
 import form from '../../forms/form.module.css';
 import app from '../../styles/app.module.css';
-import shared from '../../styles/shared.module.css';
 import styles from './Analytics.module.css';
 import { isPeriod, PERIODS, versusBefore } from './analytics.ts';
 import { AnalyticsSkeleton } from './AnalyticsSkeleton.tsx';
@@ -77,23 +77,10 @@ export function AnalyticsPage() {
             </div>
 
             {state.status === 'loading' && (
-                <>
-                    <div className={app.status} role="status">
-                        <span className={app.spinner} aria-hidden="true" />
-                        Loading your analytics…
-                    </div>
-                    <AnalyticsSkeleton />
-                </>
+                <Loading text="Loading your analytics…"><AnalyticsSkeleton /></Loading>
             )}
 
-            {state.status === 'error' && (
-                <div className={app.error} role="alert">
-                    <p>{state.message}</p>
-                    <button type="button" className={`${shared.button} ${shared.secondary} ${shared.small}`} onClick={reload}>
-                        Try again
-                    </button>
-                </div>
-            )}
+            {state.status === 'error' && <LoadError message={state.message} retry={reload} />}
 
             {state.status === 'ready' && (
                 <>

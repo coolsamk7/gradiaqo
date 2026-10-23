@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { CardSkeleton, LoadError, Loading } from '../../components/LoadStates.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import { SessionForm } from './SessionForm.tsx';
@@ -71,20 +72,13 @@ export function SessionsPage() {
             )}
 
             {state.status === 'loading' && (
-                <div className={app.status}>
-                    <span className={app.spinner} aria-hidden="true" />
-                    Loading your sessions…
-                </div>
+                <Loading text="Loading your sessions…">
+                    <CardSkeleton lines={3} />
+                    <CardSkeleton lines={2} />
+                </Loading>
             )}
 
-            {state.status === 'error' && (
-                <div className={app.error} role="alert">
-                    <p>{state.message}</p>
-                    <button type="button" className={`${shared.button} ${shared.secondary} ${shared.small}`} onClick={reload}>
-                        Try again
-                    </button>
-                </div>
-            )}
+            {state.status === 'error' && <LoadError message={state.message} retry={reload} />}
 
             {state.status === 'ready' && state.items.length === 0 && (
                 <p className={app.empty}>No study sessions yet. Log your first one to start your streak.</p>
