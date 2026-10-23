@@ -173,6 +173,11 @@
     background: var( --color-warning-soft );
 }
 
+.badgeDanger {
+    color: var( --color-danger );
+    background: var( --color-danger-soft );
+}
+
 /* ---------- Study session rows ---------- */
 
 .sessions {

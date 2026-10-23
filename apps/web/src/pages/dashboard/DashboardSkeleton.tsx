@@ -1,3 +1,4 @@
+import tiles from '../../components/StatTiles.module.css';
 import app from '../../styles/app.module.css';
 import styles from './Dashboard.module.css';
 
@@ -5,9 +6,9 @@ import styles from './Dashboard.module.css';
 export function DashboardSkeleton() {
     return (
         <div className={styles.skeleton} aria-hidden="true">
-            <div className={styles.tiles}>
+            <div className={tiles.tiles}>
                 {[ 0, 1, 2, 3, 4 ].map( ( n ) => (
-                    <div key={n} className={`${app.card} ${styles.tile}`}>
+                    <div key={n} className={`${app.card} ${tiles.tile}`}>
                         <span className={app.skeleton} style={{ width: 64, height: 10 }} />
                         <span className={app.skeleton} style={{ width: 110, height: 24 }} />
                     </div>

@@ -1,21 +1,12 @@
 import type { StudyStats } from '@studylog/schemas';
 
-import type { IconName } from '../../components/Icon.tsx';
-import { Icon } from '../../components/Icon.tsx';
+import type { StatTile } from '../../components/StatTiles.tsx';
+import { StatTiles as StatTileList } from '../../components/StatTiles.tsx';
 import { formatDays, formatMinutes } from '../../format/format.ts';
-import app from '../../styles/app.module.css';
-import styles from './Dashboard.module.css';
-
-interface Tile {
-    label: string;
-    value: string;
-    detail: string;
-    icon: IconName;
-}
 
 /** The headline numbers: time today, this week and in total, the streak, and items completed. */
 export function StatTiles( { stats, paths }: { stats: StudyStats; paths: number } ) {
-    const tiles: Tile[] = [
+    const tiles: StatTile[] = [
         { label: 'Today', value: formatMinutes( stats.todayMinutes ), detail: versusYesterday( stats ), icon: 'clock' },
         { label: 'This week', value: formatMinutes( stats.weekMinutes ), detail: 'Mon–Sun', icon: 'calendar' },
         {
@@ -33,20 +24,7 @@ export function StatTiles( { stats, paths }: { stats: StudyStats; paths: number 
         },
     ];
 
-    return (
-        <dl className={styles.tiles}>
-            {tiles.map( ( tile ) => (
-                <div key={tile.label} className={`${app.card} ${styles.tile}`}>
-                    <dt className={styles.label}>
-                        {tile.label}
-                        <span className={styles.chip}><Icon name={tile.icon} /></span>
-                    </dt>
-                    <dd className={styles.tileValue}>{tile.value}</dd>
-                    <dd className={`${app.muted} ${app.small}`}>{tile.detail}</dd>
-                </div>
-            ) )}
-        </dl>
-    );
+    return <StatTileList tiles={tiles} />;
 }
 
 /** Today against yesterday: "+30m vs yesterday", "−15m vs yesterday" or "Same as yesterday". */

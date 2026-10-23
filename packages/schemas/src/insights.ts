@@ -167,6 +167,16 @@ export const Readiness = Type.Object( {
             } ) ),
         } ) ),
         nextSteps: Type.Array( Type.Object( {
+            kind: Type.Union( [
+                Type.Literal( 'module' ),
+                Type.Literal( 'mock' ),
+                Type.Literal( 'revise' ),
+                Type.Literal( 'resume' ),
+                Type.Literal( 'hard' ),
+            ], {
+                description: 'module: finish the weakest module · mock: do a mock interview · revise: clear Revise items · '
+                    + 'resume: resume a paused path · hard: try a hard problem',
+            } ),
             priority: Type.Union( [ Type.Literal( 'high' ), Type.Literal( 'medium' ), Type.Literal( 'low' ) ] ),
             title: Type.String(),
             detail: Type.String(),

@@ -1,0 +1,375 @@
+/* Analytics (Figma: Insights › Analytics). Cards and badges: styles/app.module.css; stat tiles: components/StatTiles. */
+
+/* ---------- Filters ---------- */
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-2 );
+}
+
+.pathFilter {
+    width: 200px;
+}
+
+.periods {
+    display: flex;
+    gap: var( --space-1 );
+    padding: var( --space-0-5 );
+    border-radius: var( --radius-md );
+    background: var( --color-bg-muted );
+}
+
+.period {
+    padding: var( --space-1 ) var( --space-3 );
+    border: 1px solid transparent;
+    border-radius: var( --radius-md );
+    color: var( --color-text );
+    background: none;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    cursor: pointer;
+}
+
+.period:hover {
+    background: var( --color-surface );
+}
+
+.period[aria-pressed='true'] {
+    border-color: var( --color-border-strong );
+    background: var( --color-surface );
+}
+
+/* ---------- Rows of cards ---------- */
+
+.wideLeft,
+.wideRight {
+    display: grid;
+    align-items: stretch;
+    gap: var( --space-4 );
+}
+
+.wideLeft {
+    grid-template-columns: minmax( 0, 1fr ) 400px;
+}
+
+.wideRight {
+    grid-template-columns: 400px minmax( 0, 1fr );
+}
+
+@media ( max-width: 1200px ) {
+    .wideLeft,
+    .wideRight {
+        grid-template-columns: minmax( 0, 1fr );
+    }
+}
+
+.skeleton {
+    display: grid;
+    gap: var( --space-6 );
+}
+
+/* ---------- Bars ---------- */
+
+.track {
+    display: block;
+    flex: 1;
+    height: 4px;
+    overflow: hidden;
+    border-radius: var( --radius-full );
+    background: var( --color-bg-muted );
+}
+
+.thick {
+    height: 8px;
+}
+
+.fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+}
+
+/* ---------- Study time per week ---------- */
+
+.weeks {
+    display: flex;
+    gap: var( --space-3 );
+    height: 160px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.week {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var( --space-2 );
+    min-width: 0;
+}
+
+.weekColumn {
+    display: flex;
+    flex: 1;
+    align-items: flex-end;
+}
+
+.weekBar,
+.weekBarEmpty {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+}
+
+.weekBar {
+    min-height: 4px;
+    background: var( --color-chart-1 );
+    opacity: 0.55;
+}
+
+/* The current week. */
+.current {
+    background: var( --color-accent );
+    opacity: 1;
+}
+
+.weekBarEmpty {
+    height: 4px;
+    background: var( --color-bg-muted );
+}
+
+.weekLabel {
+    min-height: 16px;
+    overflow: visible;
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ---------- Where your time went ---------- */
+
+.bars {
+    display: grid;
+    gap: var( --space-4 );
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pathTime {
+    display: grid;
+    gap: var( --space-1 );
+}
+
+.barLabel {
+    display: flex;
+    justify-content: space-between;
+    gap: var( --space-3 );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* ---------- Item status ---------- */
+
+.statusBody {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-6 );
+}
+
+.donut {
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 140px;
+    height: 140px;
+}
+
+.donut svg {
+    position: absolute;
+    inset: 0;
+}
+
+.donutCenter {
+    position: relative;
+    display: grid;
+    justify-items: center;
+}
+
+.donutValue {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+    letter-spacing: -0.005em;
+}
+
+.legend {
+    display: grid;
+    flex: 1;
+    gap: var( --space-2 );
+    min-width: 160px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.legend li {
+    display: flex;
+    align-items: center;
+    gap: var( --space-2 );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.legendLabel {
+    flex: 1;
+}
+
+/* ---------- By difficulty ---------- */
+
+.levels {
+    display: grid;
+    gap: var( --space-4 );
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.level {
+    display: flex;
+    align-items: center;
+    gap: var( --space-4 );
+}
+
+.levelName {
+    flex: none;
+    width: 72px;
+    font-weight: 500;
+}
+
+.habits {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax( 110px, 1fr ) );
+    gap: var( --space-3 );
+    margin: var( --space-6 ) 0 0;
+}
+
+.habit {
+    display: grid;
+    gap: var( --space-1 );
+    padding: var( --space-3 );
+    border-radius: var( --radius-md );
+    background: var( --color-bg-muted );
+}
+
+.habitValue {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+    letter-spacing: -0.005em;
+}
+
+/* ---------- Needs focus ---------- */
+
+.focusHeader {
+    display: grid;
+    gap: var( --space-1 );
+    margin-bottom: var( --space-4 );
+}
+
+.focusGrid {
+    display: grid;
+    grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+    gap: var( --space-3 );
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.focus {
+    display: grid;
+    grid-template-columns: minmax( 0, 1fr );
+    gap: var( --space-2 );
+    padding: var( --space-4 );
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-lg );
+}
+
+.focusTop {
+    display: flex;
+    align-items: flex-start;
+    gap: var( --space-3 );
+}
+
+.focusTitles {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+}
+
+.focusTitle {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+.focusNext {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.nextItem {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media ( max-width: 1200px ) {
+    .focusGrid {
+        grid-template-columns: minmax( 0, 1fr );
+    }
+}
+
+.danger {
+    color: var( --color-danger );
+}
+
+.warning {
+    color: var( --color-warning );
+}
+
+.success {
+    color: var( --color-success );
+}
+
+@media ( max-width: 600px ) {
+    .actions,
+    .pathFilter {
+        width: 100%;
+    }
+
+    .weeks {
+        gap: var( --space-1 );
+    }
+
+}

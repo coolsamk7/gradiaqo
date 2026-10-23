@@ -78,12 +78,12 @@ describe( 'AppLayout', () => {
     it( 'opens a section that isn\'t built yet on a "coming soon" page, marked as current', async () => {
         api();
         renderApp( '/app' );
-        await userEvent.setup().click( await screen.findByRole( 'link', { name: 'Analytics' } ) );
+        await userEvent.setup().click( await screen.findByRole( 'link', { name: 'Organizations' } ) );
 
-        expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app/analytics' );
-        expect( screen.getByRole( 'heading', { level: 1, name: 'Analytics' } ) ).toBeInTheDocument();
+        expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app/organizations' );
+        expect( screen.getByRole( 'heading', { level: 1, name: 'Organizations' } ) ).toBeInTheDocument();
         expect( screen.getByRole( 'heading', { level: 2, name: 'Coming soon' } ) ).toBeInTheDocument();
-        expect( screen.getByRole( 'link', { name: 'Analytics' } ) ).toHaveAttribute( 'aria-current', 'page' );
+        expect( screen.getByRole( 'link', { name: 'Organizations' } ) ).toHaveAttribute( 'aria-current', 'page' );
         expect( screen.getByRole( 'link', { name: 'Back to dashboard' } ) ).toHaveAttribute( 'href', '/app' );
     } );
 } );

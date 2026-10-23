@@ -440,7 +440,8 @@ function nextStepsOf(
     mock: Entry | undefined,
 ): Step[] {
     const steps: Step[] = [];
-    const step = ( priority: Step['priority'], title: string, detail: string, tree: Tree, entry?: Entry ): Step => ( {
+    const step = ( kind: Step['kind'], priority: Step['priority'], title: string, detail: string, tree: Tree, entry?: Entry ): Step => ( {
+        kind,
         priority,
         title,
         detail,
@@ -462,6 +463,7 @@ function nextStepsOf(
         const left = weakest.module.progress.total - weakest.module.progress.completed;
 
         steps.push( step(
+            'module',
             'high',
             `Finish ${weakest.module.title}: ${plural( left, 'required item' )} left`,
             `Next up: ${todo.slice( 0, 2 ).map( ( { item } ) => item.title ).join( ', ' )}`,
@@ -470,10 +472,11 @@ function nextStepsOf(
         ) );
     }
     if ( mock ) {
-        steps.push( step( 'high', 'Do a mock interview', `${mock.item.title}, in ${mock.tree.learningPath.title}`, mock.tree, mock ) );
+        steps.push( step( 'mock', 'high', 'Do a mock interview', `${mock.item.title}, in ${mock.tree.learningPath.title}`, mock.tree, mock ) );
     }
     if ( revise.oldest ) {
         steps.push( step(
+            'revise',
             'medium',
             `Clear your ${plural( revise.count, 'Revise item' )}`,
             `Oldest: ${revise.oldest.entry.item.title}, marked ${plural( revise.oldest.days, 'day' )} ago`,
@@ -484,13 +487,13 @@ function nextStepsOf(
     for ( const tree of trees.filter( ( candidate ) => candidate.status === EnrollmentStatus.Paused ) ) {
         const left = tree.progress.total - tree.progress.completed;
 
-        steps.push( step( 'medium', `Resume ${tree.learningPath.title}`, `Paused · ${plural( left, 'item' )} left`, tree ) );
+        steps.push( step( 'resume', 'medium', `Resume ${tree.learningPath.title}`, `Paused · ${plural( left, 'item' )} left`, tree ) );
     }
 
     const hard = entriesOf( trees ).find( ( { item } ) => item.difficulty === Difficulty.Hard && !isFinished( item ) );
 
     if ( hard ) {
-        steps.push( step( 'low', 'Try a hard problem', `${hard.item.title} · ${hard.topic.title}`, hard.tree, hard ) );
+        steps.push( step( 'hard', 'low', 'Try a hard problem', `${hard.item.title} · ${hard.topic.title}`, hard.tree, hard ) );
     }
 
     return steps;
