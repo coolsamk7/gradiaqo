@@ -1,3 +1,4 @@
+import type { UserJson } from '@studylog/schemas';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StrictMode, useState } from 'react';
@@ -15,7 +16,7 @@ const SIGNUP = { firstName: 'Sam', lastName: 'Khan', email: 'sam@example.com', p
 
 /** Shows the auth state, with buttons to log in and out. */
 function AuthProbe() {
-    const { state, logIn, signUp, logOut, request } = useAuth();
+    const { state, logIn, signUp, logOut, updateUser, request } = useAuth();
     const [ settled, setSettled ] = useState( 0 );
 
     return (
@@ -24,6 +25,7 @@ function AuthProbe() {
             <button type="button" onClick={() => void logIn( 'sam@example.com', 'secret' ).catch( () => undefined )}>log in</button>
             <button type="button" onClick={() => void signUp( SIGNUP ).catch( () => undefined )}>sign up</button>
             <button type="button" onClick={() => void logOut()}>log out</button>
+            <button type="button" onClick={() => updateUser( { ...USER, firstName: 'Samira' } as UserJson )}>rename</button>
             <button
                 type="button"
                 onClick={() => void request( '/things' ).catch( () => undefined ).finally( () => setSettled( ( count ) => count + 1 ) )}
@@ -47,6 +49,21 @@ describe( 'AuthProvider', () => {
         expect( await screen.findByText( 'authenticated:Sam:restored-token' ) ).toBeInTheDocument();
         expect( calls.filter( ( call ) => call.path === '/auth/refresh' ) ).toHaveLength( 1 );
         expect( calls.find( ( call ) => call.path === '/auth/me' )?.headers ).toEqual( { Authorization: 'Bearer restored-token' } );
+    } );
+
+    it( 'shows a changed user while logged in, and ignores it after logging out', async () => {
+        mockApi( { ...loggedIn, 'POST /auth/logout': () => noContent() } );
+        const user = userEvent.setup();
+
+        renderProvider();
+        await screen.findByText( 'authenticated:Sam:restored-token' );
+        await user.click( screen.getByRole( 'button', { name: 'rename' } ) );
+        expect( screen.getByRole( 'status' ) ).toHaveTextContent( 'authenticated:Samira:restored-token' );
+
+        await user.click( screen.getByRole( 'button', { name: 'log out' } ) );
+        await screen.findByText( 'anonymous' );
+        await user.click( screen.getByRole( 'button', { name: 'rename' } ) );
+        expect( screen.getByRole( 'status' ) ).toHaveTextContent( 'anonymous' );
     } );
 
     it( 'is anonymous without a valid session', async () => {

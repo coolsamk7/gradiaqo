@@ -14,12 +14,6 @@ export const UPCOMING = {
         icon: 'shield',
         text: 'Manage the global catalog and review paths people reported.',
     },
-    settings: {
-        path: '/app/settings',
-        title: 'Settings',
-        icon: 'sliders',
-        text: 'Your profile, password, reminders and data.',
-    },
 } satisfies Record<string, { path: string; title: string; icon: IconName; text: string }>;
 
 export type UpcomingPage = keyof typeof UPCOMING;

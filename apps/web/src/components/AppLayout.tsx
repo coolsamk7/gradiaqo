@@ -31,7 +31,7 @@ const LINKS: NavItem[] = [
 /** Under the main links, above the account. Admin only for superadmins. */
 const FOOTER_LINKS: ( NavItem & { superadmin?: boolean } )[] = [
     { to: UPCOMING.admin.path, label: 'Admin', icon: 'shield', superadmin: true },
-    { to: UPCOMING.settings.path, label: 'Settings', icon: 'sliders' },
+    { to: '/app/settings', label: 'Settings', icon: 'sliders' },
 ];
 
 /**

@@ -1,6 +1,7 @@
 import { EnrollmentStatus, ItemType, RuleMode, RuleScope } from '@studylog/schemas/enums';
 
 import { ApiError, NetworkError } from '../../api/client.ts';
+import { formatMonth } from '../../format/format.ts';
 import type { TreeSpec } from '../../test/fixtures.ts';
 import { enrollment, enrollmentDetail, publishedPath, uuid } from '../../test/fixtures.ts';
 import {
@@ -13,7 +14,7 @@ import {
     toggleModule,
     toggleTopic,
 } from './parts.ts';
-import { enrollError, formatMonth, itemLine, sourceName } from './preview.ts';
+import { enrollError, itemLine, sourceName } from './preview.ts';
 
 const SHARED = { id: uuid( 99 ), title: 'Shared Item' };
 

@@ -12,8 +12,11 @@ export interface Session {
 export type AuthState =
     /** Checking for an existing session at startup. */
     | { status: 'loading' }
-    /** `expired`: was logged in, but the session could not be renewed (e.g. logged out on another device). */
-    | { status: 'anonymous'; expired?: boolean }
+    /**
+     * `expired`: was logged in, but the session could not be renewed (e.g. logged out on another device).
+     * `deleted`: the user just deleted their account.
+     */
+    | { status: 'anonymous'; expired?: boolean; deleted?: boolean }
     | { status: 'authenticated'; session: Session };
 
 export interface AuthContextValue {
@@ -24,6 +27,10 @@ export interface AuthContextValue {
     signUp: ( details: SignupRequest ) => Promise<void>;
     /** Always ends up logged out locally, even if the API can't be reached. */
     logOut: () => Promise<void>;
+    /** Shows changes to the logged-in user, e.g. a new name, everywhere at once. */
+    updateUser: ( user: UserJson ) => void;
+    /** Forgets the session after the account was deleted (the API already ended it); pages go to the homepage. */
+    accountDeleted: () => void;
     /**
      * Calls the API as the logged-in user. Renews the access token when it has expired and retries once; if the
      * session is over, logs out (pages behind <RequireAuth> then go to the login page) and rejects with the 401.

@@ -1,4 +1,4 @@
-import type { SignupRequest } from '@studylog/schemas';
+import type { SignupRequest, UserJson } from '@studylog/schemas';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -66,11 +66,22 @@ export function AuthProvider( { children }: { children: ReactNode } ) {
         }
     }, [ requests ] );
 
+    const updateUser = useCallback( ( user: UserJson ) => {
+        setState( ( current ) => ( current.status === 'authenticated'
+            ? { status: 'authenticated', session: { ...current.session, user } }
+            : current ) );
+    }, [] );
+
+    const accountDeleted = useCallback( () => {
+        requests.setToken( '' );
+        setState( { status: 'anonymous', deleted: true } );
+    }, [ requests ] );
+
     const { request } = requests;
 
     const value = useMemo(
-        () => ( { state, logIn, signUp, logOut, request } ),
-        [ state, logIn, signUp, logOut, request ],
+        () => ( { state, logIn, signUp, logOut, updateUser, accountDeleted, request } ),
+        [ state, logIn, signUp, logOut, updateUser, accountDeleted, request ],
     );
 
     return <AuthContext value={value}>{children}</AuthContext>;

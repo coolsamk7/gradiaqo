@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useAuth } from '../../auth/auth-context.ts';
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { formatMonth } from '../../format/format.ts';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import { authorOf, count, formatEstimate, sourceOf } from '../catalog/catalog-paths.ts';
@@ -13,7 +14,7 @@ import { TYPE_ICONS } from '../my-paths/builder-tree.ts';
 import { ChoosePartsDialog } from './ChoosePartsDialog.tsx';
 import { allTopics, rulesFor } from './parts.ts';
 import styles from './PathPreview.module.css';
-import { enrollError, formatMonth, itemLine, sourceName } from './preview.ts';
+import { enrollError, itemLine, sourceName } from './preview.ts';
 import { usePathPreview } from './use-path-preview.ts';
 
 const BADGE_TONES = { accent: app.badgeAccent, neutral: '', inverse: app.badgeInverse, warning: app.badgeWarning };

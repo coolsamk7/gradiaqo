@@ -63,6 +63,13 @@ export function formatStatsDate( date: string ): string {
     return shortDate.format( new Date( `${date}T00:00:00Z` ) );
 }
 
+const monthYear = new Intl.DateTimeFormat( 'en-US', { month: 'short', year: 'numeric' } );
+
+/** A moment's month: "Oct 2026". */
+export function formatMonth( iso: string ): string {
+    return monthYear.format( new Date( iso ) );
+}
+
 /** "Good morning" before noon, "Good afternoon" before 6 PM, then "Good evening" (local time). */
 export function greeting( now: Date ): string {
     const hour = now.getHours();

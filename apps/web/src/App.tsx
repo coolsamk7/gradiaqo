@@ -18,6 +18,7 @@ import { PathPreviewPage } from './pages/path-preview/PathPreviewPage.tsx';
 import { PathSettingsPage } from './pages/path-settings/PathSettingsPage.tsx';
 import { ReadinessPage } from './pages/readiness/ReadinessPage.tsx';
 import { SessionsPage } from './pages/sessions/SessionsPage.tsx';
+import { SettingsPage } from './pages/settings/SettingsPage.tsx';
 import { SignupPage } from './pages/signup/SignupPage.tsx';
 
 /** The routes. The router itself is set up in main.tsx (tests use a MemoryRouter). */
@@ -36,6 +37,7 @@ export function App() {
                 <Route path="/app/paths/:enrollmentId/settings" element={<RequireAuth><PathSettingsPage /></RequireAuth>} />
                 <Route path="/app/analytics" element={<RequireAuth><AnalyticsPage /></RequireAuth>} />
                 <Route path="/app/interview-ready" element={<RequireAuth><ReadinessPage /></RequireAuth>} />
+                <Route path="/app/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
                 <Route path="/app/my-paths" element={<RequireAuth><MyPathsPage /></RequireAuth>} />
                 <Route path="/app/my-paths/:organizationId/:pathId" element={<RequireAuth><PathBuilderPage /></RequireAuth>} />
                 {( Object.keys( UPCOMING ) as UpcomingPage[] ).map( ( page ) => (
