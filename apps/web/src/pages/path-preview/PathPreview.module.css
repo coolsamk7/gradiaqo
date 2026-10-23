@@ -285,3 +285,84 @@
     font-size: 12px;
     line-height: 16px;
 }
+
+/* ---------- Reporting a community path ---------- */
+
+.report {
+    display: flex;
+    align-items: center;
+    gap: var( --space-2 );
+    margin-top: var( --space-3 );
+    padding-top: var( --space-3 );
+    border-top: 1px solid var( --color-border );
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.reportLink {
+    padding: 0;
+    border: 0;
+    color: inherit;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+}
+
+.reportLink:hover {
+    color: var( --color-text );
+    text-decoration: underline;
+}
+
+.reported {
+    color: var( --color-success );
+}
+
+.reportForm {
+    display: grid;
+    gap: var( --space-5 );
+}
+
+.flush {
+    margin: 0;
+}
+
+.reasons {
+    display: grid;
+    gap: var( --space-2 );
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.reasons legend {
+    margin-bottom: var( --space-2 );
+    padding: 0;
+}
+
+/* Each reason is a card; the chosen one is outlined in the accent color (Figma). */
+.reason {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+    padding: var( --space-3 );
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-md );
+    cursor: pointer;
+}
+
+.reason:has( input:checked ) {
+    padding: calc( var( --space-3 ) - 1px );
+    border: 2px solid var( --color-border-accent );
+    background: var( --color-accent-soft );
+}
+
+.reason:has( input:focus-visible ) {
+    outline: 2px solid var( --color-border-accent );
+    outline-offset: 2px;
+}
+
+.reason input {
+    margin: 0;
+    accent-color: var( --color-accent );
+}

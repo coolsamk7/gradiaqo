@@ -1,4 +1,5 @@
-import type { PublishedPathJson } from '@studylog/schemas';
+import type { PublishedPathJson, PublishedPathSummaryJson } from '@studylog/schemas';
+import { PathVisibility } from '@studylog/schemas/enums';
 
 import { ApiError, NetworkError } from '../../api/client.ts';
 import { DIFFICULTY_LABELS, TYPE_LABELS } from '../path/item-details.ts';
@@ -44,4 +45,33 @@ export function enrollError( error: unknown ): string {
     return error instanceof ApiError && error.status === 404
         ? 'This path isn\'t available any more.'
         : 'Something went wrong, so you weren\'t enrolled. Please try again.';
+}
+
+/**
+ * Whether the user can report the path: only a public path from another user's workspace (a "community" path).
+ * Official paths and organizations' paths aren't reported.
+ */
+export function isReportable( path: PublishedPathSummaryJson, userId: string ): boolean {
+    return path.visibility === PathVisibility.Public
+        && path.organization?.isPersonal === true
+        && path.createdBy?.id !== userId;
+}
+
+/** Why the report wasn't sent; the API explains refusals like "You can't report your own path". */
+export function reportError( error: unknown ): string {
+    if ( error instanceof NetworkError ) {
+        return 'Can\'t reach StudyLog right now. Check your connection and try again.';
+    }
+    if ( error instanceof ApiError && error.status === 429 ) {
+        return 'You\'ve sent a lot of reports. Wait a while before sending more.';
+    }
+    if (
+        error instanceof ApiError
+        && ( error.status === 400 || error.status === 404 )
+        && Object.keys( error.fieldErrors ).length === 0
+    ) {
+        return `${error.message.replace( /\.$/, '' )}.`;
+    }
+
+    return 'Something went wrong, so the report wasn\'t sent. Please try again.';
 }

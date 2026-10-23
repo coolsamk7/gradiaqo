@@ -55,4 +55,39 @@ test.describe( 'Browse paths', () => {
         await expect( page.getByRole( 'listitem' ).filter( { has: page.getByRole( 'heading', { name: 'Alice\'s Favourite Problems' } ) } ) )
             .toContainText( 'Community' );
     } );
+
+    test( 'a community path can be reported once, from its preview', async ( { page, api } ) => {
+        // A new user, so the report is theirs alone.
+        const user = await api.signUp();
+
+        await logIn( page, user );
+        await page.goto( '/app/catalog?source=community' );
+        await page.getByRole( 'link', { name: 'View Alice\'s Favourite Problems' } ).click();
+        await expect( page.getByRole( 'heading', { level: 1, name: 'Alice\'s Favourite Problems' } ) ).toBeVisible();
+
+        const about = page.getByRole( 'region', { name: 'About' } );
+
+        await about.getByRole( 'button', { name: 'Report this path' } ).click();
+        const dialog = page.getByRole( 'dialog', { name: 'Report this path' } );
+
+        await dialog.getByRole( 'radio', { name: 'Something else' } ).check();
+        await dialog.getByLabel( 'Details (optional)' ).fill( 'Two of the links point to paid courses.' );
+        await dialog.getByRole( 'button', { name: 'Send report' } ).click();
+        await expect( about.getByRole( 'status' ) ).toHaveText( 'Thanks for telling us. An admin will review this path.' );
+
+        // Again, after a reload: the API remembers it.
+        await page.reload();
+        await about.getByRole( 'button', { name: 'Report this path' } ).click();
+        await dialog.getByRole( 'radio', { name: 'Spam or advertising' } ).check();
+        await dialog.getByRole( 'button', { name: 'Send report' } ).click();
+        await expect( about.getByRole( 'status' ) ).toHaveText( 'You already reported this path. An admin will review it.' );
+    } );
+
+    test( 'your own public path has no report link', async ( { page } ) => {
+        await logIn( page, SEEDED.alice );
+        await page.goto( '/app/catalog?source=mine' );
+        await page.getByRole( 'link', { name: 'View Alice\'s Favourite Problems' } ).click();
+        await expect( page.getByRole( 'region', { name: 'About' } ) ).toContainText( 'Public' );
+        await expect( page.getByRole( 'button', { name: 'Report this path' } ) ).toBeHidden();
+    } );
 } );
