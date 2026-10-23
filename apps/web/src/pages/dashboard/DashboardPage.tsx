@@ -20,7 +20,7 @@ import { useDashboard } from './use-dashboard.ts';
 /** Where users land after logging in: their study time, streak, learning paths and latest sessions. */
 export function DashboardPage() {
     const { state: auth } = useAuth();
-    const { state, reload } = useDashboard();
+    const { state, reload, setEnrollments } = useDashboard();
     // Only rendered inside <RequireAuth>, so there is a session.
     const { user } = ( auth as Extract<typeof auth, { status: 'authenticated' }> ).session;
     const now = new Date();
@@ -62,7 +62,7 @@ export function DashboardPage() {
                 <>
                     <StatTiles stats={state.data.stats} paths={following( state.data.enrollments ).length} />
                     <div className={styles.columns}>
-                        <PathList enrollments={state.data.enrollments} />
+                        <PathList enrollments={state.data.enrollments} onReordered={setEnrollments} />
                         <div className={styles.side}>
                             <ActivityChart days={state.data.stats.last30Days} />
                             <RecentSessions sessions={state.data.sessions} now={now} />

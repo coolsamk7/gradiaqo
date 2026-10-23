@@ -295,4 +295,56 @@ describe( 'DashboardPage', () => {
         expect( screen.getByRole( 'heading', { level: 1 } ) ).toHaveTextContent( 'Study with a plan.' );
         expect( calls.at( -1 ) ).toMatchObject( { path: '/auth/logout' } );
     } );
+    it( 'reorders the paths, keeping dropped ones at the end', async () => {
+        const a = enrollment( 'Arrays', EnrollmentStatus.Active, 0, 5, ID.replace( /.$/, '1' ) );
+        const b = enrollment( 'Graphs', EnrollmentStatus.Paused, 0, 5, ID.replace( /.$/, '2' ) );
+        const old = enrollment( 'Old Path', EnrollmentStatus.Dropped, 0, 3, ID.replace( /.$/, '3' ) );
+        let answer = () => json( 200, [ b, a, old ] );
+        const { calls } = mockApi( {
+            ...loggedIn,
+            'GET /me/stats': () => json( 200, STATS ),
+            'GET /me/enrollments': () => json( 200, [ a, b, old ] ),
+            'GET /me/study-sessions': () => json( 200, SESSIONS ),
+            'PUT /me/enrollments/order': () => answer(),
+        } );
+        const user = userEvent.setup();
+
+        renderApp( '/app' );
+        const paths = await screen.findByRole( 'region', { name: 'Your learning paths' } );
+        const titles = () => within( paths ).getAllByRole( 'heading', { level: 3 } ).map( ( heading ) => heading.textContent );
+
+        await waitFor( () => expect( titles() ).toEqual( [ 'Arrays', 'Graphs' ] ) );
+        expect( within( paths ).queryByRole( 'button', { name: 'Move Arrays down' } ) ).not.toBeInTheDocument();
+
+        await user.click( within( paths ).getByRole( 'button', { name: 'Reorder' } ) );
+        expect( within( paths ).getByRole( 'button', { name: 'Done' } ) ).toHaveAttribute( 'aria-pressed', 'true' );
+        expect( within( paths ).getByRole( 'button', { name: 'Move Arrays up' } ) ).toBeDisabled();
+
+        await user.click( within( paths ).getByRole( 'button', { name: 'Move Arrays down' } ) );
+        await waitFor( () => expect( titles() ).toEqual( [ 'Graphs', 'Arrays' ] ) );
+        expect( calls.find( ( call ) => call.method === 'PUT' )?.body ).toEqual( { ids: [ b.id, a.id, old.id ] } );
+
+        // A failed move says so and keeps the order.
+        answer = () => json( 500, {} );
+        await user.click( within( paths ).getByRole( 'button', { name: 'Move Arrays up' } ) );
+        expect( await within( paths ).findByRole( 'alert' ) ).toHaveTextContent( 'Something went wrong, so the order wasn\'t changed.' );
+        expect( titles() ).toEqual( [ 'Graphs', 'Arrays' ] );
+
+        answer = () => {
+            throw new TypeError( 'Failed to fetch' );
+        };
+        await user.click( within( paths ).getByRole( 'button', { name: 'Move Arrays up' } ) );
+        await waitFor( () => expect( within( paths ).getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' ) );
+
+        await user.click( within( paths ).getByRole( 'button', { name: 'Done' } ) );
+        expect( within( paths ).queryByRole( 'button', { name: 'Move Arrays up' } ) ).not.toBeInTheDocument();
+    } );
+
+    it( 'offers no reordering for a single path', async () => {
+        api( { enrollments: [ enrollment( 'Arrays', EnrollmentStatus.Active, 0, 5 ) ] } );
+        renderApp( '/app' );
+
+        expect( await screen.findByRole( 'link', { name: 'Arrays' } ) ).toBeInTheDocument();
+        expect( screen.queryByRole( 'button', { name: 'Reorder' } ) ).not.toBeInTheDocument();
+    } );
 } );
