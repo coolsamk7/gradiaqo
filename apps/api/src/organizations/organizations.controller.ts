@@ -32,6 +32,7 @@ import type {
     CreateOrganizationRequest,
     Member,
     MyOrganization,
+    OrganizationSummary,
     UpdateMemberRequest,
     UpdateOrganizationRequest,
 } from '@studylog/schemas';
@@ -48,11 +49,14 @@ export class OrganizationsController {
     @Get()
     @UseGuards( AuthGuard )
     @ApiBearerAuth()
-    @ApiOperation( { summary: 'List the organizations you belong to, with your role in each' } )
-    @TypeboxResponse( Responses.MyOrganizationList )
+    @ApiOperation( {
+        summary: 'List the organizations you belong to',
+        description: 'With your role, member and published path counts, and the first few members (for avatars).',
+    } )
+    @TypeboxResponse( Responses.OrganizationSummaryList )
     @ApiUnauthorizedResponse( { description: 'Missing or invalid access token' } )
-    listMine( @CurrentUser() user: AccessTokenPayload ): Promise<MyOrganization[]> {
-        return this.organizationsService.listForUser( user.sub );
+    listMine( @CurrentUser() user: AccessTokenPayload ): Promise<OrganizationSummary[]> {
+        return this.organizationsService.summariesForUser( user.sub );
     }
 
     @Post()

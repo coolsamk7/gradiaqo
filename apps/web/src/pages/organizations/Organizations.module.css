@@ -1,0 +1,308 @@
+/* Organizations (Figma: M4 · Teams & creators › Organizations, Organization). Cards and badges: styles/app.module.css. */
+
+.stack {
+    display: grid;
+    gap: var( --space-6 );
+}
+
+/* ---------- Invitations for you ---------- */
+
+.invitesHead {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.invitesHead h2 {
+    flex: 1;
+}
+
+.rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-3 );
+    padding: var( --space-3 ) var( --space-0-5 );
+}
+
+.tight {
+    flex-wrap: nowrap;
+}
+
+.tight .copy {
+    min-width: 0;
+}
+
+.row + .row {
+    border-top: 1px solid var( --color-border );
+}
+
+.chip {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
+.chipMuted {
+    color: var( --color-icon );
+    background: var( --color-bg-muted );
+}
+
+.chipLarge {
+    width: 40px;
+    height: 40px;
+}
+
+.copy {
+    display: grid;
+    flex: 1;
+    gap: var( --space-0-5 );
+    min-width: min( 100%, 200px );
+}
+
+.strong {
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Organization cards ---------- */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat( auto-fill, minmax( min( 100%, 320px ), 1fr ) );
+    gap: var( --space-4 );
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.card {
+    display: grid;
+    align-content: start;
+    gap: var( --space-3 );
+}
+
+.top {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.name {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var( --space-3 );
+}
+
+/* ---------- Avatars ---------- */
+
+.avatars {
+    display: flex;
+}
+
+.avatars > * + * {
+    margin-left: -4px;
+}
+
+.avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var( --radius-full );
+    color: var( --color-on-accent );
+    background: var( --color-accent );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.avatars > .avatar {
+    box-shadow: 0 0 0 2px var( --color-surface );
+}
+
+.more {
+    color: var( --color-text-muted );
+    background: var( --color-bg-muted );
+}
+
+.avatarLarge {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+/* ---------- One organization ---------- */
+
+.back {
+    justify-self: start;
+}
+
+.titleRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var( --space-2 );
+}
+
+.tabs {
+    display: flex;
+    gap: var( --space-4 );
+    overflow-x: auto;
+    border-bottom: 1px solid var( --color-border );
+    scrollbar-width: none;
+}
+
+.tab {
+    flex: none;
+    margin-bottom: -1px;
+    padding: var( --space-2 ) var( --space-1 );
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var( --color-text-muted );
+    background: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.tab:hover {
+    color: var( --color-text );
+}
+
+.tab[aria-selected='true'] {
+    color: var( --color-text );
+    border-bottom-color: var( --color-accent );
+}
+
+.search {
+    display: flex;
+    align-items: center;
+    gap: var( --space-2 );
+    width: min( 100%, 320px );
+    padding: var( --space-2 ) var( --space-3 );
+    border: 1px solid var( --color-border-strong );
+    border-radius: var( --radius-md );
+    color: var( --color-icon );
+    background: var( --color-surface );
+}
+
+.search:focus-within {
+    border-color: var( --color-border-accent );
+    box-shadow: 0 0 0 1px var( --color-border-accent );
+}
+
+.search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    color: var( --color-text );
+    background: none;
+}
+
+.members {
+    padding: var( --space-2 ) var( --space-1 );
+}
+
+.member {
+    display: grid;
+    grid-template-columns: auto minmax( 0, 1fr ) auto auto;
+    align-items: center;
+    gap: var( --space-1 ) var( --space-3 );
+    padding: var( --space-3 ) var( --space-4 );
+}
+
+.meta {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+/* Narrow: the role and join date go under the name, the menu stays on the right. */
+@media ( max-width: 600px ) {
+    .member {
+        grid-template-columns: auto minmax( 0, 1fr ) auto;
+        padding-inline: var( --space-3 );
+    }
+
+    .meta {
+        grid-row: 2;
+        grid-column: 2;
+    }
+}
+
+.joined {
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* The invite form and the pending invitations, side by side; stacked on narrow screens. */
+.inviteArea {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax( min( 100%, 320px ), 1fr ) );
+    align-items: start;
+    gap: var( --space-4 );
+}
+
+.cardHead {
+    display: grid;
+    gap: var( --space-1 );
+    margin-bottom: var( --space-4 );
+}
+
+.inviteForm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var( --space-3 );
+}
+
+.inviteForm > :first-child {
+    flex: 1 1 200px;
+}
+
+.role {
+    flex: 0 1 160px;
+}
+
+.sent {
+    color: var( --color-success );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.form {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+.flush {
+    margin: 0;
+}

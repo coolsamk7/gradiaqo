@@ -25,7 +25,7 @@ const LINKS: NavItem[] = [
     { to: '/app/analytics', label: 'Analytics', icon: 'bar-chart' },
     { to: '/app/interview-ready', label: 'Interview ready', icon: 'target' },
     { to: '/app/my-paths', label: 'My paths', icon: 'layers', also: '/app/my-paths/' },
-    { to: UPCOMING.organizations.path, label: 'Organizations', icon: 'users' },
+    { to: '/app/organizations', label: 'Organizations', icon: 'users', also: '/app/organizations/' },
 ];
 
 /** Under the main links, above the account. Admin only for superadmins. */
