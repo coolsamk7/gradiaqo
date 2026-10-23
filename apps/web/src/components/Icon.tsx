@@ -55,6 +55,8 @@ const ICONS = {
     'log-out': [ path( 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' ), polyline( '16 17 21 12 16 7' ), line( 21, 12, 9, 12 ) ],
     menu: [ line( 3, 12, 21, 12 ), line( 3, 6, 21, 6 ), line( 3, 18, 21, 18 ) ],
     'more-horizontal': [ circle( 12, 12, 1 ), circle( 19, 12, 1 ), circle( 5, 12, 1 ) ],
+    pause: [ rect( 6, 4, 4, 16 ), rect( 14, 4, 4, 16 ) ],
+    play: [ [ 'polygon', { points: '5 3 19 12 5 21 5 3' } ] ],
     plus: [ line( 12, 5, 12, 19 ), line( 5, 12, 19, 12 ) ],
     search: [ circle( 11, 11, 8 ), line( 21, 21, 16.65, 16.65 ) ],
     shield: [ path( 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' ) ],
@@ -71,6 +73,7 @@ const ICONS = {
         path( 'M14 11v6' ),
         path( 'M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2' ),
     ],
+    user: [ path( 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' ), circle( 12, 7, 4 ) ],
     users: [
         path( 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' ),
         circle( 9, 7, 4 ),

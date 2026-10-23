@@ -145,6 +145,7 @@ describe( 'PathPage', () => {
         expect( screen.queryByText( 'Paused' ) ).not.toBeInTheDocument();
         expect( screen.getByRole( 'heading', { level: 1 } ).parentElement?.children ).toHaveLength( 1 ); // no status badge
         expect( screen.queryByText( 'Loading the learning path…' ) ).not.toBeInTheDocument();
+        expect( screen.getByRole( 'link', { name: 'Path settings' } ) ).toHaveAttribute( 'href', `/app/paths/${DSA.id}/settings` );
 
         expect( screen.getAllByRole( 'heading', { level: 2 } ).map( ( heading ) => heading.textContent ) )
             .toEqual( [ 'Arrays & Hashing', 'Linked Lists', 'Trees' ] );
