@@ -280,10 +280,10 @@ describe( 'computeReadiness', () => {
         // 4 required items finished in the last 14 days; 2 left over 42 days.
         expect( readiness.pace ).toEqual( { itemsPerDay: 0.3, neededPerDay: 0, projectedDate: '2026-10-26', onTrack: true } );
         expect( readiness.nextSteps ).toEqual( [
-            { priority: 'high', title: 'Finish Trees: 1 required item left', detail: 'Next up: Mock Interview: Arrays', enrollmentId: 'eA', topicId: 't2', itemId: 'mock' },
-            { priority: 'high', title: 'Do a mock interview', detail: 'Mock Interview: Arrays, in DSA', enrollmentId: 'eA', topicId: 't2', itemId: 'mock' },
-            { priority: 'medium', title: 'Clear your 1 Revise item', detail: 'Oldest: Group Anagrams, marked 18 days ago', enrollmentId: 'eA', topicId: 't1', itemId: 'md1' },
-            { priority: 'low', title: 'Try a hard problem', detail: 'Minimum Window · Hashing', enrollmentId: 'eA', topicId: 't1', itemId: 'h1' },
+            { kind: 'module', priority: 'high', title: 'Finish Trees: 1 required item left', detail: 'Next up: Mock Interview: Arrays', enrollmentId: 'eA', topicId: 't2', itemId: 'mock' },
+            { kind: 'mock', priority: 'high', title: 'Do a mock interview', detail: 'Mock Interview: Arrays, in DSA', enrollmentId: 'eA', topicId: 't2', itemId: 'mock' },
+            { kind: 'revise', priority: 'medium', title: 'Clear your 1 Revise item', detail: 'Oldest: Group Anagrams, marked 18 days ago', enrollmentId: 'eA', topicId: 't1', itemId: 'md1' },
+            { kind: 'hard', priority: 'low', title: 'Try a hard problem', detail: 'Minimum Window · Hashing', enrollmentId: 'eA', topicId: 't1', itemId: 'h1' },
         ] );
     } );
 
@@ -342,8 +342,8 @@ describe( 'computeReadiness', () => {
         ] );
         expect( readiness.pace ).toEqual( { itemsPerDay: 0, neededPerDay: null, projectedDate: null, onTrack: false } );
         expect( readiness.nextSteps ).toEqual( [
-            { priority: 'high', title: 'Finish Arrays: 3 required items left', detail: 'Next up: Two Sum, 3Sum', enrollmentId: 'eA', topicId: 't1', itemId: 'x' },
-            { priority: 'medium', title: 'Resume DSA', detail: 'Paused · 3 items left', enrollmentId: 'eA', topicId: null, itemId: null },
+            { kind: 'module', priority: 'high', title: 'Finish Arrays: 3 required items left', detail: 'Next up: Two Sum, 3Sum', enrollmentId: 'eA', topicId: 't1', itemId: 'x' },
+            { kind: 'resume', priority: 'medium', title: 'Resume DSA', detail: 'Paused · 3 items left', enrollmentId: 'eA', topicId: null, itemId: null },
         ] );
     } );
 

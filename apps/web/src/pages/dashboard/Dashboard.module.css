@@ -1,53 +1,4 @@
-/* The dashboard's own sections (Figma: Current · App › Dashboard). Cards, badges and session rows: styles/app.module.css. */
-
-/* ---------- Stat tiles ---------- */
-
-.tiles {
-    display: grid;
-    grid-template-columns: repeat( auto-fit, minmax( 180px, 1fr ) );
-    gap: var( --space-4 );
-    margin: 0;
-}
-
-.tile {
-    display: grid;
-    align-content: start;
-    gap: var( --space-2 );
-}
-
-.tile dd {
-    margin: 0;
-}
-
-.label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: var( --color-text-muted );
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 16px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.chip {
-    display: grid;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var( --radius-md );
-    color: var( --color-accent-text );
-    background: var( --color-accent-soft );
-}
-
-.tileValue {
-    font-size: 28px;
-    font-weight: 600;
-    line-height: 36px;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-}
+/* The dashboard's own sections (Figma: Current · App › Dashboard). Cards, badges and session rows: styles/app.module.css; stat tiles: components/StatTiles. */
 
 /* ---------- Columns ---------- */
 
@@ -66,18 +17,6 @@
 @media ( max-width: 1200px ) {
     .columns {
         grid-template-columns: minmax( 0, 1fr );
-    }
-}
-
-@media ( max-width: 600px ) {
-    .tiles {
-        grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
-        gap: var( --space-3 );
-    }
-
-    .tileValue {
-        font-size: 24px;
-        line-height: 32px;
     }
 }
 

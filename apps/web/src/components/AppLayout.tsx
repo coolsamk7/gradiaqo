@@ -22,8 +22,8 @@ const LINKS: NavItem[] = [
     { to: '/app', label: 'Dashboard', icon: 'dashboard', also: '/app/paths/' },
     { to: '/app/catalog', label: 'Browse paths', icon: 'compass', also: '/app/catalog/' },
     { to: '/app/sessions', label: 'Sessions', icon: 'clock' },
-    { to: UPCOMING.analytics.path, label: 'Analytics', icon: 'bar-chart' },
-    { to: UPCOMING.readiness.path, label: 'Interview ready', icon: 'target' },
+    { to: '/app/analytics', label: 'Analytics', icon: 'bar-chart' },
+    { to: '/app/interview-ready', label: 'Interview ready', icon: 'target' },
     { to: '/app/my-paths', label: 'My paths', icon: 'layers', also: '/app/my-paths/' },
     { to: UPCOMING.organizations.path, label: 'Organizations', icon: 'users' },
 ];

@@ -1,8 +1,8 @@
 import type { EnrollmentDetailJson } from '@studylog/schemas';
 import type { ProgressStatus } from '@studylog/schemas/enums';
 import { EnrollmentStatus } from '@studylog/schemas/enums';
-import { useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { useEffect, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router';
 
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
@@ -23,7 +23,10 @@ const ENROLLMENT_LABELS: Partial<Record<EnrollmentStatus, string>> = {
     [EnrollmentStatus.Dropped]: 'Dropped',
 };
 
-/** One learning path the user follows: its modules, topics and items, with progress, in the user's own order. */
+/**
+ * One learning path the user follows: its modules, topics and items, with progress, in the user's own order.
+ * `?topic=` (an id) opens that topic and scrolls to it, e.g. from "Open topic" on Analytics.
+ */
 export function PathPage() {
     const { enrollmentId = '' } = useParams();
     const { state, reload, setStatus } = usePath( enrollmentId );
@@ -67,11 +70,21 @@ function PathView( { path, onStatus }: PathViewProps ) {
     const { title, description } = path.learningPath;
     const { completed, total } = path.progress;
     const status = ENROLLMENT_LABELS[path.status];
-    // Open where the user left off: the first topic with required items still to do. Chosen once, so finishing a
-    // topic doesn't close it under the user.
-    const [ firstOpen ] = useState( () => path.modules
-        .flatMap( ( module ) => module.topics )
-        .find( isUnfinished )?.id );
+    const [ params ] = useSearchParams();
+    // Open the topic asked for, else where the user left off: the first topic with required items still to do.
+    // Chosen once, so finishing a topic doesn't close it under the user.
+    const [ firstOpen ] = useState( () => {
+        const topics = path.modules.flatMap( ( module ) => module.topics );
+        const asked = topics.find( ( topic ) => topic.id === params.get( 'topic' ) );
+
+        return { id: ( asked ?? topics.find( isUnfinished ) )?.id, asked: asked !== undefined };
+    } );
+
+    useEffect( () => {
+        if ( firstOpen.asked && firstOpen.id ) {
+            document.getElementById( `topic-${firstOpen.id}` )?.scrollIntoView( { block: 'start' } );
+        }
+    }, [ firstOpen ] );
 
     return (
         <>
@@ -103,7 +116,7 @@ function PathView( { path, onStatus }: PathViewProps ) {
                                 key={topic.id}
                                 topic={topic}
                                 enrollmentId={path.id}
-                                initiallyOpen={topic.id === firstOpen}
+                                initiallyOpen={topic.id === firstOpen.id}
                                 onStatus={onStatus}
                             />
                         ) )}
@@ -126,7 +139,7 @@ function TopicSection( { topic, enrollmentId, initiallyOpen, onStatus }: TopicSe
 
     // `initiallyOpen` never changes for a topic, so after the first render the browser keeps the open state.
     return (
-        <details className={styles.topic} open={initiallyOpen}>
+        <details id={`topic-${topic.id}`} className={styles.topic} open={initiallyOpen}>
             <summary className={styles.topicSummary}>
                 <h3 className={styles.topicTitle}>{topic.title}</h3>
                 <span className={`${app.mono} ${total > 0 && completed === total ? styles.countDone : styles.count}`}>{`${completed}/${total}`}</span>

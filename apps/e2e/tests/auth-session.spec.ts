@@ -66,8 +66,8 @@ test.describe( 'Session', () => {
         ] );
         await expect( page.getByRole( 'navigation', { name: 'Admin and settings' } ).getByRole( 'link' ) ).toHaveText( [ 'Settings' ] );
 
-        await main.getByRole( 'link', { name: 'Interview ready' } ).click();
-        await expect( page ).toHaveURL( '/app/interview-ready' );
+        await main.getByRole( 'link', { name: 'Organizations' } ).click();
+        await expect( page ).toHaveURL( '/app/organizations' );
         await expect( page.getByRole( 'heading', { level: 2, name: 'Coming soon' } ) ).toBeVisible();
         await page.getByRole( 'link', { name: 'Back to dashboard' } ).click();
         await expect( page ).toHaveURL( '/app' );

@@ -183,6 +183,35 @@ describe( 'PathPage', () => {
         expect( topic( 'Hashing Basics' ).open ).toBe( true );
     } );
 
+    it( 'opens and scrolls to the topic in the link, e.g. from Analytics', async () => {
+        const scrolled: Element[] = [];
+
+        // jsdom doesn't scroll.
+        Element.prototype.scrollIntoView = function scrollIntoView( this: Element ) {
+            scrolled.push( this );
+        };
+        try {
+            api();
+            renderApp( `/app/paths/${DSA.id}?topic=${uuid( 4 )}` );
+            await screen.findByRole( 'heading', { level: 1 } );
+
+            expect( topic( 'Tree Traversals' ).open ).toBe( true );
+            expect( topic( 'Two Pointers' ).open ).toBe( false );
+            expect( scrolled ).toEqual( [ topic( 'Tree Traversals' ) ] );
+        } finally {
+            Reflect.deleteProperty( Element.prototype, 'scrollIntoView' );
+        }
+    } );
+
+    it( 'ignores a topic in the link that isn\'t in the path', async () => {
+        api();
+        renderApp( `/app/paths/${DSA.id}?topic=${uuid( 99 )}` );
+        await screen.findByRole( 'heading', { level: 1 } );
+
+        // No scrolling (jsdom would throw), and the first unfinished topic opens as usual.
+        expect( topic( 'Two Pointers' ).open ).toBe( true );
+    } );
+
     it( 'describes each item and where to study it', async () => {
         api();
         const user = userEvent.setup();
