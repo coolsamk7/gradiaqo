@@ -1,0 +1,30 @@
+/* Small icon buttons: moving rows up and down, opening a row. */
+
+.move {
+    display: flex;
+    flex: none;
+    gap: var( --space-0-5 );
+}
+
+.iconButton {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: var( --radius-md );
+    color: var( --color-icon );
+    background: none;
+    cursor: pointer;
+}
+
+.iconButton:hover:not( :disabled ) {
+    color: var( --color-text );
+    background: var( --color-bg-muted );
+}
+
+.iconButton:disabled {
+    cursor: default;
+    opacity: 0.35;
+}

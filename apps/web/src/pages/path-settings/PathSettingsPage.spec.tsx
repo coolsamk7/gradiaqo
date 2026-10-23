@@ -1,5 +1,5 @@
 import type { EnrollmentDetailJson } from '@studylog/schemas';
-import { EnrollmentStatus, RuleMode, RuleScope } from '@studylog/schemas/enums';
+import { EnrollmentStatus, OrderParentType, RuleMode, RuleScope } from '@studylog/schemas/enums';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -179,6 +179,90 @@ describe( 'PathSettingsPage', () => {
 
         expect( await screen.findByText( /isn't published any more/ ) ).toBeInTheDocument();
         expect( screen.queryByRole( 'button', { name: 'Edit parts' } ) ).not.toBeInTheDocument();
+    } );
+
+    it( 'orders modules and the topics in them', async () => {
+        const all = enrollmentDetail( BASE, SPEC );
+        const { calls } = api( all );
+        const user = userEvent.setup();
+
+        renderApp( `/app/paths/${DETAIL.id}/settings` );
+        const order = await screen.findByRole( 'region', { name: 'Your order' } );
+        const modules = within( order ).getByRole( 'list', { name: 'Modules' } );
+
+        expect( within( modules ).getAllByRole( 'listitem' ).map( ( row ) => row.textContent ) )
+            .toEqual( [ 'Arrays & HashingHashing Basics, Two Pointers', 'Dynamic Programming1-D DP' ] );
+        expect( within( order ).queryByRole( 'button', { name: 'Reset to the author\'s order' } ) ).not.toBeInTheDocument();
+        expect( within( order ).getByRole( 'button', { name: 'Move Arrays & Hashing up' } ) ).toBeDisabled();
+        expect( within( order ).getByRole( 'button', { name: 'Move Dynamic Programming down' } ) ).toBeDisabled();
+        // One topic: nothing to order inside.
+        expect( within( order ).queryByRole( 'button', { name: 'Order the topics in Dynamic Programming' } ) ).not.toBeInTheDocument();
+
+        await user.click( within( order ).getByRole( 'button', { name: 'Move Dynamic Programming up' } ) );
+        await waitFor( () => expect( calls.filter( ( call ) => call.method === 'PUT' ) ).toHaveLength( 1 ) );
+        expect( calls.find( ( call ) => call.method === 'PUT' ) ).toMatchObject( {
+            path: `${URL}/orders/path/${PATH.id}`,
+            body: { ids: [ uuid( 701 ), uuid( 700 ) ] },
+        } );
+
+        const expand = within( order ).getByRole( 'button', { name: 'Order the topics in Arrays & Hashing' } );
+
+        expect( expand ).toHaveAttribute( 'aria-expanded', 'false' );
+        await user.click( expand );
+        const topics = within( order ).getByRole( 'list', { name: 'Topics in Arrays & Hashing' } );
+
+        await user.click( within( topics ).getByRole( 'button', { name: 'Move Two Pointers up' } ) );
+        await waitFor( () => expect( calls.filter( ( call ) => call.method === 'PUT' ) ).toHaveLength( 2 ) );
+        expect( calls.filter( ( call ) => call.method === 'PUT' ).at( -1 ) ).toMatchObject( {
+            path: `${URL}/orders/module/${uuid( 700 )}`,
+            body: { ids: [ uuid( 2 ), uuid( 1 ) ] },
+        } );
+
+        await user.click( within( order ).getByRole( 'button', { name: 'Hide the topics in Arrays & Hashing' } ) );
+        expect( within( order ).queryByRole( 'list', { name: 'Topics in Arrays & Hashing' } ) ).not.toBeInTheDocument();
+    } );
+
+    it( 'resets every order the user set', async () => {
+        const ordered: EnrollmentDetailJson = {
+            ...enrollmentDetail( BASE, SPEC ),
+            orders: [
+                { parentType: OrderParentType.Path, parentId: PATH.id, orderedIds: [ uuid( 701 ), uuid( 700 ) ] },
+                { parentType: OrderParentType.Topic, parentId: uuid( 1 ), orderedIds: [ uuid( 11 ) ] },
+            ],
+        };
+        const { calls } = api( ordered, {
+            [`DELETE ${URL}/orders/path/${PATH.id}`]: () => json( 200, ordered ),
+            [`DELETE ${URL}/orders/topic/${uuid( 1 )}`]: () => json( 200, ordered ),
+        } );
+
+        renderApp( `/app/paths/${DETAIL.id}/settings` );
+        await userEvent.setup().click( await screen.findByRole( 'button', { name: 'Reset to the author\'s order' } ) );
+
+        await waitFor( () => expect( calls.filter( ( call ) => call.method === 'DELETE' ) ).toHaveLength( 2 ) );
+        expect( calls.filter( ( call ) => call.method === 'DELETE' ).map( ( call ) => call.path ) )
+            .toEqual( [ `${URL}/orders/path/${PATH.id}`, `${URL}/orders/topic/${uuid( 1 )}` ] );
+    } );
+
+    it( 'says when the order couldn\'t be changed', async () => {
+        api( enrollmentDetail( BASE, SPEC ), { [`PUT ${URL}/orders/path/${PATH.id}`]: () => json( 400, {} ) } );
+        renderApp( `/app/paths/${DETAIL.id}/settings` );
+        await userEvent.setup().click( await screen.findByRole( 'button', { name: 'Move Arrays & Hashing down' } ) );
+
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Something went wrong, so the order wasn\'t changed.' );
+        expect( screen.getByRole( 'button', { name: 'Move Arrays & Hashing down' } ) ).toBeEnabled();
+    } );
+
+    it( 'has nothing to order in an empty path', async () => {
+        api( enrollmentDetail( BASE, [ { title: 'Empty', topics: [] } ] ) );
+        const first = renderApp( `/app/paths/${DETAIL.id}/settings` );
+
+        expect( await screen.findByText( 'No topics' ) ).toBeInTheDocument();
+        first.unmount();
+
+        api( enrollmentDetail( BASE, [] ) );
+        renderApp( `/app/paths/${DETAIL.id}/settings` );
+
+        expect( await screen.findByText( 'Nothing to order yet.' ) ).toBeInTheDocument();
     } );
 
     it( 'leaves the path after asking, then goes to the dashboard', async () => {

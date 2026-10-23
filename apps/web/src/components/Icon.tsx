@@ -25,6 +25,7 @@ const ICONS = {
     'chevron-down': [ polyline( '6 9 12 15 18 9' ) ],
     'chevron-left': [ polyline( '15 18 9 12 15 6' ) ],
     'chevron-right': [ polyline( '9 18 15 12 9 6' ) ],
+    'chevron-up': [ polyline( '18 15 12 9 6 15' ) ],
     circle: [ circle( 12, 12, 10 ) ],
     clock: [ circle( 12, 12, 10 ), polyline( '12 6 12 12 16 14' ) ],
     dashboard: [ rect( 3, 3, 7, 9, 1 ), rect( 14, 3, 7, 5, 1 ), rect( 14, 12, 7, 9, 1 ), rect( 3, 16, 7, 5, 1 ) ],

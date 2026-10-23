@@ -11,14 +11,15 @@ import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import { ChoosePartsDialog } from '../path-preview/ChoosePartsDialog.tsx';
 import { describeParts, followedTopics, rulesFor } from '../path-preview/parts.ts';
+import { OrderCard } from './OrderCard.tsx';
 import styles from './PathSettings.module.css';
 import { formatSince, saveError, STATUSES } from './settings.ts';
 import type { SettingsData } from './use-path-settings.ts';
 import { usePathSettings } from './use-path-settings.ts';
 
 /**
- * How the user follows one path (Figma: M1 › Path settings): pause or resume it, change which parts they follow,
- * or leave it.
+ * How the user follows one path (Figma: M1 › Path settings): pause or resume it, change which parts they follow
+ * and the order they study them in, or leave it.
  */
 export function PathSettingsPage() {
     const { enrollmentId = '' } = useParams();
@@ -141,6 +142,8 @@ function Settings( { data, onChanged }: { data: SettingsData; onChanged: () => P
                         </button>
                     )}
                 </section>
+
+                <OrderCard enrollment={enrollment} onChanged={onChanged} />
 
                 <section className={`${app.card} ${styles.row} ${styles.danger}`} aria-labelledby="leave-title">
                     <div className={styles.copy}>

@@ -18,8 +18,15 @@ export type DashboardState =
     | { status: 'error'; message: string }
     | { status: 'ready'; data: DashboardData };
 
-/** Loads everything the dashboard shows, in parallel. `reload()` tries again after an error. */
-export function useDashboard(): { state: DashboardState; reload: () => void } {
+/**
+ * Loads everything the dashboard shows, in parallel. `reload()` tries again after an error; `setEnrollments()`
+ * shows a new list of paths (e.g. after reordering them).
+ */
+export function useDashboard(): {
+    state: DashboardState;
+    reload: () => void;
+    setEnrollments: ( enrollments: EnrollmentJson[] ) => void;
+} {
     const { request } = useAuth();
     const [ state, setState ] = useState<DashboardState>( { status: 'loading' } );
     const [ attempt, setAttempt ] = useState( 0 );
@@ -44,7 +51,13 @@ export function useDashboard(): { state: DashboardState; reload: () => void } {
         setAttempt( ( n ) => n + 1 );
     }, [] );
 
-    return { state, reload };
+    // Only called from the list of paths, which shows once everything has loaded.
+    const setEnrollments = useCallback( ( enrollments: EnrollmentJson[] ) => setState( ( current ) => ( {
+        status: 'ready',
+        data: { ...( current as Extract<DashboardState, { status: 'ready' }> ).data, enrollments },
+    } ) ), [] );
+
+    return { state, reload, setEnrollments };
 }
 
 function describeError( error: unknown ): string {
