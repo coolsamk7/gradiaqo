@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { User } from '@studylog/database';
-import { Membership, Organization, OrganizationRole } from '@studylog/database';
+import { CatalogStatus, LearningPath, Membership, Organization, OrganizationRole } from '@studylog/database';
 import type { DataSource, EntityManager, Repository } from 'typeorm';
 
 import type { FakeDataSource } from '../../test/unit/fake-data-source.js';
@@ -123,6 +123,41 @@ describe( 'OrganizationsService', () => {
         ] );
 
         expect( ( await service.listForUser( 'user-1' ) ).map( ( o ) => o.id ) ).toEqual( [ 'mine', 'older', 'newer' ] );
+    } );
+
+    it( 'summariesForUser adds member and published path counts, and the first five members', async () => {
+        const person = ( n: number ) => ( { id: `u${n}`, firstName: `F${n}`, lastName: `L${n}` } );
+
+        db.repo( Membership ).find
+            .mockResolvedValueOnce( [
+                { organization: { id: 'mine', isPersonal: true, createdById: 'user-1', createdAt: new Date() }, role: OrganizationRole.Owner },
+                { organization: { id: 'club', isPersonal: false, createdById: 'u0', createdAt: new Date() }, role: OrganizationRole.Member },
+            ] )
+            .mockResolvedValueOnce( [
+                { organizationId: 'mine', user: person( 9 ) },
+                ...[ 0, 1, 2, 3, 4, 5 ].map( ( n ) => ( { organizationId: 'club', user: person( n ) } ) ),
+            ] );
+        db.repo( LearningPath ).find.mockResolvedValue( [
+            { id: 'p1', organizationId: 'club' },
+            { id: 'p2', organizationId: 'club' },
+            { id: 'p3', organizationId: 'mine' },
+        ] );
+
+        const [ mine, club ] = await service.summariesForUser( 'user-1' );
+
+        expect( mine ).toMatchObject( { id: 'mine', memberCount: 1, pathCount: 1, members: [ { userId: 'u9', firstName: 'F9', lastName: 'L9' } ] } );
+        expect( club ).toMatchObject( { id: 'club', role: OrganizationRole.Member, memberCount: 6, pathCount: 2 } );
+        expect( club?.members.map( ( member ) => member.userId ) ).toEqual( [ 'u0', 'u1', 'u2', 'u3', 'u4' ] );
+        expect( db.repo( LearningPath ).find ).toHaveBeenCalledWith( expect.objectContaining( {
+            where: expect.objectContaining( { status: CatalogStatus.Published } ) as unknown,
+        } ) );
+    } );
+
+    it( 'summariesForUser has nothing to count without organizations', async () => {
+        db.repo( Membership ).find.mockResolvedValue( [] );
+
+        expect( await service.summariesForUser( 'user-1' ) ).toEqual( [] );
+        expect( db.repo( Membership ).find ).toHaveBeenCalledOnce();
     } );
 
     it( 'reads, renames and removes organizations and memberships', async () => {

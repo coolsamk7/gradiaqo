@@ -24,6 +24,19 @@ export const MyOrganization = Type.Object( {
 export type MyOrganization = StaticDecode<typeof MyOrganization>;
 export type MyOrganizationJson = StaticEncode<typeof MyOrganization>;
 
+/** An organization in the user's list, with what its card shows. */
+export const OrganizationSummary = Type.Object( {
+    ...MyOrganization.properties,
+    memberCount: Type.Integer(),
+    pathCount: Type.Integer( { description: 'Published paths' } ),
+    members: Type.Array(
+        Type.Object( { userId: Uuid(), firstName: Type.String(), lastName: Type.String() } ),
+        { description: 'The first 5 members, owners first, for avatars' },
+    ),
+} );
+export type OrganizationSummary = StaticDecode<typeof OrganizationSummary>;
+export type OrganizationSummaryJson = StaticEncode<typeof OrganizationSummary>;
+
 export const Member = Type.Object( {
     userId: Uuid(),
     email: Type.String( { examples: [ 'sameer@example.com' ] } ),
@@ -33,6 +46,7 @@ export const Member = Type.Object( {
     joinedAt: IsoDate(),
 } );
 export type Member = StaticDecode<typeof Member>;
+export type MemberJson = StaticEncode<typeof Member>;
 
 export const UpdateOrganizationRequest = Type.Object(
     { name: TrimmedText( 100, [ 'Study Group' ] ) },
@@ -68,6 +82,7 @@ export const Invitation = Type.Object( {
     createdAt: IsoDate(),
 } );
 export type Invitation = StaticDecode<typeof Invitation>;
+export type InvitationJson = StaticEncode<typeof Invitation>;
 
 /** A pending invitation, as the invited user sees it. */
 export const MyInvitation = Type.Object( {
@@ -79,6 +94,7 @@ export const MyInvitation = Type.Object( {
     createdAt: IsoDate(),
 } );
 export type MyInvitation = StaticDecode<typeof MyInvitation>;
+export type MyInvitationJson = StaticEncode<typeof MyInvitation>;
 
 export const CreateInvitationRequest = Type.Object(
     {

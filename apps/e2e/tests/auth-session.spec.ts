@@ -66,16 +66,16 @@ test.describe( 'Session', () => {
         ] );
         await expect( page.getByRole( 'navigation', { name: 'Admin and settings' } ).getByRole( 'link' ) ).toHaveText( [ 'Settings' ] );
 
-        await main.getByRole( 'link', { name: 'Organizations' } ).click();
-        await expect( page ).toHaveURL( '/app/organizations' );
+        await page.getByRole( 'button', { name: 'Log out' } ).click();
+        await logIn( page, 'admin@example.com' );
+        const more = page.getByRole( 'navigation', { name: 'Admin and settings' } );
+
+        await expect( more.getByRole( 'link' ) ).toHaveText( [ 'Admin', 'Settings' ] );
+        await more.getByRole( 'link', { name: 'Admin' } ).click();
+        await expect( page ).toHaveURL( '/app/admin' );
         await expect( page.getByRole( 'heading', { level: 2, name: 'Coming soon' } ) ).toBeVisible();
         await page.getByRole( 'link', { name: 'Back to dashboard' } ).click();
         await expect( page ).toHaveURL( '/app' );
-
-        await page.getByRole( 'button', { name: 'Log out' } ).click();
-        await logIn( page, 'admin@example.com' );
-        await expect( page.getByRole( 'navigation', { name: 'Admin and settings' } ).getByRole( 'link' ) )
-            .toHaveText( [ 'Admin', 'Settings' ] );
     } );
 
     test( 'logging out goes home and closes the session for good', async ( { page } ) => {

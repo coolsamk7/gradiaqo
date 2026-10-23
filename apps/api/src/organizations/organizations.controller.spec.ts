@@ -27,7 +27,7 @@ describe( 'OrganizationsController permissions', () => {
         changeRole: vi.fn(),
         removeMember: vi.fn(),
         remove: vi.fn(),
-        listForUser: vi.fn().mockResolvedValue( [] ),
+        summariesForUser: vi.fn().mockResolvedValue( [] ),
         create: vi.fn().mockResolvedValue( { id: 'new' } ),
         rename: vi.fn( ( organization: Organization, name: string ) =>
             Promise.resolve( Object.assign( organization, { name } ) ) ),
@@ -127,7 +127,7 @@ describe( 'OrganizationsController permissions', () => {
             await controller.listMine( user() );
             await controller.create( user(), { name: 'Group' } );
 
-            expect( service.listForUser ).toHaveBeenCalledWith( 'me' );
+            expect( service.summariesForUser ).toHaveBeenCalledWith( 'me' );
             expect( service.create ).toHaveBeenCalledWith( 'me', 'Group' );
         } );
 

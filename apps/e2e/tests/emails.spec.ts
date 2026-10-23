@@ -95,7 +95,7 @@ test.describe( 'Emails', () => {
         await logIn( page, { ...user, email: newEmail } );
     } );
 
-    test( 'an invited person gets an email whose link leads to the app after signing up', async ( { page, api } ) => {
+    test( 'an invited person gets an email whose link leads to the invitation after signing up', async ( { page, api } ) => {
         const owner = await api.signUp( 'Olive' );
         const invited = `invited-${owner.email}`;
 
@@ -116,5 +116,7 @@ test.describe( 'Emails', () => {
         await page.getByRole( 'button', { name: 'Create account' } ).click();
 
         await expect( page ).toHaveURL( '/app/organizations' );
+        await expect( page.getByRole( 'region', { name: 'Invitations for you' } ) )
+            .toContainText( 'Study Group invited you as a MemberFrom Olive Tester' );
     } );
 } );

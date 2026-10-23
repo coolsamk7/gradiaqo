@@ -13,6 +13,8 @@ import { LoginPage } from './pages/login/LoginPage.tsx';
 import { MyPathsPage } from './pages/my-paths/MyPathsPage.tsx';
 import { PathBuilderPage } from './pages/my-paths/PathBuilderPage.tsx';
 import { NotFoundPage } from './pages/not-found/NotFoundPage.tsx';
+import { OrganizationPage } from './pages/organizations/OrganizationPage.tsx';
+import { OrganizationsPage } from './pages/organizations/OrganizationsPage.tsx';
 import { ForgotPasswordPage } from './pages/password-reset/ForgotPasswordPage.tsx';
 import { ResetPasswordPage } from './pages/password-reset/ResetPasswordPage.tsx';
 import { PathPage } from './pages/path/PathPage.tsx';
@@ -46,6 +48,8 @@ export function App() {
                 <Route path="/app/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
                 <Route path="/app/my-paths" element={<RequireAuth><MyPathsPage /></RequireAuth>} />
                 <Route path="/app/my-paths/:organizationId/:pathId" element={<RequireAuth><PathBuilderPage /></RequireAuth>} />
+                <Route path="/app/organizations" element={<RequireAuth><OrganizationsPage /></RequireAuth>} />
+                <Route path="/app/organizations/:organizationId" element={<RequireAuth><OrganizationPage /></RequireAuth>} />
                 {( Object.keys( UPCOMING ) as UpcomingPage[] ).map( ( page ) => (
                     <Route
                         key={page}

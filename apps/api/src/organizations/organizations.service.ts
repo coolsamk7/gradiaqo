@@ -3,10 +3,13 @@ import { randomBytes } from 'node:crypto';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import type { User } from '@studylog/database';
-import { Membership, Organization, OrganizationRole } from '@studylog/database';
-import type { Member, MyOrganization, Organization as OrganizationView } from '@studylog/schemas';
+import { CatalogStatus, LearningPath, Membership, Organization, OrganizationRole } from '@studylog/database';
+import type { Member, MyOrganization, Organization as OrganizationView, OrganizationSummary } from '@studylog/schemas';
 import type { EntityManager } from 'typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
+
+/** Members shown as avatars on an organization's card. */
+const MEMBER_PREVIEW = 5;
 
 @Injectable()
 export class OrganizationsService {
@@ -128,6 +131,41 @@ export class OrganizationsService {
                 Number( isOwnWorkspace( b ) ) - Number( isOwnWorkspace( a ) )
                 || a.organization.createdAt.getTime() - b.organization.createdAt.getTime() )
             .map( ( { organization, role } ) => ( { ...toOrganizationResponse( organization ), role } ) );
+    }
+
+    /** The user's organizations (in listForUser's order) with their member and published path counts. */
+    async summariesForUser( userId: string ): Promise<OrganizationSummary[]> {
+        const organizations = await this.listForUser( userId );
+
+        if ( organizations.length === 0 ) {
+            return [];
+        }
+
+        const organizationIds = In( organizations.map( ( organization ) => organization.id ) );
+        const memberships = await this.memberships.find( {
+            where: { organizationId: organizationIds },
+            relations: { user: true },
+            order: { role: 'ASC', createdAt: 'ASC' },
+        } );
+        const paths = await this.dataSource.getRepository( LearningPath ).find( {
+            select: { id: true, organizationId: true },
+            where: { organizationId: organizationIds, status: CatalogStatus.Published },
+        } );
+
+        return organizations.map( ( organization ) => {
+            const members = memberships.filter( ( membership ) => membership.organizationId === organization.id );
+
+            return {
+                ...organization,
+                memberCount: members.length,
+                pathCount: paths.filter( ( path ) => path.organizationId === organization.id ).length,
+                members: members.slice( 0, MEMBER_PREVIEW ).map( ( { user } ) => ( {
+                    userId: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                } ) ),
+            };
+        } );
     }
 
     findMembership( userId: string, organizationId: string ): Promise<Membership | null> {

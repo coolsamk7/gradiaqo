@@ -2,12 +2,6 @@ import type { IconName } from '../../components/Icon.tsx';
 
 /** Sections in the sidebar whose pages aren't built yet (Figma has their designs). Remove one when its page exists. */
 export const UPCOMING = {
-    organizations: {
-        path: '/app/organizations',
-        title: 'Organizations',
-        icon: 'users',
-        text: 'Study together: create a group, invite people and share paths with everyone in it.',
-    },
     admin: {
         path: '/app/admin',
         title: 'Admin',

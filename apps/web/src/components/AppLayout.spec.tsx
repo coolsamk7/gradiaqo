@@ -76,14 +76,14 @@ describe( 'AppLayout', () => {
     } );
 
     it( 'opens a section that isn\'t built yet on a "coming soon" page, marked as current', async () => {
-        api();
+        mockApi( { ...loggedIn, 'GET /auth/me': () => json( 200, { ...USER, platformRole: 'superadmin' } ), 'GET /me/stats': pending, 'GET /me/enrollments': pending, 'GET /me/study-sessions': pending } );
         renderApp( '/app' );
-        await userEvent.setup().click( await screen.findByRole( 'link', { name: 'Organizations' } ) );
+        await userEvent.setup().click( await screen.findByRole( 'link', { name: 'Admin' } ) );
 
-        expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app/organizations' );
-        expect( screen.getByRole( 'heading', { level: 1, name: 'Organizations' } ) ).toBeInTheDocument();
+        expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app/admin' );
+        expect( screen.getByRole( 'heading', { level: 1, name: 'Admin' } ) ).toBeInTheDocument();
         expect( screen.getByRole( 'heading', { level: 2, name: 'Coming soon' } ) ).toBeInTheDocument();
-        expect( screen.getByRole( 'link', { name: 'Organizations' } ) ).toHaveAttribute( 'aria-current', 'page' );
+        expect( screen.getByRole( 'link', { name: 'Admin' } ) ).toHaveAttribute( 'aria-current', 'page' );
         expect( screen.getByRole( 'link', { name: 'Back to dashboard' } ) ).toHaveAttribute( 'href', '/app' );
     } );
 } );

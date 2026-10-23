@@ -306,7 +306,7 @@ Every user has a personal workspace; for studying together, create an organizati
 
 | Method | Path | Body | Who |
 |---|---|---|---|
-| GET / POST | `/organizations` | POST: `name` | Your organizations / create one (you become owner) |
+| GET / POST | `/organizations` | POST: `name` | Your organizations, with member and published path counts / create one (you become owner) |
 | GET / PATCH / DELETE | `/organizations/:organizationId` | PATCH: `name` | Members / owner or admin / owner |
 | GET | `/organizations/:organizationId/members` | none | Any member |
 | PATCH / DELETE | `/organizations/:organizationId/members/:userId` | PATCH: `role` | Owner or admin (see rules) |
