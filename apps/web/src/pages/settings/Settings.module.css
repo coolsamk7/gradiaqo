@@ -1,0 +1,105 @@
+/* Account settings (Figma: M1 › Account settings). Cards: styles/app.module.css; fields: forms/form.module.css. */
+
+.cards {
+    display: grid;
+    gap: var( --space-4 );
+    max-width: 760px;
+}
+
+.cardTitle {
+    margin-bottom: var( --space-4 );
+}
+
+.cardHead {
+    display: grid;
+    gap: var( --space-1 );
+    margin-bottom: var( --space-4 );
+}
+
+.who {
+    display: flex;
+    align-items: center;
+    gap: var( --space-4 );
+    margin-bottom: var( --space-4 );
+}
+
+.avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: var( --radius-full );
+    color: var( --color-on-accent );
+    background: var( --color-accent );
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.name {
+    font-weight: 500;
+}
+
+.form {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+.flush {
+    margin: 0;
+}
+
+/* Two fields side by side, stacked on narrow screens. */
+.pair {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax( min( 100%, 240px ), 1fr ) );
+    align-items: start;
+    gap: var( --space-4 );
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.saved {
+    color: var( --color-success );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* A card with its text on the left and its button on the right. */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-4 );
+}
+
+.copy {
+    display: grid;
+    flex: 1;
+    gap: var( --space-1 );
+    min-width: min( 100%, 280px );
+}
+
+.danger {
+    border-color: var( --color-border-danger );
+}
+
+.warning {
+    display: flex;
+    align-items: flex-start;
+    gap: var( --space-3 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    color: var( --color-warning );
+    background: var( --color-warning-soft );
+}
+
+.warning svg {
+    flex: none;
+    margin-top: 2px;
+}

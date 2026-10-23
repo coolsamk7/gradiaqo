@@ -32,13 +32,6 @@ export function sourceName( path: PublishedPathJson, userId: string ): string {
     return createdBy?.id === userId ? 'Your workspace' : 'Community';
 }
 
-const monthYear = new Intl.DateTimeFormat( 'en-US', { month: 'short', year: 'numeric' } );
-
-/** "Oct 2026". */
-export function formatMonth( iso: string ): string {
-    return monthYear.format( new Date( iso ) );
-}
-
 /** Why enrolling failed. */
 export function enrollError( error: unknown ): string {
     if ( error instanceof NetworkError ) {
