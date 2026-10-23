@@ -15,7 +15,8 @@ import { TYPE_ICONS } from '../my-paths/builder-tree.ts';
 import { ChoosePartsDialog } from './ChoosePartsDialog.tsx';
 import { allTopics, rulesFor } from './parts.ts';
 import styles from './PathPreview.module.css';
-import { enrollError, itemLine, sourceName } from './preview.ts';
+import { enrollError, isReportable, itemLine, sourceName } from './preview.ts';
+import { ReportPathDialog } from './ReportPathDialog.tsx';
 import { usePathPreview } from './use-path-preview.ts';
 
 const BADGE_TONES = { accent: app.badgeAccent, neutral: '', inverse: app.badgeInverse, warning: app.badgeWarning };
@@ -56,6 +57,8 @@ function Preview( { path }: { path: PublishedPathJson } ) {
     const [ choosing, setChoosing ] = useState( false );
     const [ enrolling, setEnrolling ] = useState( false );
     const [ error, setError ] = useState<string>();
+    const [ reporting, setReporting ] = useState( false );
+    const [ reported, setReported ] = useState<string>();
     const source = sourceOf( path, user.id );
     const estimate = formatEstimate( path.contents.estimatedMinutes );
     // Open the first topic, so there's something to look at.
@@ -226,10 +229,30 @@ function Preview( { path }: { path: PublishedPathJson } ) {
                                 <dd>{path.visibility === PathVisibility.Public ? 'Public' : 'Private'}</dd>
                             </div>
                         </dl>
+                        {isReportable( path, user.id ) && (
+                            <p className={`${styles.report} ${reported ? styles.reported : ''}`} role={reported ? 'status' : undefined}>
+                                <Icon name="flag" />
+                                {reported ?? (
+                                    <button type="button" className={styles.reportLink} onClick={() => setReporting( true )}>
+                                        Report this path
+                                    </button>
+                                )}
+                            </p>
+                        )}
                     </section>
                 </div>
             </div>
 
+            {reporting && (
+                <ReportPathDialog
+                    pathId={path.id}
+                    onClose={() => setReporting( false )}
+                    onSent={( notice ) => {
+                        setReporting( false );
+                        setReported( notice );
+                    }}
+                />
+            )}
             {choosing && (
                 <ChoosePartsDialog
                     modules={path.modules}

@@ -3,7 +3,7 @@ import { EnrollmentStatus, ItemType, PathVisibility } from '@studylog/schemas/en
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { json, loggedIn, mockApi, pending } from '../../test/api.ts';
+import { json, loggedIn, mockApi, pending, USER } from '../../test/api.ts';
 import type { TreeSpec } from '../../test/fixtures.ts';
 import { enrollment, enrollmentDetail, publishedPath, uuid } from '../../test/fixtures.ts';
 import { renderApp } from '../../test/render.tsx';
@@ -236,5 +236,116 @@ describe( 'PathPreviewPage', () => {
         renderApp( `/app/catalog/${PATH.id}` );
 
         expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+    } );
+} );
+
+describe( 'Reporting a community path', () => {
+    const someone = { id: uuid( 950 ), firstName: 'Priya', lastName: 'Shah' };
+    const COMMUNITY = {
+        ...PATH,
+        visibility: PathVisibility.Public,
+        organizationId: uuid( 951 ),
+        organization: { id: uuid( 951 ), name: 'Priya\'s Workspace', isPersonal: true },
+        createdBy: someone,
+    };
+    const about = () => within( screen.getByRole( 'region', { name: 'About' } ) );
+    const loadedAbout = async () => within( await screen.findByRole( 'region', { name: 'About' } ) );
+
+    it( 'sends a report with a reason and details, then thanks the user', async () => {
+        let answer = () => json( 400, { statusCode: 400, message: 'You can\'t report your own path' } );
+        const { calls } = api( COMMUNITY, { [`POST ${URL}/reports`]: () => answer() } );
+        const user = userEvent.setup();
+
+        renderApp( `/app/catalog/${PATH.id}` );
+        await user.click( ( await loadedAbout() ).getByRole( 'button', { name: 'Report this path' } ) );
+
+        const dialog = within( screen.getByRole( 'dialog', { name: 'Report this path' } ) );
+
+        expect( screen.getByRole( 'dialog' ) )
+            .toHaveAccessibleDescription( 'Tell us what\'s wrong. An admin will review it; the author isn\'t told who reported it.' );
+        expect( dialog.getAllByRole( 'radio' ).map( ( radio ) => radio.closest( 'label' )?.textContent ) )
+            .toEqual( [ 'Spam or advertising', 'Inappropriate content', 'Copies someone else\'s work', 'Something else' ] );
+        await user.click( dialog.getByRole( 'button', { name: 'Send report' } ) );
+        expect( dialog.getByRole( 'group', { name: 'Reason' } ) ).toHaveAccessibleDescription( 'Choose a reason.' );
+
+        await user.click( dialog.getByRole( 'radio', { name: 'Something else' } ) );
+        await user.type( dialog.getByLabelText( 'Details (optional)' ), '  Two of the links point to paid courses. ' );
+        await user.click( dialog.getByRole( 'button', { name: 'Send report' } ) );
+        expect( await dialog.findByRole( 'alert' ) ).toHaveTextContent( 'You can\'t report your own path.' );
+
+        answer = () => json( 429, { statusCode: 429, message: 'Too Many Requests' } );
+        await user.click( dialog.getByRole( 'button', { name: 'Send report' } ) );
+        await waitFor( () => expect( dialog.getByRole( 'alert' ) ).toHaveTextContent( 'You\'ve sent a lot of reports.' ) );
+
+        answer = () => json( 500, {} );
+        await user.click( dialog.getByRole( 'button', { name: 'Send report' } ) );
+        await waitFor( () => expect( dialog.getByRole( 'alert' ) ).toHaveTextContent( 'Something went wrong, so the report wasn\'t sent.' ) );
+
+        answer = () => json( 201, {} );
+        await user.click( dialog.getByRole( 'button', { name: 'Send report' } ) );
+
+        expect( await about().findByRole( 'status' ) ).toHaveTextContent( 'Thanks for telling us. An admin will review this path.' );
+        expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+        expect( about().queryByRole( 'button', { name: 'Report this path' } ) ).not.toBeInTheDocument();
+        expect( calls.filter( ( call ) => call.path === `${URL}/reports` ).at( -1 )?.body )
+            .toEqual( { reason: 'other', details: 'Two of the links point to paid courses.' } );
+    } );
+
+    it( 'treats reporting twice as done, and sends no details when there are none', async () => {
+        const { calls } = api( COMMUNITY, {
+            [`POST ${URL}/reports`]: () => json( 409, { statusCode: 409, message: 'You already reported this path' } ),
+        } );
+        const user = userEvent.setup();
+
+        renderApp( `/app/catalog/${PATH.id}` );
+        await user.click( ( await loadedAbout() ).getByRole( 'button', { name: 'Report this path' } ) );
+        await user.click( screen.getByRole( 'radio', { name: 'Spam or advertising' } ) );
+        await user.click( screen.getByRole( 'button', { name: 'Send report' } ) );
+
+        expect( await about().findByRole( 'status' ) ).toHaveTextContent( 'You already reported this path. An admin will review it.' );
+        expect( calls.find( ( call ) => call.path === `${URL}/reports` )?.body ).toEqual( { reason: 'spam' } );
+    } );
+
+    it( 'waits while sending, says when offline, and closes without sending', async () => {
+        let answer: () => Response | Promise<Response> = pending;
+        const { calls } = api( COMMUNITY, { [`POST ${URL}/reports`]: () => answer() } );
+        const user = userEvent.setup();
+
+        renderApp( `/app/catalog/${PATH.id}` );
+        await user.click( ( await loadedAbout() ).getByRole( 'button', { name: 'Report this path' } ) );
+        await user.click( screen.getByRole( 'radio', { name: 'Inappropriate content' } ) );
+        await user.click( screen.getByRole( 'button', { name: 'Send report' } ) );
+        expect( screen.getByRole( 'button', { name: 'Sending…' } ) ).toBeDisabled();
+        await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+        expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+
+        answer = () => Promise.reject( new TypeError( 'Failed to fetch' ) );
+        await user.click( about().getByRole( 'button', { name: 'Report this path' } ) );
+        await user.click( screen.getByRole( 'radio', { name: 'Copies someone else\'s work' } ) );
+        await user.click( screen.getByRole( 'button', { name: 'Send report' } ) );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( calls.filter( ( call ) => call.path === `${URL}/reports` ) ).toHaveLength( 2 );
+    } );
+
+    it( 'offers reporting only for other people\'s public workspace paths', async () => {
+        const cases: PublishedPathJson[] = [
+            PATH,
+            { ...COMMUNITY, visibility: PathVisibility.Private },
+            { ...COMMUNITY, createdBy: { id: USER.id, firstName: 'Sam', lastName: 'Khan' } },
+            { ...COMMUNITY, organization: { id: uuid( 952 ), name: 'Acme', isPersonal: false } },
+        ];
+
+        for ( const path of cases ) {
+            api( path );
+            const view = renderApp( `/app/catalog/${PATH.id}` );
+
+            await screen.findByRole( 'region', { name: 'About' } );
+            expect( about().queryByRole( 'button', { name: 'Report this path' } ) ).not.toBeInTheDocument();
+            view.unmount();
+        }
+
+        api( { ...COMMUNITY, createdBy: null } );
+        renderApp( `/app/catalog/${PATH.id}` );
+        expect( ( await loadedAbout() ).getByRole( 'button', { name: 'Report this path' } ) ).toBeInTheDocument();
     } );
 } );
