@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 
 import { useAuth } from '../auth/auth-context.ts';
-import { UPCOMING } from '../pages/coming-soon/upcoming.ts';
 import styles from './AppLayout.module.css';
 import type { IconName } from './Icon.tsx';
 import { Icon } from './Icon.tsx';
@@ -30,7 +29,7 @@ const LINKS: NavItem[] = [
 
 /** Under the main links, above the account. Admin only for superadmins. */
 const FOOTER_LINKS: ( NavItem & { superadmin?: boolean } )[] = [
-    { to: UPCOMING.admin.path, label: 'Admin', icon: 'shield', superadmin: true },
+    { to: '/app/admin', label: 'Admin', icon: 'shield', also: '/app/admin/', superadmin: true },
     { to: '/app/settings', label: 'Settings', icon: 'sliders' },
 ];
 

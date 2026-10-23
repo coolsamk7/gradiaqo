@@ -1,9 +1,11 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
+import type { User } from '@studylog/database';
 import { LearningPath, Membership, PathReport, PathVisibility, ReportStatus } from '@studylog/database';
 import type { CreateReportRequest, ListReportsQuery, Report, ReportPage, ResolveReportRequest } from '@studylog/schemas';
 import { ReportAction } from '@studylog/schemas';
-import { DataSource } from 'typeorm';
+import type { FindOptionsOrder } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 
 import { saveUnique } from '../catalog/catalog.helpers.js';
 import { CatalogAccessService } from '../catalog/catalog-access.service.js';
@@ -50,11 +52,16 @@ export class ReportsService {
     }
 
     /** Reports with the given status (default: open), oldest first, so the queue is worked in order. */
+    /** Open reports oldest first (the queue); resolved ones most recently resolved first. */
     async list( { status = ReportStatus.Open, limit = 50, offset = 0 }: ListReportsQuery ): Promise<ReportPage> {
+        const resolved = status === 'resolved';
+        const order: FindOptionsOrder<PathReport> = resolved || status !== ReportStatus.Open
+            ? { resolvedAt: 'DESC', id: 'ASC' }
+            : { createdAt: 'ASC', id: 'ASC' };
         const [ reports, total ] = await this.dataSource.getRepository( PathReport ).findAndCount( {
-            where: { status },
-            relations: { learningPath: true, reporter: true },
-            order: { createdAt: 'ASC', id: 'ASC' },
+            where: { status: resolved ? In( [ ReportStatus.Dismissed, ReportStatus.Actioned ] ) : status },
+            relations: VIEW_RELATIONS,
+            order,
             take: limit,
             skip: offset,
         } );
@@ -100,16 +107,39 @@ export class ReportsService {
         return this.findView( id );
     }
 
+    /**
+     * Lets a path hidden by mistake be public again: clears `publicBlockedAt`. It stays private until its owner makes
+     * it public; its reports keep their history.
+     */
+    async unhide( pathId: string ): Promise<void> {
+        const paths = this.dataSource.getRepository( LearningPath );
+        const path = await paths.findOneBy( { id: pathId } );
+
+        if ( !path ) {
+            throw new NotFoundException( 'Learning path not found' );
+        }
+        if ( !path.publicBlockedAt ) {
+            throw new ConflictException( 'This path isn\'t hidden' );
+        }
+
+        await paths.update( { id: pathId }, { publicBlockedAt: null } );
+    }
+
     private async findView( id: string ): Promise<Report> {
         return toView( await this.dataSource.getRepository( PathReport ).findOneOrFail( {
             where: { id },
-            relations: { learningPath: true, reporter: true },
+            relations: VIEW_RELATIONS,
         } ) );
     }
 }
 
+const VIEW_RELATIONS = { learningPath: { createdBy: true }, reporter: true, resolvedBy: true };
+
+const personOf = ( user: User | null ) => user && { id: user.id, firstName: user.firstName, lastName: user.lastName };
+
 function toView( report: PathReport ): Report {
-    const { id, reason, details, status, resolutionNote, resolvedAt, createdAt, learningPath, reporter } = report;
+    const { id, reason, details, status, resolutionNote, resolvedAt, createdAt } = report;
+    const { learningPath, reporter, resolvedBy } = report;
 
     return {
         id,
@@ -124,7 +154,10 @@ function toView( report: PathReport ): Report {
             title: learningPath.title,
             organizationId: learningPath.organizationId,
             visibility: learningPath.visibility,
+            publicBlockedAt: learningPath.publicBlockedAt,
+            createdBy: personOf( learningPath.createdBy ),
         },
+        resolvedBy: personOf( resolvedBy ),
         reporter: reporter && {
             id: reporter.id,
             email: reporter.email,

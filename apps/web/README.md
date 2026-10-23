@@ -30,7 +30,7 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
 | `/app/settings` | Settings (`src/pages/settings`): your name, email (checked with a code sent to the new address), password, and deleting your account |
 | `/app/organizations` | Organizations (`src/pages/organizations`): invitations waiting for you (accept or decline), then a card per organization with its members and paths; New organization |
 | `/app/organizations/:organizationId` | One organization: members (search; owners and admins change roles and remove people; anyone can leave), invitations (owners and admins invite by email and revoke) and its published paths, as tabs (`?tab=`). Owners and admins rename it; owners delete it after typing its name |
-| `/app/admin` | In the sidebar for superadmins, designed in Figma, not built yet: a "Coming soon" page (`src/pages/coming-soon`; remove a section from `upcoming.ts` when its page exists) |
+| `/app/admin/reports` | Reports (`src/pages/admin`), superadmins only (others get "not found"): open reports on community paths, to dismiss or hide the path with a note; resolved ones (`?tab=resolved`), where a path hidden by mistake can be un-hidden. `/app/admin` leads here for now |
 | anything else | Not found |
 
 ## Talking to the API

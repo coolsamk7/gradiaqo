@@ -308,6 +308,11 @@ export const CreateReportRequest = Type.Object(
 );
 export type CreateReportRequest = StaticDecode<typeof CreateReportRequest>;
 
+const ReportPerson = () => Type.Union( [
+    Type.Object( { id: Uuid(), firstName: Type.String(), lastName: Type.String() } ),
+    Type.Null(),
+] );
+
 export const Report = Type.Object( {
     id: Uuid(),
     reason: Type.Enum( ReportReason ),
@@ -321,17 +326,23 @@ export const Report = Type.Object( {
         title: Type.String(),
         organizationId: Type.Union( [ Uuid(), Type.Null() ] ),
         visibility: LearningPath.properties.visibility,
+        publicBlockedAt: LearningPath.properties.publicBlockedAt,
+        createdBy: ReportPerson(),
     } ),
+    resolvedBy: ReportPerson(),
     reporter: Type.Union( [
         Type.Object( { id: Uuid(), email: Type.String(), firstName: Type.String(), lastName: Type.String() } ),
         Type.Null(),
     ] ),
 } );
 export type Report = StaticDecode<typeof Report>;
+export type ReportJson = StaticEncode<typeof Report>;
 
 export const ListReportsQuery = Type.Object(
     {
-        status: Type.Optional( Type.Enum( ReportStatus, { description: 'Default: open' } ) ),
+        status: Type.Optional( Type.Union( [ Type.Enum( ReportStatus ), Type.Literal( 'resolved' ) ], {
+            description: 'Default: open. `resolved` is dismissed and actioned ones together, most recently resolved first',
+        } ) ),
         limit: Type.Optional( Type.Integer( { minimum: 1, maximum: 200, default: 50 } ) ),
         offset: Type.Optional( Type.Integer( { minimum: 0, default: 0 } ) ),
     },
@@ -341,6 +352,7 @@ export type ListReportsQuery = StaticDecode<typeof ListReportsQuery>;
 
 export const ReportPage = Type.Object( { items: Type.Array( Report ), total: Type.Integer() } );
 export type ReportPage = StaticDecode<typeof ReportPage>;
+export type ReportPageJson = StaticEncode<typeof ReportPage>;
 
 export enum ReportAction {
     Dismiss = 'dismiss',

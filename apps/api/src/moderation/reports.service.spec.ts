@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, NotFoundException } from '@nest
 import { LearningPath, Membership, PathReport, PathVisibility, ReportReason, ReportStatus } from '@studylog/database';
 import { ReportAction } from '@studylog/schemas';
 import type { DataSource } from 'typeorm';
-import { QueryFailedError } from 'typeorm';
+import { In, QueryFailedError } from 'typeorm';
 
 import type { FakeDataSource } from '../../test/unit/fake-data-source.js';
 import { fakeDataSource } from '../../test/unit/fake-data-source.js';
@@ -114,5 +114,67 @@ describe( 'ReportsService', () => {
             take: 50,
             skip: 0,
         } ) );
+    } );
+
+    it( 'lists resolved reports, dismissed and actioned together, most recently resolved first', async () => {
+        await service.list( { status: 'resolved', limit: 5, offset: 10 } );
+        await service.list( { status: ReportStatus.Dismissed } );
+
+        const calls = db.repo( PathReport ).findAndCount.mock.calls as [ [ object ], [ object ] ];
+        const [ [ resolved ], [ dismissed ] ] = calls;
+
+        expect( resolved ).toMatchObject( {
+            where: { status: In( [ ReportStatus.Dismissed, ReportStatus.Actioned ] ) },
+            order: { resolvedAt: 'DESC', id: 'ASC' },
+            take: 5,
+            skip: 10,
+        } );
+        expect( dismissed ).toMatchObject( { where: { status: ReportStatus.Dismissed }, order: { resolvedAt: 'DESC', id: 'ASC' } } );
+    } );
+
+    it( 'shows who made the path, whether it\'s hidden, and who resolved the report, without their emails', async () => {
+        const blockedAt = new Date( '2026-10-20T00:00:00Z' );
+
+        db.repo( PathReport ).findAndCount.mockResolvedValue( [ [
+            reportRow( {
+                status: ReportStatus.Actioned,
+                learningPath: { ...communityPath, publicBlockedAt: blockedAt, createdBy: { id: 'alice', firstName: 'Alice', lastName: 'W', email: 'a@x.co' } },
+                resolvedBy: { id: 'ada', firstName: 'Ada', lastName: 'Admin', email: 'ada@x.co' },
+            } ),
+            reportRow( {
+                learningPath: { ...communityPath, publicBlockedAt: null, createdBy: null },
+                resolvedBy: null,
+                reporter: null,
+            } ),
+        ], 2 ] );
+
+        const { items: [ actioned, open ], total } = await service.list( {} );
+
+        expect( total ).toBe( 2 );
+        expect( actioned?.learningPath ).toMatchObject( { publicBlockedAt: blockedAt, createdBy: { id: 'alice', firstName: 'Alice', lastName: 'W' } } );
+        expect( actioned?.learningPath.createdBy ).not.toHaveProperty( 'email' );
+        expect( actioned?.resolvedBy ).toEqual( { id: 'ada', firstName: 'Ada', lastName: 'Admin' } );
+        expect( open ).toMatchObject( { resolvedBy: null, reporter: null, learningPath: { createdBy: null } } );
+    } );
+
+    describe( 'unhide', () => {
+        it( 'clears the block, leaving the path private', async () => {
+            const hidden = { ...communityPath, visibility: PathVisibility.Private, publicBlockedAt: new Date() };
+
+            db.repo( LearningPath ).findOneBy.mockResolvedValue( hidden );
+
+            await service.unhide( 'path' );
+
+            expect( db.repo( LearningPath ).update ).toHaveBeenCalledWith( { id: 'path' }, { publicBlockedAt: null } );
+        } );
+
+        it( 'refuses an unknown path, or one that isn\'t hidden', async () => {
+            db.repo( LearningPath ).findOneBy.mockResolvedValueOnce( null );
+            await expect( service.unhide( 'path' ) ).rejects.toThrow( NotFoundException );
+
+            db.repo( LearningPath ).findOneBy.mockResolvedValueOnce( { ...communityPath, publicBlockedAt: null } );
+            await expect( service.unhide( 'path' ) ).rejects.toThrow( 'This path isn\'t hidden' );
+            expect( db.repo( LearningPath ).update ).not.toHaveBeenCalled();
+        } );
     } );
 } );

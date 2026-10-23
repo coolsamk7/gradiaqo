@@ -1,12 +1,11 @@
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 
 import { AuthProvider } from './auth/AuthProvider.tsx';
 import { RequireAuth } from './auth/RequireAuth.tsx';
+import { ReportsPage } from './pages/admin/ReportsPage.tsx';
+import { RequireSuperadmin } from './pages/admin/RequireSuperadmin.tsx';
 import { AnalyticsPage } from './pages/analytics/AnalyticsPage.tsx';
 import { CatalogPage } from './pages/catalog/CatalogPage.tsx';
-import { ComingSoonPage } from './pages/coming-soon/ComingSoonPage.tsx';
-import type { UpcomingPage } from './pages/coming-soon/upcoming.ts';
-import { UPCOMING } from './pages/coming-soon/upcoming.ts';
 import { DashboardPage } from './pages/dashboard/DashboardPage.tsx';
 import { HomePage } from './pages/home/HomePage.tsx';
 import { LoginPage } from './pages/login/LoginPage.tsx';
@@ -50,13 +49,12 @@ export function App() {
                 <Route path="/app/my-paths/:organizationId/:pathId" element={<RequireAuth><PathBuilderPage /></RequireAuth>} />
                 <Route path="/app/organizations" element={<RequireAuth><OrganizationsPage /></RequireAuth>} />
                 <Route path="/app/organizations/:organizationId" element={<RequireAuth><OrganizationPage /></RequireAuth>} />
-                {( Object.keys( UPCOMING ) as UpcomingPage[] ).map( ( page ) => (
-                    <Route
-                        key={page}
-                        path={UPCOMING[page].path}
-                        element={<RequireAuth><ComingSoonPage page={page} /></RequireAuth>}
-                    />
-                ) )}
+                {/* The global catalog editor will be the admin home; until then it's the reports. */}
+                <Route
+                    path="/app/admin"
+                    element={<RequireAuth><RequireSuperadmin><Navigate to="/app/admin/reports" replace /></RequireSuperadmin></RequireAuth>}
+                />
+                <Route path="/app/admin/reports" element={<RequireAuth><RequireSuperadmin><ReportsPage /></RequireSuperadmin></RequireAuth>} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </AuthProvider>
