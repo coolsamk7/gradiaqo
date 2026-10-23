@@ -14,6 +14,7 @@ const production = {
     SMTP_PORT: '587',
     SMTP_USER: 'me@example.com',
     SMTP_PASSWORD: 'key',
+    APP_URL: 'https://app.example.com',
 };
 
 describe( 'validateEnv', () => {
@@ -69,5 +70,13 @@ describe( 'validateEnv', () => {
         } );
         expect( () => validateEnv( { ...production, SMTP_HOST: 'localhost' } ) ).toThrow( 'SMTP_HOST: must point at the email provider\'s SMTP relay' );
         expect( () => validateEnv( { ...production, SMTP_USER: '' } ) ).toThrow( 'SMTP_HOST: must point at the email provider\'s SMTP relay' );
+    } );
+
+    it( 'links emails to the local web app by default, and needs an https address in production', () => {
+        expect( validateEnv( valid ).APP_URL ).toBe( 'http://localhost:5173' );
+        expect( () => validateEnv( { ...valid, APP_URL: 'app.example.com' } ) )
+            .toThrow( 'APP_URL: must be the web app\'s address, e.g. https://app.example.com' );
+        expect( () => validateEnv( { ...production, APP_URL: 'http://app.example.com' } ) )
+            .toThrow( 'APP_URL: must be an https:// address in production' );
     } );
 } );

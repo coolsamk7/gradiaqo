@@ -295,6 +295,8 @@ The API sends email over SMTP, so any provider works (set `SMTP_*` and `MAIL_FRO
 - **Production:** the provider's SMTP relay; the API refuses to start in production without one. We use Brevo for
   now: `smtp-relay.brevo.com`, port 587, your Brevo login as `SMTP_USER` and an SMTP key as `SMTP_PASSWORD`.
   `MAIL_FROM` must be an address on a domain verified in Brevo (SPF and DKIM records), or mail lands in spam.
+- **Links in emails** (invitations) point at `APP_URL`, the web app's address: `http://localhost:5173` by default,
+  an `https://` address in production.
 
 ## Organizations
 
@@ -313,8 +315,9 @@ Every user has a personal workspace; for studying together, create an organizati
 | POST | `/me/invitations/:invitationId/accept` · `/decline` | none | The invited user |
 
 - **Invitations** go to an email, even one without an account yet; that person sees them in `/me/invitations` once
-  logged in with that email. They're valid for 14 days; inviting again updates the role and restarts the 14 days.
-  (Nothing is emailed yet.) An invitation gives `member` (default) or `admin`.
+  logged in with that email. They're also emailed a link to the app (`APP_URL`); if the email can't be sent, the
+  invitation still stands. They're valid for 14 days; inviting again updates the role, restarts the 14 days and
+  emails them again. An invitation gives `member` (default) or `admin`.
 - **Roles:** owners can change anyone and make others owner; admins can manage members and admins but never owners.
 - **Always an owner:** the last owner can't be demoted, removed or leave; make someone else owner first (or delete the
   organization).
@@ -464,11 +467,11 @@ test coverage at 100% (see [Tests](#tests)).
 
 ### Backend features
 
-- [ ] **OTP and email** (SMTP; Brevo in production, Mailpit locally)
+- [x] **OTP and email** (SMTP; Brevo in production, Mailpit locally)
   - [x] Email verification at signup
   - [x] Password reset
   - [x] Changing your email (verify the new address first)
-  - [ ] Send invitation emails (today invited people only see them in `GET /me/invitations`)
+  - [x] Send invitation emails (accepting them in the web app comes with the Organizations page)
 - [ ] **Moderation:** let a superadmin un-hide a path hidden by mistake (clear `publicBlockedAt`)
 - [ ] **Pagination** for `GET /catalog/paths` and `GET /me/enrollments` (both return everything today)
 - [ ] **Study reminders / notifications**, e.g. "you haven't studied today, keep your streak"

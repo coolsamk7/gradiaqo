@@ -1,8 +1,8 @@
 import { expect, logIn, test } from './support/fixtures.ts';
-import { latestCode } from './support/mailpit.ts';
+import { latestCode, latestEmail } from './support/mailpit.ts';
 
-test.describe( 'Email codes', () => {
-    // New users each time: these tests verify emails and change passwords.
+test.describe( 'Emails', () => {
+    // New users each time: these tests verify emails, change passwords and invite people.
     test( 'a new user verifies their email with the code sent at signup', async ( { page, api } ) => {
         const user = await api.signUp( 'Vera' );
 
@@ -93,5 +93,28 @@ test.describe( 'Email codes', () => {
         await expect( page.getByText( /^Verify your email/ ) ).toBeHidden();
         await page.getByRole( 'button', { name: 'Log out' } ).click();
         await logIn( page, { ...user, email: newEmail } );
+    } );
+
+    test( 'an invited person gets an email whose link leads to the app after signing up', async ( { page, api } ) => {
+        const owner = await api.signUp( 'Olive' );
+        const invited = `invited-${owner.email}`;
+
+        await api.invite( owner, 'Study Group', invited );
+        const email = await latestEmail( invited, /invited you to Study Group on StudyLog$/ );
+
+        expect( email.Subject ).toBe( 'Olive Tester invited you to Study Group on StudyLog' );
+        const link = /to accept: (\S+)/.exec( email.Text )![1];
+
+        // Not logged in: the link asks to log in, and "Create an account" from there comes back to it.
+        await page.goto( link );
+        await expect( page ).toHaveURL( '/login' );
+        await page.getByRole( 'link', { name: 'Create an account' } ).click();
+        await page.getByLabel( 'First name' ).fill( 'Ivy' );
+        await page.getByLabel( 'Last name' ).fill( 'Invited' );
+        await page.getByLabel( 'Email' ).fill( invited );
+        await page.getByLabel( 'Password', { exact: true } ).fill( owner.password );
+        await page.getByRole( 'button', { name: 'Create account' } ).click();
+
+        await expect( page ).toHaveURL( '/app/organizations' );
     } );
 } );

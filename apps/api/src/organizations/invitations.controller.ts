@@ -43,8 +43,9 @@ export class OrganizationInvitationsController {
     @RateLimit( 'invite' )
     @ApiOperation( {
         summary: 'Invite someone by email (owners and admins)',
-        description: 'They see it under /me/invitations once logged in with that email, for 14 days. '
-            + 'Inviting the same email again updates the role and restarts the 14 days.',
+        description: 'Emails them a link to StudyLog; they see it under /me/invitations once logged in with that '
+            + 'email, for 14 days. Inviting the same email again updates the role, restarts the 14 days and emails '
+            + 'them again. If the email can\'t be sent, the invitation is still made.',
     } )
     @TypeboxResponse( Responses.Invitation, { status: 201 } )
     @ApiBadRequestResponse( { description: 'Invalid input, or a personal workspace' } )

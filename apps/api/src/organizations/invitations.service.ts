@@ -1,21 +1,34 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { User } from '@studylog/database';
 import { Membership, OrganizationInvitation, OrganizationRole } from '@studylog/database';
 import type { CreateInvitationRequest, Invitation, MyInvitation, MyOrganization } from '@studylog/schemas';
 import { DataSource, MoreThan, Repository } from 'typeorm';
 
+import { MailService } from '../mail/mail.service.js';
+import { invitationMail } from '../mail/templates.js';
 import { toOrganizationResponse } from './organizations.service.js';
 
-const INVITATION_TTL_MS = 14 * 24 * 60 * 60 * 1000;
+const INVITATION_TTL_DAYS = 14;
+const INVITATION_TTL_MS = INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000;
 
 /**
- * Invitations to join an organization, by email. There's no email sending yet: invited users see their
- * invitations in the app (`GET /me/invitations`) once they log in with that email.
+ * Invitations to join an organization, by email. The invited person gets an email, and sees the invitation in the
+ * app (`GET /me/invitations`) once logged in with that address, even if the email didn't arrive.
  */
 @Injectable()
 export class InvitationsService {
-    constructor( @InjectDataSource() private readonly dataSource: DataSource ) {}
+    private readonly logger = new Logger( InvitationsService.name );
+    private readonly acceptUrl: string;
+
+    constructor(
+        @InjectDataSource() private readonly dataSource: DataSource,
+        private readonly mail: MailService,
+        config: ConfigService,
+    ) {
+        this.acceptUrl = `${config.getOrThrow<string>( 'APP_URL' ).replace( /\/+$/, '' )}/app/organizations`;
+    }
 
     /** Pending (unexpired) invitations of an organization, newest first. */
     async list( organizationId: string ): Promise<Invitation[]> {
@@ -28,7 +41,10 @@ export class InvitationsService {
         return invitations.map( toInvitationView );
     }
 
-    /** Invites an email. Inviting the same email again updates the role and restarts the expiry. */
+    /**
+     * Invites an email and emails them. Inviting the same email again updates the role, restarts the expiry and
+     * sends the email again.
+     */
     async create( organizationId: string, invitedById: string, dto: CreateInvitationRequest ): Promise<Invitation> {
         const isMember = await this.dataSource.getRepository( Membership ).exists( {
             where: { organizationId, user: { email: dto.email } },
@@ -51,10 +67,14 @@ export class InvitationsService {
             [ 'organizationId', 'email' ],
         );
 
-        return toInvitationView( await repository.findOneOrFail( {
+        const invitation = await repository.findOneOrFail( {
             where: { organizationId, email: dto.email },
-            relations: { invitedBy: true },
-        } ) );
+            relations: { invitedBy: true, organization: true },
+        } );
+
+        await this.sendEmail( invitation );
+
+        return toInvitationView( invitation );
     }
 
     async revoke( organizationId: string, id: string ): Promise<void> {
@@ -112,6 +132,21 @@ export class InvitationsService {
 
         await this.findForUser( repository, user, id );
         await repository.delete( { id } );
+    }
+
+    /** Best effort: the invitation stands without it, and shows in the app. */
+    private async sendEmail( { email, role, invitedBy, organization }: OrganizationInvitation ): Promise<void> {
+        try {
+            await this.mail.send( invitationMail( email, {
+                inviter: invitedBy && `${invitedBy.firstName} ${invitedBy.lastName}`,
+                organization: organization.name,
+                role,
+                url: this.acceptUrl,
+                days: INVITATION_TTL_DAYS,
+            } ) );
+        } catch ( err ) {
+            this.logger.warn( `Couldn't email the invitation to ${organization.name}: ${( err as Error ).message}` );
+        }
     }
 
     /** Another user's (or an expired) invitation is "not found". */
