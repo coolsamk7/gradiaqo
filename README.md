@@ -266,6 +266,8 @@ Log in via `/auth/login`, click **Authorize**, and paste the `accessToken`.
 | POST | `/auth/verify-email/resend` | none | Emails a new code (not within a minute of the last one) |
 | POST | `/auth/forgot-password` | `email` | Emails a reset code if the email has an account (always 204) |
 | POST | `/auth/reset-password` | `email, code, newPassword` | Sets the new password and signs out every device |
+| POST | `/auth/change-email` | `newEmail, password` | Emails a code to the new address; nothing changes yet |
+| POST | `/auth/change-email/confirm` | `code` | Switches to the new address; returns the user |
 
 ## Accounts
 
@@ -280,7 +282,9 @@ Log in via `/auth/login`, click **Authorize**, and paste the `accessToken`.
     shows a reminder; everything else works as usual.
   - **Forgotten password:** `forgot-password` answers the same whether or not the email has an account. Resetting
     signs out every device and also verifies the email.
-- Not yet: changing your email.
+  - **Changing the email:** after the password, a code goes to the new address (kept with the code as
+    `new_email`). Entering it switches the account to that address, marks it verified and tells the old address.
+    Refused if another account uses the address.
 
 ### Email
 
@@ -463,7 +467,7 @@ test coverage at 100% (see [Tests](#tests)).
 - [ ] **OTP and email** (SMTP; Brevo in production, Mailpit locally)
   - [x] Email verification at signup
   - [x] Password reset
-  - [ ] Changing your email (verify the new address first)
+  - [x] Changing your email (verify the new address first)
   - [ ] Send invitation emails (today invited people only see them in `GET /me/invitations`)
 - [ ] **Moderation:** let a superadmin un-hide a path hidden by mistake (clear `publicBlockedAt`)
 - [ ] **Pagination** for `GET /catalog/paths` and `GET /me/enrollments` (both return everything today)

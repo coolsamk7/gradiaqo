@@ -28,8 +28,15 @@ export class EmailCodesService {
         return this.dataSource.getRepository( EmailCode );
     }
 
-    /** A new code, replacing any earlier one. Refused (429) if the last one was sent less than a minute ago. */
-    async issue( userId: string, purpose: EmailCodePurpose, now = new Date() ): Promise<string> {
+    /**
+     * A new code, replacing any earlier one. Refused (429) if the last one was sent less than a minute ago.
+     * `newEmail` is kept with a code for changing the email.
+     */
+    async issue(
+        userId: string,
+        purpose: EmailCodePurpose,
+        { newEmail = null, now = new Date() }: { newEmail?: string | null; now?: Date } = {},
+    ): Promise<string> {
         const last = await this.codes.findOneBy( { userId, purpose } );
 
         if ( last && now.getTime() - last.createdAt.getTime() < RESEND_AFTER_SECONDS * 1000 ) {
@@ -41,6 +48,7 @@ export class EmailCodesService {
         await this.codes.upsert( {
             userId,
             purpose,
+            newEmail,
             codeHash: await argon2.hash( code ),
             attempts: 0,
             expiresAt: new Date( now.getTime() + CODE_TTL_MINUTES * 60_000 ),
@@ -55,8 +63,8 @@ export class EmailCodesService {
         await this.codes.delete( { userId, purpose } );
     }
 
-    /** Uses the code up if it's right; otherwise counts the guess and throws (400). */
-    async consume( userId: string, purpose: EmailCodePurpose, code: string, now = new Date() ): Promise<void> {
+    /** Uses the code up if it's right, returning it; otherwise counts the guess and throws (400). */
+    async consume( userId: string, purpose: EmailCodePurpose, code: string, now = new Date() ): Promise<EmailCode> {
         const live = await this.codes.findOneBy( { userId, purpose } );
 
         if ( !live || live.expiresAt <= now ) {
@@ -65,7 +73,7 @@ export class EmailCodesService {
         if ( await argon2.verify( live.codeHash, code ) ) {
             await this.codes.delete( { id: live.id } );
 
-            return;
+            return live;
         }
         if ( live.attempts + 1 >= MAX_ATTEMPTS ) {
             await this.codes.delete( { id: live.id } );

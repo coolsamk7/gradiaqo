@@ -131,6 +131,7 @@ describe( 'Verify your email', () => {
         api();
         renderApp( '/verify-email' );
 
-        expect( await screen.findByRole( 'link', { name: 'Back to StudyLog' } ) ).toHaveAttribute( 'href', '/app' );
+        expect( await screen.findByRole( 'link', { name: 'Not now' } ) ).toHaveAttribute( 'href', '/app' );
+        expect( screen.getByRole( 'link', { name: 'Use a different email' } ) ).toHaveAttribute( 'href', '/app/settings' );
     } );
 } );

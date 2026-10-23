@@ -69,4 +69,29 @@ test.describe( 'Email codes', () => {
         // Resetting proved the email is theirs.
         await expect( page.getByText( /^Verify your email/ ) ).toBeHidden();
     } );
+
+    test( 'changes the email after a code sent to the new address, and logs in with it', async ( { page, api } ) => {
+        const user = await api.signUp();
+        const newEmail = `new-${user.email}`;
+
+        await logIn( page, user );
+        await page.goto( '/app/settings' );
+        await page.getByRole( 'button', { name: 'Change email' } ).click();
+        const dialog = page.getByRole( 'dialog', { name: 'Change your email' } );
+
+        await dialog.getByLabel( 'New email' ).fill( newEmail );
+        await dialog.getByLabel( 'Password', { exact: true } ).fill( user.password );
+        await dialog.getByRole( 'button', { name: 'Send code' } ).click();
+        await expect( dialog.getByRole( 'status' ) ).toContainText( `We sent a 6-digit code to ${newEmail}.` );
+
+        await dialog.getByLabel( 'Code' ).fill( await latestCode( newEmail, /is your StudyLog code$/ ) );
+        await dialog.getByRole( 'button', { name: 'Confirm new email' } ).click();
+
+        await expect( page.getByRole( 'status' ) ).toHaveText( `Email changed. Log in with ${newEmail} from now on.` );
+        await expect( page.getByLabel( 'Email', { exact: true } ) ).toHaveValue( newEmail );
+        // The new address is verified, and it's the one to log in with.
+        await expect( page.getByText( /^Verify your email/ ) ).toBeHidden();
+        await page.getByRole( 'button', { name: 'Log out' } ).click();
+        await logIn( page, { ...user, email: newEmail } );
+    } );
 } );

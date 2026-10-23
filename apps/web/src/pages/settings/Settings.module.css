@@ -103,3 +103,46 @@
     flex: none;
     margin-top: 2px;
 }
+
+/* "We sent a code to …" in the change-email dialog. */
+.info {
+    display: flex;
+    align-items: flex-start;
+    gap: var( --space-3 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    color: var( --color-accent-text );
+    background: var( --color-accent-soft );
+}
+
+.info svg {
+    flex: none;
+    margin-top: 2px;
+}
+
+/* The email with its "Change email" button beside it. */
+.email {
+    display: flex;
+    align-items: flex-end;
+    gap: var( --space-3 );
+}
+
+.email > :first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+/* A button that looks like a link ("Resend code"). */
+.link {
+    padding: 0;
+    border: 0;
+    color: var( --color-accent-text );
+    background: none;
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.link:hover {
+    text-decoration: underline;
+}

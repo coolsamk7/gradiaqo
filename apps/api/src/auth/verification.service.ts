@@ -4,14 +4,15 @@ import {
     Injectable,
     Logger,
     ServiceUnavailableException,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { EmailCodePurpose, User } from '@studylog/database';
 import * as argon2 from 'argon2';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryFailedError } from 'typeorm';
 
 import { MailService } from '../mail/mail.service.js';
-import { resetPasswordMail, verifyEmailMail } from '../mail/templates.js';
+import { changeEmailMail, emailChangedMail, resetPasswordMail, verifyEmailMail } from '../mail/templates.js';
 import type { PublicUser } from '../users/public-user.js';
 import { toPublicUser } from '../users/public-user.js';
 import { UsersService } from '../users/users.service.js';
@@ -20,7 +21,20 @@ import { SessionsService } from './sessions.service.js';
 
 type Recipient = Pick<User, 'id' | 'email' | 'firstName'>;
 
-/** Proving the email is the user's with an emailed code: after signup, and to reset a forgotten password. */
+const PG_UNIQUE_VIOLATION = '23505';
+const EMAIL_TAKEN = 'That email is already used by another account';
+
+/** The email with the code, per purpose. */
+const CODE_MAILS = {
+    [EmailCodePurpose.VerifyEmail]: verifyEmailMail,
+    [EmailCodePurpose.ResetPassword]: resetPasswordMail,
+    [EmailCodePurpose.ChangeEmail]: changeEmailMail,
+};
+
+/**
+ * Proving an email is the user's with an emailed code: after signup, to reset a forgotten password, and before
+ * switching to a new address.
+ */
 @Injectable()
 export class VerificationService {
     private readonly logger = new Logger( VerificationService.name );
@@ -108,19 +122,65 @@ export class VerificationService {
         await this.sessionsService.revokeOthers( user.id, undefined );
     }
 
+    /**
+     * Starts changing the email: after the password, emails a code to the new address. Nothing changes until the
+     * code is entered (confirmEmailChange). Asking again sends a new code and replaces the pending address.
+     */
+    async requestEmailChange( userId: string, newEmail: string, password: string ): Promise<void> {
+        const user = await this.usersService.findByIdWithPassword( userId );
+
+        if ( !user || !( await argon2.verify( user.passwordHash, password ) ) ) {
+            throw new UnauthorizedException( 'Wrong password' );
+        }
+        if ( newEmail === user.email ) {
+            throw new BadRequestException( 'That\'s already your email' );
+        }
+        if ( await this.usersService.existsByEmail( newEmail ) ) {
+            throw new ConflictException( EMAIL_TAKEN );
+        }
+
+        await this.send( user, EmailCodePurpose.ChangeEmail, newEmail );
+    }
+
+    /**
+     * Switches to the new address with the code sent to it, which also verifies it, and tells the old address.
+     * Refused (409) if someone signed up with that address in the meantime.
+     */
+    async confirmEmailChange( userId: string, code: string ): Promise<PublicUser> {
+        const user = await this.usersService.findByIdOrFail( userId );
+        const { newEmail } = await this.codes.consume( userId, EmailCodePurpose.ChangeEmail, code );
+        // Codes for changing the email always have the new address.
+        const email = newEmail!;
+
+        try {
+            await this.users.update( { id: userId }, { email, emailVerifiedAt: new Date() } );
+        } catch ( err ) {
+            if ( isUniqueViolation( err ) ) {
+                throw new ConflictException( EMAIL_TAKEN );
+            }
+            throw err;
+        }
+
+        try {
+            await this.mail.send( emailChangedMail( user.email, user.firstName, email ) );
+        } catch ( err ) {
+            this.logger.warn( `Couldn't tell the old address about the email change: ${( err as Error ).message}` );
+        }
+
+        return toPublicUser( await this.usersService.findByIdOrFail( userId ) );
+    }
+
     private sendVerification( user: Recipient ): Promise<void> {
         return this.send( user, EmailCodePurpose.VerifyEmail );
     }
 
     /**
-     * Issues a code and emails it. If the email can't be sent, the code is thrown away (so asking again isn't
-     * refused) and it fails with 503.
+     * Issues a code and emails it (to `newEmail` when changing the email). If the email can't be sent, the code
+     * is thrown away (so asking again isn't refused) and it fails with 503.
      */
-    private async send( user: Recipient, purpose: EmailCodePurpose ): Promise<void> {
-        const code = await this.codes.issue( user.id, purpose );
-        const mail = purpose === EmailCodePurpose.VerifyEmail
-            ? verifyEmailMail( user.email, user.firstName, code, CODE_TTL_MINUTES )
-            : resetPasswordMail( user.email, user.firstName, code, CODE_TTL_MINUTES );
+    private async send( user: Recipient, purpose: EmailCodePurpose, newEmail: string | null = null ): Promise<void> {
+        const code = await this.codes.issue( user.id, purpose, { newEmail } );
+        const mail = CODE_MAILS[purpose]( newEmail ?? user.email, user.firstName, code, CODE_TTL_MINUTES );
 
         try {
             await this.mail.send( mail );
@@ -130,4 +190,8 @@ export class VerificationService {
             throw new ServiceUnavailableException( 'We couldn\'t send the email. Please try again in a minute.' );
         }
     }
+}
+
+function isUniqueViolation( err: unknown ): boolean {
+    return err instanceof QueryFailedError && ( err.driverError as { code?: string } ).code === PG_UNIQUE_VIOLATION;
 }

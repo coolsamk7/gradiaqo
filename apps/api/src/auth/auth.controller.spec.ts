@@ -23,7 +23,14 @@ describe( 'AuthController cookies', () => {
     const auth = { signup: vi.fn(), login: vi.fn(), refresh: vi.fn(), logout: vi.fn() };
     const users = { findById: vi.fn() };
     const account = { updateProfile: vi.fn(), changePassword: vi.fn(), deleteAccount: vi.fn() };
-    const verification = { verify: vi.fn(), resend: vi.fn(), forgotPassword: vi.fn(), resetPassword: vi.fn() };
+    const verification = {
+        verify: vi.fn(),
+        resend: vi.fn(),
+        forgotPassword: vi.fn(),
+        resetPassword: vi.fn(),
+        requestEmailChange: vi.fn(),
+        confirmEmailChange: vi.fn(),
+    };
     const controller = new AuthController(
         auth as unknown as AuthService,
         users as unknown as UsersService,
@@ -136,6 +143,16 @@ describe( 'AuthController cookies', () => {
         expect( verification.resend ).toHaveBeenCalledWith( 'me' );
         expect( verification.forgotPassword ).toHaveBeenCalledWith( 'a@b.co' );
         expect( verification.resetPassword ).toHaveBeenCalledWith( 'a@b.co', '482913', 'newpassword' );
+    } );
+
+    it( 'change email routes pass the new email, password and code on', async () => {
+        verification.confirmEmailChange.mockResolvedValue( { id: 'me', email: 'new@b.co' } );
+
+        await controller.changeEmail( { sub: 'me' } as never, { newEmail: 'new@b.co', password: 'right' } );
+        expect( await controller.confirmEmailChange( { sub: 'me' } as never, { code: '482913' } ) ).toEqual( { id: 'me', email: 'new@b.co' } );
+
+        expect( verification.requestEmailChange ).toHaveBeenCalledWith( 'me', 'new@b.co', 'right' );
+        expect( verification.confirmEmailChange ).toHaveBeenCalledWith( 'me', '482913' );
     } );
 
     it( 'deleting the account clears the refresh cookie', async () => {

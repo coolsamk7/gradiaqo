@@ -99,4 +99,5 @@ export enum ReportStatus {
 export enum EmailCodePurpose {
     VerifyEmail = 'verify_email',
     ResetPassword = 'reset_password',
+    ChangeEmail = 'change_email',
 }

@@ -21,7 +21,7 @@ function api( handlers: Handlers = {} ) {
 const card = ( name: string ) => screen.getByRole( 'region', { name } );
 
 describe( 'SettingsPage', () => {
-    it( 'shows the profile, with the email read-only', async () => {
+    it( 'shows the profile, with the email changed only through its dialog', async () => {
         api();
         renderApp( '/app/settings' );
 
@@ -32,7 +32,7 @@ describe( 'SettingsPage', () => {
         expect( within( profile ).getByLabelText( 'First name' ) ).toHaveValue( 'Sam' );
         expect( within( profile ).getByLabelText( 'Last name' ) ).toHaveValue( 'Khan' );
         expect( within( profile ).getByLabelText( 'Email' ) ).toBeDisabled();
-        expect( within( profile ).getByLabelText( 'Email' ) ).toHaveAccessibleDescription( 'Changing your email isn\'t available yet.' );
+        expect( within( profile ).getByRole( 'button', { name: 'Change email' } ) ).toBeInTheDocument();
         expect( screen.getByRole( 'link', { name: 'Settings' } ) ).toHaveAttribute( 'aria-current', 'page' );
     } );
 

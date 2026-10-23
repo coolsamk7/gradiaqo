@@ -3,6 +3,7 @@ import { Compile } from 'typebox/compile';
 import { describe, expect, it } from 'vitest';
 
 import {
+    ChangeEmailRequest,
     CreateItemRequest,
     CreateLearningPathRequest,
     Email,
@@ -78,6 +79,13 @@ describe( 'response schemas', () => {
         expect( verify.Check( { code: '482a13' } ) ).toBe( false );
         expect( Compile( ResetPasswordRequest ).Check( { email: 'a@b.co', code: '482913', newPassword: 'short' } ) ).toBe( false );
         expect( Compile( ForgotPasswordRequest ).Check( { email: 'not-an-email' } ) ).toBe( false );
+    } );
+
+    it( 'normalizes the new email when changing it, and needs the password', () => {
+        const change = parse( Compile( ChangeEmailRequest ) );
+
+        expect( change( { newEmail: ' New@B.CO ', password: 'x' } ) ).toEqual( { newEmail: 'new@b.co', password: 'x' } );
+        expect( change( { newEmail: 'new@b.co', password: '' } ) ).toBeUndefined();
     } );
 
     it( 'encode nullable dates whether set or null', () => {
