@@ -1,0 +1,287 @@
+/* Path preview and the choose-parts dialog (Figma: M1 · Find & follow paths). Cards and badges: styles/app.module.css. */
+
+.back {
+    justify-self: start;
+    margin-left: calc( -1 * var( --space-3 ) );
+}
+
+.titleBlock {
+    display: grid;
+    flex: 1;
+    gap: var( --space-2 );
+    min-width: min( 100%, 320px );
+}
+
+.badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var( --space-2 );
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var( --space-1 ) var( --space-4 );
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.meta li {
+    display: flex;
+    align-items: center;
+    gap: var( --space-1 );
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.meta svg {
+    color: var( --color-icon );
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var( --space-2 );
+}
+
+/* ---------- Contents ---------- */
+
+.columns {
+    display: grid;
+    grid-template-columns: minmax( 0, 1fr ) 340px;
+    align-items: start;
+    gap: var( --space-6 );
+}
+
+.contents,
+.side {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+.module {
+    display: grid;
+    gap: var( --space-1 );
+}
+
+.moduleHead,
+.topicSummary,
+.item {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.moduleHead h2 {
+    flex: 1;
+}
+
+.topicSummary {
+    padding: var( --space-2 ) var( --space-0-5 ) var( --space-2 ) 0;
+    list-style: none;
+    cursor: pointer;
+}
+
+.topicSummary::-webkit-details-marker {
+    display: none;
+}
+
+.chevron {
+    flex: none;
+    color: var( --color-icon );
+    transition: transform 120ms ease;
+}
+
+.topic[open] .chevron {
+    transform: rotate( 90deg );
+}
+
+.topicTitle {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+.items {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.item {
+    padding: var( --space-2 ) var( --space-0-5 ) var( --space-2 ) 28px;
+}
+
+.itemIcon {
+    flex: none;
+    color: var( --color-icon );
+}
+
+.itemTitle {
+    flex: 1;
+    min-width: 0;
+}
+
+.noItems {
+    padding: 0 0 var( --space-2 ) 28px;
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* ---------- Side ---------- */
+
+.follow {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+.follow a,
+.follow button {
+    width: 100%;
+}
+
+.cardHead {
+    display: grid;
+    gap: var( --space-1 );
+}
+
+.aboutTitle {
+    margin-bottom: var( --space-2 );
+}
+
+.about {
+    display: grid;
+    gap: var( --space-2 );
+    margin: 0;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.about div {
+    display: flex;
+    justify-content: space-between;
+    gap: var( --space-3 );
+}
+
+.about dt {
+    color: var( --color-text-muted );
+}
+
+.about dd {
+    margin: 0;
+    font-weight: 500;
+}
+
+@media ( max-width: 1000px ) {
+    .columns {
+        grid-template-columns: minmax( 0, 1fr );
+    }
+
+    /* Following comes first on narrow screens, so the header doesn't repeat its buttons. */
+    .side {
+        order: -1;
+    }
+
+    .actions {
+        display: none;
+    }
+}
+
+@media ( max-width: 600px ) {
+    /* The item's type and length go under its title. */
+    .item {
+        flex-wrap: wrap;
+        row-gap: 0;
+    }
+
+    .itemTitle {
+        flex-basis: calc( 100% - 28px );
+    }
+
+    .item > :last-child {
+        padding-left: 28px;
+    }
+}
+
+/* ---------- Choose-parts dialog ---------- */
+
+.flush {
+    margin: 0;
+}
+
+.selection {
+    display: grid;
+    gap: var( --space-0-5 );
+    max-height: min( 50vh, 420px );
+    margin: 0;
+    padding: var( --space-2 ) var( --space-3 );
+    overflow-y: auto;
+    border: 1px solid var( --color-border );
+    border-radius: var( --radius-md );
+    list-style: none;
+}
+
+.topicChoices {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.moduleChoice,
+.topicChoice {
+    display: flex;
+    align-items: center;
+    gap: var( --space-2 );
+    cursor: pointer;
+}
+
+.moduleChoice {
+    padding: var( --space-2 ) var( --space-1 );
+    font-weight: 500;
+}
+
+.topicChoice {
+    padding: var( --space-1 ) var( --space-1 ) var( --space-1 ) 32px;
+}
+
+.moduleChoice input,
+.topicChoice input {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var( --color-accent );
+}
+
+.choiceName {
+    flex: 1;
+    min-width: 0;
+}
+
+.choiceCount {
+    color: var( --color-text-muted );
+    font-family: var( --font-mono );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.dialogFooter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-2 );
+}
+
+.selected {
+    flex: 1;
+    color: var( --color-text-muted );
+    font-size: 12px;
+    line-height: 16px;
+}

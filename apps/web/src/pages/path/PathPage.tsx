@@ -89,9 +89,15 @@ function PathView( { path, onStatus }: PathViewProps ) {
     return (
         <>
             <div className={styles.header}>
-                <div className={styles.titleRow}>
-                    <h1 className={app.title}>{title}</h1>
-                    {status && <span className={`${app.badge} ${path.status === EnrollmentStatus.Completed ? app.badgeSuccess : ''}`}>{status}</span>}
+                <div className={styles.headTop}>
+                    <div className={styles.titleRow}>
+                        <h1 className={app.title}>{title}</h1>
+                        {status && <span className={`${app.badge} ${path.status === EnrollmentStatus.Completed ? app.badgeSuccess : ''}`}>{status}</span>}
+                    </div>
+                    <Link to={`/app/paths/${path.id}/settings`} className={`${shared.button} ${shared.secondary}`}>
+                        <Icon name="sliders" />
+                        Path settings
+                    </Link>
                 </div>
                 {description && <p className={app.muted}>{description}</p>}
                 <ProgressBar label={`${title} progress`} percent={percent( completed, total )} />

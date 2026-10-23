@@ -7,6 +7,7 @@ import type {
     ItemJson as CatalogItemJson,
     LearningPathTreeJson,
     MyOrganizationJson,
+    PublishedPathJson,
     PublishedPathSummaryJson,
     StudySessionPageJson,
 } from '@studylog/schemas';
@@ -164,6 +165,21 @@ export function catalogPath(
         contents: { modules: 0, items: 0, estimatedMinutes: 0 },
         ...overrides,
     };
+}
+
+/**
+ * A published path with its modules, topics and items, as Path preview loads it. Built from the same specs as
+ * `enrollmentDetail()`, so ids match between the two.
+ */
+export function publishedPath(
+    title: string,
+    modules: TreeSpec[],
+    overrides: Partial<PublishedPathSummaryJson> = {},
+): PublishedPathJson {
+    const summary = catalogPath( title, overrides );
+    const tree = enrollmentDetail( enrollment( title, 'active' as EnrollmentStatus, 0, 0 ), modules ).modules;
+
+    return { ...summary, modules: tree.map( ( module ) => ( { ...module, learningPathId: summary.id } ) ) };
 }
 
 /** The user's personal workspace, or (with overrides) an organization they're in. */
