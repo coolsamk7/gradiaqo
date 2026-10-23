@@ -1,3 +1,4 @@
+import { EmailCode } from './email-code.entity.js';
 import { Enrollment } from './enrollment.entity.js';
 import { EnrollmentOrder } from './enrollment-order.entity.js';
 import { EnrollmentRule } from './enrollment-rule.entity.js';
@@ -35,4 +36,5 @@ export const entities = [
     OrganizationInvitation,
     PathReport,
     InterviewGoal,
+    EmailCode,
 ];

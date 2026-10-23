@@ -1,0 +1,26 @@
+/* Verify email (Figma: M3 · Email & passwords › Verify email). Layout: components/AuthLayout. */
+
+.resend {
+    margin-top: var( --space-5 );
+    color: var( --color-text-muted );
+    text-align: center;
+}
+
+.wait {
+    font-weight: 500;
+}
+
+/* A button that looks like the page's links. */
+.link {
+    padding: 0;
+    border: 0;
+    color: var( --color-accent-text );
+    background: none;
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.link:hover {
+    text-decoration: underline;
+}

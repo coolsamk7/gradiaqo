@@ -1,0 +1,35 @@
+/* Figma: Verify email › Code: six boxes, the one being typed in highlighted. */
+
+.code {
+    display: grid;
+    grid-template-columns: repeat( 6, minmax( 0, 1fr ) );
+    gap: var( --space-2 );
+}
+
+.box {
+    width: 100%;
+    height: 60px;
+    border: 1px solid var( --color-border-strong );
+    border-radius: var( --radius-md );
+    color: var( --color-text );
+    background: var( --color-surface );
+    font: inherit;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.box:focus-visible {
+    border-color: var( --color-border-accent );
+    outline: none;
+    box-shadow: 0 0 0 1px var( --color-border-accent );
+}
+
+.box[aria-invalid='true'] {
+    border-color: var( --color-border-danger );
+}
+
+.box:disabled {
+    color: var( --color-text-muted );
+    background: var( --color-bg-muted );
+}

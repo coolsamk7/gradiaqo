@@ -111,7 +111,16 @@ export function AppLayout( { children }: { children: ReactNode } ) {
                 </div>
             </header>
             <main className={styles.main}>
-                <div className={styles.content}>{children}</div>
+                <div className={styles.content}>
+                    {!user.emailVerifiedAt && (
+                        <p className={styles.verify}>
+                            <Icon name="mail" />
+                            <span className={styles.verifyText}>{`Verify your email: we sent a 6-digit code to ${user.email}.`}</span>
+                            <Link to="/verify-email" state={{ from: pathname }} className={styles.verifyLink}>Enter code</Link>
+                        </p>
+                    )}
+                    {children}
+                </div>
             </main>
         </div>
     );

@@ -117,6 +117,8 @@ export function buildSeedData( { now, passwordHash, id = randomUUID, randomSeed 
             lastName: user.lastName,
             passwordHash,
             platformRole: user.platformRole,
+            // The dummy users have "verified" their email, so the app doesn't ask them to.
+            emailVerifiedAt: joined,
             createdAt: joined,
             updatedAt: joined,
         } );

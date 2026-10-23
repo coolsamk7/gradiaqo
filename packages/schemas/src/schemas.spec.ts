@@ -6,6 +6,7 @@ import {
     CreateItemRequest,
     CreateLearningPathRequest,
     Email,
+    ForgotPasswordRequest,
     IsoDate,
     ItemDetailsSchemas,
     ItemProgress,
@@ -13,11 +14,13 @@ import {
     LoginRequest,
     NullableIsoDate,
     ReorderRequest,
+    ResetPasswordRequest,
     SignupRequest,
     StudySessionPage,
     TrimmedText,
     UpdateOrganizationRequest,
     User,
+    VerifyEmailRequest,
 } from './index.js';
 
 const parse = ( validator: Validator ) => ( value: unknown ) =>
@@ -58,11 +61,23 @@ describe( 'response schemas', () => {
         const createdAt = new Date( '2026-01-02T03:04:05.000Z' );
         const encoded = user.Encode( {
             id: '97f12719-9f4c-41c9-afc3-a91de613d02b', email: 'a@b.co', firstName: 'A', lastName: 'B',
-            platformRole: 'application_user', createdAt, updatedAt: createdAt,
+            platformRole: 'application_user', emailVerifiedAt: null, createdAt, updatedAt: createdAt,
         } );
 
         expect( encoded.createdAt ).toBe( '2026-01-02T03:04:05.000Z' );
+        expect( encoded.emailVerifiedAt ).toBeNull();
         expect( user.Check( { ...encoded, platformRole: 'god' } ) ).toBe( false );
+    } );
+
+    it( 'take the 6-digit code from an email, with or without spaces', () => {
+        const verify = Compile( VerifyEmailRequest );
+
+        expect( verify.Decode( { code: ' 482 913 ' } ) ).toEqual( { code: '482913' } );
+        expect( verify.Encode( { code: '482913' } ) ).toEqual( { code: '482913' } );
+        expect( verify.Check( { code: '48291' } ) ).toBe( false );
+        expect( verify.Check( { code: '482a13' } ) ).toBe( false );
+        expect( Compile( ResetPasswordRequest ).Check( { email: 'a@b.co', code: '482913', newPassword: 'short' } ) ).toBe( false );
+        expect( Compile( ForgotPasswordRequest ).Check( { email: 'not-an-email' } ) ).toBe( false );
     } );
 
     it( 'encode nullable dates whether set or null', () => {

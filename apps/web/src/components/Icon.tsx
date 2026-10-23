@@ -54,6 +54,7 @@ const ICONS = {
         polyline( '2 12 12 17 22 12' ),
     ],
     'log-out': [ path( 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' ), polyline( '16 17 21 12 16 7' ), line( 21, 12, 9, 12 ) ],
+    mail: [ path( 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z' ), polyline( '22 6 12 13 2 6' ) ],
     menu: [ line( 3, 12, 21, 12 ), line( 3, 6, 21, 6 ), line( 3, 18, 21, 18 ) ],
     'more-horizontal': [ circle( 12, 12, 1 ), circle( 19, 12, 1 ), circle( 5, 12, 1 ) ],
     pause: [ rect( 6, 4, 4, 16 ), rect( 14, 4, 4, 16 ) ],

@@ -19,6 +19,7 @@ describe( '@studylog/nestjs wrappers', () => {
             firstName: 'A',
             lastName: 'B',
             platformRole: PlatformRole.ApplicationUser,
+            emailVerifiedAt: null,
             createdAt: at,
             updatedAt: at,
             passwordHash: 'secret',

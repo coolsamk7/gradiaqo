@@ -136,3 +136,18 @@ select.input {
     color: var( --color-accent-text );
     background: var( --color-accent-soft );
 }
+
+/* "Forgot password?" under the password, on the right. */
+.forgot {
+    justify-self: end;
+    margin-top: calc( -1 * var( --space-3 ) );
+    color: var( --color-accent-text );
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    text-decoration: none;
+}
+
+.forgot:hover {
+    text-decoration: underline;
+}

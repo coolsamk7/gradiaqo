@@ -34,3 +34,26 @@ export const AuthResponse = Type.Object( {
     user: User,
 } );
 export type AuthResponse = StaticEncode<typeof AuthResponse>;
+
+// ---------- Email codes: verifying the email, resetting a forgotten password ----------
+
+/** A 6-digit code from an email. Spaces are allowed (people copy "482 913"), and taken out. */
+const EmailCode = () => Type.Codec(
+    Type.String( { pattern: '^\\s*(\\d\\s*){6}$', errorMessage: 'must be the 6-digit code from the email', examples: [ '482913' ] } ),
+).Decode( ( value ) => value.replace( /\s/g, '' ) ).Encode( ( value ) => value );
+
+export const VerifyEmailRequest = Type.Object( { code: EmailCode() }, { additionalProperties: false } );
+export type VerifyEmailRequest = StaticDecode<typeof VerifyEmailRequest>;
+
+export const ForgotPasswordRequest = Type.Object( { email: Email() }, { additionalProperties: false } );
+export type ForgotPasswordRequest = StaticDecode<typeof ForgotPasswordRequest>;
+
+export const ResetPasswordRequest = Type.Object(
+    {
+        email: Email(),
+        code: EmailCode(),
+        newPassword: SignupRequest.properties.password,
+    },
+    { additionalProperties: false },
+);
+export type ResetPasswordRequest = StaticDecode<typeof ResetPasswordRequest>;

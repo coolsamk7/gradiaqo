@@ -5,6 +5,17 @@ const valid = {
     JWT_SECRET: 'x'.repeat( 64 ),
 };
 
+/** Everything production insists on. */
+const production = {
+    ...valid,
+    NODE_ENV: 'production',
+    COOKIE_SECURE: 'true',
+    SMTP_HOST: 'smtp-relay.brevo.com',
+    SMTP_PORT: '587',
+    SMTP_USER: 'me@example.com',
+    SMTP_PASSWORD: 'key',
+};
+
 describe( 'validateEnv', () => {
     it( 'applies defaults and converts strings to numbers and booleans', () => {
         expect( validateEnv( { ...valid, PORT: '4000', COOKIE_SECURE: 'true', TRUST_PROXY: '1' } ) ).toMatchObject( {
@@ -39,12 +50,24 @@ describe( 'validateEnv', () => {
 
     it( 'allows turning rate limits off, except in production', () => {
         expect( validateEnv( { ...valid, RATE_LIMITS_ENABLED: 'false' } ).RATE_LIMITS_ENABLED ).toBe( false );
-        expect( () => validateEnv( { ...valid, NODE_ENV: 'production', COOKIE_SECURE: 'true', RATE_LIMITS_ENABLED: 'false' } ) )
+        expect( () => validateEnv( { ...production, RATE_LIMITS_ENABLED: 'false' } ) )
             .toThrow( 'RATE_LIMITS_ENABLED: must be true in production' );
     } );
 
     it( 'requires secure cookies in production', () => {
         expect( () => validateEnv( { ...valid, NODE_ENV: 'production' } ) ).toThrow( 'COOKIE_SECURE: must be true in production' );
-        expect( validateEnv( { ...valid, NODE_ENV: 'production', COOKIE_SECURE: 'true' } ).NODE_ENV ).toBe( 'production' );
+        expect( validateEnv( { ...production } ).NODE_ENV ).toBe( 'production' );
+    } );
+
+    it( 'sends email through Mailpit by default, and needs a real SMTP relay in production', () => {
+        expect( validateEnv( valid ) ).toMatchObject( {
+            SMTP_HOST: 'localhost',
+            SMTP_PORT: 1025,
+            SMTP_SECURE: false,
+            SMTP_USER: '',
+            MAIL_FROM: 'StudyLog <no-reply@studylog.local>',
+        } );
+        expect( () => validateEnv( { ...production, SMTP_HOST: 'localhost' } ) ).toThrow( 'SMTP_HOST: must point at the email provider\'s SMTP relay' );
+        expect( () => validateEnv( { ...production, SMTP_USER: '' } ) ).toThrow( 'SMTP_HOST: must point at the email provider\'s SMTP relay' );
     } );
 } );

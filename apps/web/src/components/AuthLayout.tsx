@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
 import styles from './AuthLayout.module.css';
+import type { IconName } from './Icon.tsx';
 import { Icon } from './Icon.tsx';
 import { Logo } from './Logo.tsx';
 
@@ -14,11 +15,20 @@ interface AuthLayoutProps {
     subtitle: string;
     /** Under the card's content, e.g. a link to the other auth page. */
     alternative: ReactNode;
+    /** An icon in a chip above the title, e.g. a letter on "Check your inbox". */
+    chip?: IconName;
+    /** Above the title, e.g. "Back to log in". */
+    before?: ReactNode;
     children: ReactNode;
 }
 
-/** The login and signup pages (Figma: Log in, Sign up): a dark brand panel on wide screens, and the form. */
-export function AuthLayout( { brandTitle, highlights, title, subtitle, alternative, children }: AuthLayoutProps ) {
+/**
+ * The pages around logging in (Figma: Log in, Sign up, M3 · Email & passwords): a dark brand panel on wide
+ * screens, and the form.
+ */
+export function AuthLayout( props: AuthLayoutProps ) {
+    const { brandTitle, highlights, title, subtitle, alternative, chip, before, children } = props;
+
     return (
         <div className={styles.page}>
             <aside className={styles.brand} aria-hidden="true">
@@ -42,6 +52,8 @@ export function AuthLayout( { brandTitle, highlights, title, subtitle, alternati
                     <Link to="/" className={styles.logoLink} aria-label="StudyLog home">
                         <Logo />
                     </Link>
+                    {before}
+                    {chip && <span className={styles.chip}><Icon name={chip} /></span>}
                     <h1 className={styles.title}>{title}</h1>
                     <p className={styles.subtitle}>{subtitle}</p>
 

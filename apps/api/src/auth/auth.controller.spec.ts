@@ -8,6 +8,7 @@ import type { AccountService } from './account.service.js';
 import { AuthController, REFRESH_COOKIE } from './auth.controller.js';
 import { CurrentUser } from './auth.guard.js';
 import type { AuthService } from './auth.service.js';
+import type { VerificationService } from './verification.service.js';
 
 /*
  * The controller's own job: moving the refresh token between the response body and an httpOnly cookie.
@@ -22,10 +23,12 @@ describe( 'AuthController cookies', () => {
     const auth = { signup: vi.fn(), login: vi.fn(), refresh: vi.fn(), logout: vi.fn() };
     const users = { findById: vi.fn() };
     const account = { updateProfile: vi.fn(), changePassword: vi.fn(), deleteAccount: vi.fn() };
+    const verification = { verify: vi.fn(), resend: vi.fn(), forgotPassword: vi.fn(), resetPassword: vi.fn() };
     const controller = new AuthController(
         auth as unknown as AuthService,
         users as unknown as UsersService,
         account as unknown as AccountService,
+        verification as unknown as VerificationService,
         config,
     );
     const response = () => ( { cookie: vi.fn(), clearCookie: vi.fn() } );
@@ -119,6 +122,20 @@ describe( 'AuthController cookies', () => {
 
         expect( account.updateProfile ).toHaveBeenCalledWith( 'me', { firstName: 'New' } );
         expect( account.changePassword ).toHaveBeenCalledWith( 'me', 'old', 'newpassword', 'this-device' );
+    } );
+
+    it( 'email code routes pass the code, email and new password on', async () => {
+        verification.verify.mockResolvedValue( { id: 'me' } );
+
+        expect( await controller.verifyEmail( { sub: 'me' } as never, { code: '482913' } ) ).toEqual( { id: 'me' } );
+        await controller.resendVerification( { sub: 'me' } as never );
+        await controller.forgotPassword( { email: 'a@b.co' } );
+        await controller.resetPassword( { email: 'a@b.co', code: '482913', newPassword: 'newpassword' } );
+
+        expect( verification.verify ).toHaveBeenCalledWith( 'me', '482913' );
+        expect( verification.resend ).toHaveBeenCalledWith( 'me' );
+        expect( verification.forgotPassword ).toHaveBeenCalledWith( 'a@b.co' );
+        expect( verification.resetPassword ).toHaveBeenCalledWith( 'a@b.co', '482913', 'newpassword' );
     } );
 
     it( 'deleting the account clears the refresh cookie', async () => {
