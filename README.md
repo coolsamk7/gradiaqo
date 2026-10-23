@@ -395,8 +395,10 @@ Every user has a personal workspace (an organization they own), so every user ha
   in your personal workspace **enrolls you in it** automatically.
 - **Reports:** anyone can report another user's public path (`POST /catalog/paths/:pathId/reports`, reason `spam`,
   `inappropriate`, `copyright` or `other`). Superadmins review them at `GET /admin/reports` and either `dismiss` or
-  `hide_path` (`PATCH /admin/reports/:reportId`). Hiding makes the path private for good (`publicBlockedAt` is set;
-  its owner keeps it) and closes all open reports on it.
+  `hide_path` (`PATCH /admin/reports/:reportId`); `GET /admin/reports?status=resolved` lists the resolved ones, most
+  recent first. Hiding makes the path private (`publicBlockedAt` is set, so its owner keeps it but can't make it public)
+  and closes all open reports on it. A path hidden by mistake is un-hidden with `POST /admin/paths/:pathId/unhide`: it
+  stays private until its owner makes it public again.
 - If a path becomes invisible to someone (made private, or they leave the organization), their enrollment stays but
   shows no content, and they can no longer track its items.
 
@@ -474,7 +476,6 @@ test coverage at 100% (see [Tests](#tests)).
   - [x] Password reset
   - [x] Changing your email (verify the new address first)
   - [x] Send invitation emails (accepting them in the web app comes with the Organizations page)
-- [ ] **Moderation:** let a superadmin un-hide a path hidden by mistake (clear `publicBlockedAt`)
 - [ ] **Pagination** for `GET /catalog/paths` and `GET /me/enrollments` (both return everything today)
 - [ ] **Study reminders / notifications**, e.g. "you haven't studied today, keep your streak"
 - [ ] **Data export:** a user downloads their progress and study sessions

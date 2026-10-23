@@ -1,8 +1,9 @@
 import { TypeboxResponse } from '@gradiaqo/nestjs-typebox';
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import {
     ApiBadRequestResponse,
     ApiConflictResponse,
+    ApiNoContentResponse,
     ApiNotFoundResponse,
     ApiOperation,
     ApiTags,
@@ -75,5 +76,26 @@ export class AdminReportsController {
         @Body( { schema: ResolveReportBody } ) dto: ResolveReportRequest,
     ): Promise<Report> {
         return this.reportsService.resolve( user.sub, id, dto );
+    }
+}
+
+@ApiTags( 'moderation (admin)' )
+@Controller( 'admin/paths' )
+@PlatformAuth()
+@CheckAbilities( [ 'manage', 'PathReport' ] )
+export class AdminHiddenPathsController {
+    constructor( private readonly reportsService: ReportsService ) {}
+
+    @Post( ':pathId/unhide' )
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiOperation( {
+        summary: 'Un-hide a path hidden by mistake',
+        description: 'Clears publicBlockedAt. The path stays private until its owner makes it public again.',
+    } )
+    @ApiNoContentResponse( { description: 'Its owner can make it public again' } )
+    @ApiNotFoundResponse( { description: 'Learning path not found' } )
+    @ApiConflictResponse( { description: 'The path isn\'t hidden' } )
+    unhide( @Param( 'pathId', ParseUUIDPipe ) pathId: string ): Promise<void> {
+        return this.reportsService.unhide( pathId );
     }
 }

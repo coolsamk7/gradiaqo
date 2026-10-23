@@ -2,11 +2,16 @@ import type { AccessTokenPayload } from '@studylog/casl';
 import { ReportReason } from '@studylog/database';
 import { ReportAction } from '@studylog/schemas';
 
-import { AdminReportsController, PathReportsController } from './reports.controller.js';
+import { AdminHiddenPathsController, AdminReportsController, PathReportsController } from './reports.controller.js';
 import type { ReportsService } from './reports.service.js';
 
 describe( 'reports controllers', () => {
-    const reports = { create: vi.fn().mockResolvedValue( 'created' ), list: vi.fn().mockResolvedValue( 'page' ), resolve: vi.fn().mockResolvedValue( 'resolved' ) };
+    const reports = {
+        create: vi.fn().mockResolvedValue( 'created' ),
+        list: vi.fn().mockResolvedValue( 'page' ),
+        resolve: vi.fn().mockResolvedValue( 'resolved' ),
+        unhide: vi.fn(),
+    };
     const user = { sub: 'me' } as AccessTokenPayload;
 
     it( 'files a report as the logged-in user', async () => {
@@ -24,5 +29,11 @@ describe( 'reports controllers', () => {
 
         await expect( admin.resolve( user, 'report', { action: ReportAction.Dismiss } ) ).resolves.toBe( 'resolved' );
         expect( reports.resolve ).toHaveBeenCalledWith( 'me', 'report', { action: ReportAction.Dismiss } );
+    } );
+
+    it( 'un-hides a path', async () => {
+        await new AdminHiddenPathsController( reports as unknown as ReportsService ).unhide( 'path' );
+
+        expect( reports.unhide ).toHaveBeenCalledWith( 'path' );
     } );
 } );

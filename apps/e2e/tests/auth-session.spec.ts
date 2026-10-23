@@ -57,7 +57,7 @@ test.describe( 'Session', () => {
         await expect( page ).toHaveURL( '/app' );
     } );
 
-    test( 'the sidebar has every section; Admin only for superadmins; unbuilt ones say "Coming soon"', async ( { page } ) => {
+    test( 'the sidebar has every section, with Admin only for superadmins', async ( { page } ) => {
         await logIn( page, SEEDED.alice );
         const main = page.getByRole( 'navigation', { name: 'Main' } );
 
@@ -72,10 +72,8 @@ test.describe( 'Session', () => {
 
         await expect( more.getByRole( 'link' ) ).toHaveText( [ 'Admin', 'Settings' ] );
         await more.getByRole( 'link', { name: 'Admin' } ).click();
-        await expect( page ).toHaveURL( '/app/admin' );
-        await expect( page.getByRole( 'heading', { level: 2, name: 'Coming soon' } ) ).toBeVisible();
-        await page.getByRole( 'link', { name: 'Back to dashboard' } ).click();
-        await expect( page ).toHaveURL( '/app' );
+        await expect( page ).toHaveURL( '/app/admin/reports' );
+        await expect( page.getByRole( 'heading', { level: 1, name: 'Reports' } ) ).toBeVisible();
     } );
 
     test( 'logging out goes home and closes the session for good', async ( { page } ) => {

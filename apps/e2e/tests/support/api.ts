@@ -101,6 +101,19 @@ export class Api {
         } );
     }
 
+    /** A public path called `title` in `owner`'s workspace: a community path for everyone else. */
+    async sharePath( owner: TestUser, title: string ): Promise<{ id: string; title: string }> {
+        const organizations = await this.call<{ id: string; isPersonal: boolean }[]>( 'GET', '/organizations', owner.token );
+        const workspace = organizations.find( ( organization ) => organization.isPersonal )!;
+
+        return this.call( 'POST', `/organizations/${workspace.id}/catalog/paths`, owner.token, { title, visibility: 'public' } );
+    }
+
+    /** `user` reports the path to the admins. */
+    async report( user: TestUser, pathId: string, reason: string, details?: string ): Promise<void> {
+        await this.call( 'POST', `/catalog/paths/${pathId}/reports`, user.token, { reason, ...( details ? { details } : {} ) } );
+    }
+
     /** Creates an organization owned by `owner` and invites `email` to it. */
     async invite( owner: TestUser, organization: string, email: string ): Promise<void> {
         const { id } = await this.call<{ id: string }>( 'POST', '/organizations', owner.token, { name: organization } );

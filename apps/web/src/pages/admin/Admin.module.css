@@ -1,0 +1,135 @@
+/* Admin (Figma: M4 › Admin · Reports). Cards, badges and tabs: styles/app.module.css and organizations' tabs. */
+
+.titleRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.tabs {
+    display: flex;
+    gap: var( --space-4 );
+    overflow-x: auto;
+    border-bottom: 1px solid var( --color-border );
+    scrollbar-width: none;
+}
+
+.tab {
+    flex: none;
+    margin-bottom: -1px;
+    padding: var( --space-2 ) var( --space-1 );
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var( --color-text-muted );
+    background: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.tab:hover {
+    color: var( --color-text );
+}
+
+.tab[aria-selected='true'] {
+    color: var( --color-text );
+    border-bottom-color: var( --color-accent );
+}
+
+.stack {
+    display: grid;
+    gap: var( --space-6 );
+}
+
+/* ---------- An open report ---------- */
+
+.report {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+.top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.chip {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var( --radius-md );
+    color: var( --color-danger );
+    background: var( --color-danger-soft );
+}
+
+.path {
+    display: grid;
+    flex: 1;
+    min-width: min( 100%, 220px );
+}
+
+.pathTitle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-2 );
+    font-weight: 500;
+}
+
+.details {
+    display: grid;
+    gap: var( --space-1 );
+    padding: var( --space-3 ) var( --space-4 );
+    border-radius: var( --radius-md );
+    background: var( --color-bg-muted );
+    overflow-wrap: anywhere;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-2 );
+}
+
+.spacer {
+    flex: 1;
+}
+
+/* ---------- Resolved reports ---------- */
+
+.rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: var( --space-3 );
+    padding: var( --space-3 ) var( --space-0-5 );
+}
+
+.row + .row {
+    border-top: 1px solid var( --color-border );
+}
+
+.copy {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.strong {
+    font-weight: 500;
+}
+
+.resolvedTitle {
+    margin-bottom: var( --space-1 );
+}

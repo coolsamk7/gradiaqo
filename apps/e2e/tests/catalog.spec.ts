@@ -9,7 +9,8 @@ test.describe( 'Browse paths', () => {
         const paths = page.getByRole( 'list', { name: 'Learning paths' } );
         const dsa = paths.getByRole( 'listitem' ).filter( { has: page.getByRole( 'heading', { name: 'Data Structures & Algorithms' } ) } );
 
-        await expect( paths.getByRole( 'heading', { level: 2 } ) ).toHaveText( [
+        // Other tests share public paths of their own meanwhile, so these are checked in order, not exclusively.
+        await expect( paths.getByRole( 'heading', { level: 2 } ) ).toContainText( [
             'Data Structures & Algorithms', 'System Design Fundamentals', 'Alice\'s Favourite Problems', 'Interview Sprint',
         ] );
         await expect( dsa ).toContainText( 'Official' );
