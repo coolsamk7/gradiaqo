@@ -1,6 +1,7 @@
 import type { UserJson } from '@studylog/schemas';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
+import { useLocation } from 'react-router';
 
 import { ApiError } from '../../api/client.ts';
 import { useAuth } from '../../auth/auth-context.ts';
@@ -14,12 +15,14 @@ import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import type { PasswordErrors, ProfileErrors } from './account-forms.ts';
 import { isWrongPassword, MIN_PASSWORD, saveError, validatePassword, validateProfile } from './account-forms.ts';
+import { ChangeEmailDialog } from './ChangeEmailDialog.tsx';
 import { DeleteAccountDialog } from './DeleteAccountDialog.tsx';
 import styles from './Settings.module.css';
 
 /**
- * The user's account (Figma: M1 › Account settings): their name, password, and deleting the account. Email,
- * reminders and data export come with the features behind them.
+ * The user's account (Figma: M1 › Account settings): their name, email, password, and deleting the account.
+ * Reminders and data export come with the features behind them. Opened with `{ changeEmail: true }` as router
+ * state (from Verify email's "Use a different email"), it starts with the change-email dialog open.
  */
 export function SettingsPage() {
     const { state: auth } = useAuth();
@@ -62,6 +65,9 @@ function ProfileCard( { user }: { user: UserJson } ) {
     const [ formError, setFormError ] = useState<string>();
     const [ saved, setSaved ] = useState( false );
     const [ saving, setSaving ] = useState( false );
+    const { state: routeState } = useLocation() as { state: { changeEmail?: boolean } | null };
+    const [ changingEmail, setChangingEmail ] = useState( routeState?.changeEmail === true );
+    const [ emailChanged, setEmailChanged ] = useState<string>();
 
     const onSubmit = async ( event: FormEvent<HTMLFormElement> ) => {
         event.preventDefault();
@@ -124,9 +130,22 @@ function ProfileCard( { user }: { user: UserJson } ) {
                         />
                     </FormField>
                 </div>
-                <FormField field="email" label="Email" hint="Changing your email isn't available yet.">
-                    <input {...fieldProps( 'email', undefined, 'yes' )} type="email" value={user.email} disabled readOnly />
-                </FormField>
+                <div className={styles.email}>
+                    <FormField field="email" label="Email">
+                        <input {...fieldProps( 'email', undefined )} type="email" value={user.email} disabled readOnly />
+                    </FormField>
+                    <button
+                        type="button"
+                        className={`${shared.button} ${shared.secondary}`}
+                        onClick={() => {
+                            setEmailChanged( undefined );
+                            setChangingEmail( true );
+                        }}
+                    >
+                        Change email
+                    </button>
+                </div>
+                {emailChanged && <p className={styles.saved} role="status">{`Email changed. Log in with ${emailChanged} from now on.`}</p>}
                 <div className={styles.actions}>
                     <button type="submit" className={`${shared.button} ${shared.primary}`} disabled={saving}>
                         {saving ? 'Saving…' : 'Save changes'}
@@ -134,6 +153,15 @@ function ProfileCard( { user }: { user: UserJson } ) {
                     {saved && <p className={styles.saved} role="status">Saved.</p>}
                 </div>
             </form>
+            {changingEmail && (
+                <ChangeEmailDialog
+                    onClose={() => setChangingEmail( false )}
+                    onChanged={( email ) => {
+                        setChangingEmail( false );
+                        setEmailChanged( email );
+                    }}
+                />
+            )}
         </section>
     );
 }

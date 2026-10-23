@@ -12,8 +12,9 @@ import {
 import { User } from './user.entity.js';
 
 /**
- * A 6-digit code emailed to a user, to verify their email or reset their password. Only its hash is kept. A new
- * code for the same purpose replaces the old one, so each user has at most one live code per purpose.
+ * A 6-digit code emailed to a user, to verify their email, reset their password or change their email. Only its
+ * hash is kept. A new code for the same purpose replaces the old one, so each user has at most one live code per
+ * purpose.
  */
 @Entity( 'email_codes' )
 @Unique( [ 'userId', 'purpose' ] )
@@ -33,6 +34,11 @@ export class EmailCode {
 
     @Column( { name: 'code_hash', type: 'varchar' } )
     codeHash: string;
+
+    // For changing the email: the new address, which the code was sent to. It replaces the old one once the code
+    // is entered.
+    @Column( { name: 'new_email', type: 'varchar', length: 255, nullable: true } )
+    newEmail: string | null;
 
     // Wrong guesses so far; the code is thrown away after too many.
     @Column( { type: 'smallint', default: 0 } )

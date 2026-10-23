@@ -30,13 +30,14 @@ describe( 'EmailCodesService', () => {
 
     describe( 'issue', () => {
         it( 'stores only the hash of a new 6-digit code, valid for 15 minutes, replacing any earlier one', async () => {
-            const code = await service.issue( 'u', VERIFY, NOW );
+            const code = await service.issue( 'u', VERIFY, { now: NOW } );
             const [ row, conflict ] = db.repo( EmailCode ).upsert.mock.calls[0] as [ Record<string, unknown>, string[] ];
 
             expect( code ).toMatch( /^\d{6}$/ );
             expect( row ).toMatchObject( {
                 userId: 'u',
                 purpose: VERIFY,
+                newEmail: null,
                 attempts: 0,
                 expiresAt: new Date( NOW.getTime() + 15 * 60_000 ),
                 createdAt: NOW,
@@ -46,8 +47,14 @@ describe( 'EmailCodesService', () => {
             expect( conflict ).toEqual( [ 'userId', 'purpose' ] );
         } );
 
+        it( 'keeps the new address with a code for changing the email', async () => {
+            await service.issue( 'u', EmailCodePurpose.ChangeEmail, { newEmail: 'new@b.co', now: NOW } );
+
+            expect( db.repo( EmailCode ).upsert.mock.calls[0]?.[0] ).toMatchObject( { newEmail: 'new@b.co' } );
+        } );
+
         it( 'pads short codes with zeros', async () => {
-            const codes = await Promise.all( Array.from( { length: 30 }, () => service.issue( 'u', VERIFY, NOW ) ) );
+            const codes = await Promise.all( Array.from( { length: 30 }, () => service.issue( 'u', VERIFY, { now: NOW } ) ) );
 
             expect( codes.every( ( code ) => code.length === 6 ) ).toBe( true );
         } );
@@ -55,7 +62,7 @@ describe( 'EmailCodesService', () => {
         it( 'refuses a new code within a minute of the last one', async () => {
             db.repo( EmailCode ).findOneBy.mockResolvedValue( await live( { createdAt: new Date( NOW.getTime() - 59_000 ) } ) );
 
-            const attempt = service.issue( 'u', VERIFY, NOW );
+            const attempt = service.issue( 'u', VERIFY, { now: NOW } );
 
             await expect( attempt ).rejects.toThrow( HttpException );
             await expect( attempt ).rejects.toMatchObject( { status: HttpStatus.TOO_MANY_REQUESTS } );
@@ -65,7 +72,7 @@ describe( 'EmailCodesService', () => {
         it( 'allows a new code once a minute has passed', async () => {
             db.repo( EmailCode ).findOneBy.mockResolvedValue( await live( { createdAt: new Date( NOW.getTime() - 60_000 ) } ) );
 
-            await expect( service.issue( 'u', VERIFY, NOW ) ).resolves.toMatch( /^\d{6}$/ );
+            await expect( service.issue( 'u', VERIFY, { now: NOW } ) ).resolves.toMatch( /^\d{6}$/ );
         } );
     } );
 
@@ -76,10 +83,12 @@ describe( 'EmailCodesService', () => {
     } );
 
     describe( 'consume', () => {
-        it( 'uses up the right code', async () => {
-            db.repo( EmailCode ).findOneBy.mockResolvedValue( await live() );
+        it( 'uses up the right code, and returns it', async () => {
+            const row = await live( { newEmail: 'new@b.co' } );
 
-            await service.consume( 'u', VERIFY, '482913', NOW );
+            db.repo( EmailCode ).findOneBy.mockResolvedValue( row );
+
+            await expect( service.consume( 'u', VERIFY, '482913', NOW ) ).resolves.toBe( row );
 
             expect( db.repo( EmailCode ).findOneBy ).toHaveBeenCalledWith( { userId: 'u', purpose: VERIFY } );
             expect( db.repo( EmailCode ).delete ).toHaveBeenCalledWith( { id: 'code-1' } );
@@ -112,7 +121,7 @@ describe( 'EmailCodesService', () => {
         it( 'uses the current time by default', async () => {
             db.repo( EmailCode ).findOneBy.mockResolvedValue( await live( { expiresAt: new Date( Date.now() + 60_000 ), createdAt: new Date() } ) );
 
-            await expect( service.consume( 'u', VERIFY, '482913' ) ).resolves.toBeUndefined();
+            await expect( service.consume( 'u', VERIFY, '482913' ) ).resolves.toMatchObject( { id: 'code-1' } );
             await expect( service.issue( 'u', VERIFY ) ).rejects.toMatchObject( { status: HttpStatus.TOO_MANY_REQUESTS } );
         } );
     } );

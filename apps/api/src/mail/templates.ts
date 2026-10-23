@@ -51,3 +51,27 @@ export function resetPasswordMail( to: string, firstName: string, code: string, 
         minutes,
     );
 }
+
+export function changeEmailMail( to: string, firstName: string, code: string, minutes: number ): Mail {
+    return codeMail(
+        to,
+        firstName,
+        `${code} is your StudyLog code`,
+        'Enter this code in StudyLog to use this address for your account:',
+        code,
+        minutes,
+    );
+}
+
+/** To the old address once the email has changed, so a change the owner didn't make doesn't go unnoticed. */
+export function emailChangedMail( to: string, firstName: string, newEmail: string ): Mail {
+    const body = `The email for your StudyLog account was changed to ${newEmail}. From now on, log in with that address.`;
+    const outro = 'If this wasn\'t you, someone knows your password: contact the StudyLog team right away.';
+
+    return {
+        to,
+        subject: 'Your StudyLog email was changed',
+        text: `Hi ${firstName},\n\n${body}\n\n${outro}\n\nStudyLog`,
+        html: `<p>Hi ${escape( firstName )},</p><p>${escape( body )}</p><p>${escape( outro )}</p><p>StudyLog</p>`,
+    };
+}

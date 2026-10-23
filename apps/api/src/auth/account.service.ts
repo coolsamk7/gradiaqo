@@ -11,7 +11,7 @@ import { toPublicUser } from '../users/public-user.js';
 import { UsersService } from '../users/users.service.js';
 import { SessionsService } from './sessions.service.js';
 
-/** The logged-in user managing their own account. Changing the email needs verification, so it comes later. */
+/** The logged-in user managing their own account. Changing the email is in VerificationService (it needs a code). */
 @Injectable()
 export class AccountService {
     constructor(

@@ -5,6 +5,7 @@ import {
     Analytics,
     AnalyticsQuery,
     AuthResponse,
+    ChangeEmailRequest,
     ChangePasswordRequest,
     CreateEnrollmentRequest,
     CreateInvitationRequest,
@@ -99,6 +100,7 @@ export const CreateOrganizationBody = typebox( CreateOrganizationRequest, { name
 export const UpdateMemberBody = typebox( UpdateMemberRequest, { name: 'UpdateMemberRequest' } );
 export const CreateInvitationBody = typebox( CreateInvitationRequest, { name: 'CreateInvitationRequest' } );
 export const UpdateProfileBody = typebox( UpdateProfileRequest, { name: 'UpdateProfileRequest' } );
+export const ChangeEmailBody = typebox( ChangeEmailRequest, { name: 'ChangeEmailRequest' } );
 export const ChangePasswordBody = typebox( ChangePasswordRequest, { name: 'ChangePasswordRequest' } );
 export const DeleteAccountBody = typebox( DeleteAccountRequest, { name: 'DeleteAccountRequest' } );
 export const VerifyEmailBody = typebox( VerifyEmailRequest, { name: 'VerifyEmailRequest' } );

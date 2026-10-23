@@ -27,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 import type { AccessTokenPayload } from '@studylog/casl';
 import {
+    ChangeEmailBody,
     ChangePasswordBody,
     DeleteAccountBody,
     ForgotPasswordBody,
@@ -39,6 +40,7 @@ import {
 } from '@studylog/nestjs';
 import type {
     AccessTokenResponse,
+    ChangeEmailRequest,
     ChangePasswordRequest,
     DeleteAccountRequest,
     ForgotPasswordRequest,
@@ -268,6 +270,49 @@ export class AuthController {
     @ApiBadRequestResponse( { description: 'Invalid input, or a wrong or expired code' } )
     resetPassword( @Body( { schema: ResetPasswordBody } ) dto: ResetPasswordRequest ): Promise<void> {
         return this.verification.resetPassword( dto.email, dto.code, dto.newPassword );
+    }
+
+    @Post( 'change-email' )
+    @RateLimit( 'sensitive' )
+    @UseGuards( AuthGuard )
+    @HttpCode( HttpStatus.NO_CONTENT )
+    @ApiBearerAuth()
+    @ApiOperation( {
+        summary: 'Start changing your email: emails a code to the new address',
+        description: 'Nothing changes until the code is entered at POST /auth/change-email/confirm. Asking again '
+            + 'sends a new code and replaces the pending address.',
+    } )
+    @ApiNoContentResponse( { description: 'A code is on its way to the new address' } )
+    @ApiBadRequestResponse( { description: 'Invalid input, or that is already your email' } )
+    @ApiUnauthorizedResponse( { description: 'Wrong password, or missing/invalid access token' } )
+    @ApiConflictResponse( { description: 'That email is already used by another account' } )
+    @ApiTooManyRequestsResponse( { description: 'The last code was sent less than a minute ago' } )
+    @ApiServiceUnavailableResponse( { description: 'The email couldn\'t be sent; try again later' } )
+    changeEmail(
+        @CurrentUser() current: AccessTokenPayload,
+        @Body( { schema: ChangeEmailBody } ) dto: ChangeEmailRequest,
+    ): Promise<void> {
+        return this.verification.requestEmailChange( current.sub, dto.newEmail, dto.password );
+    }
+
+    @Post( 'change-email/confirm' )
+    @RateLimit( 'code' )
+    @UseGuards( AuthGuard )
+    @HttpCode( HttpStatus.OK )
+    @ApiBearerAuth()
+    @ApiOperation( {
+        summary: 'Switch to the new email with the code sent to it',
+        description: 'The new address counts as verified. A notice goes to the old address.',
+    } )
+    @TypeboxResponse( Responses.User, { description: 'The user with the new email' } )
+    @ApiBadRequestResponse( { description: 'Wrong or expired code (after 5 wrong codes it stops working)' } )
+    @ApiUnauthorizedResponse( { description: 'Missing or invalid access token' } )
+    @ApiConflictResponse( { description: 'Someone signed up with that email in the meantime' } )
+    confirmEmailChange(
+        @CurrentUser() current: AccessTokenPayload,
+        @Body( { schema: VerifyEmailBody } ) dto: VerifyEmailRequest,
+    ): Promise<User> {
+        return this.verification.confirmEmailChange( current.sub, dto.code );
     }
 
     @Post( 'delete-account' )

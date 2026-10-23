@@ -5,10 +5,12 @@ import {
     HttpStatus,
     Logger,
     ServiceUnavailableException,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { EmailCodePurpose, User } from '@studylog/database';
 import * as argon2 from 'argon2';
 import type { DataSource } from 'typeorm';
+import { QueryFailedError } from 'typeorm';
 
 import type { FakeDataSource } from '../../test/unit/fake-data-source.js';
 import { fakeDataSource } from '../../test/unit/fake-data-source.js';
@@ -23,7 +25,7 @@ const SAM = { id: 'u', email: 'sam@example.com', firstName: 'Sam', emailVerified
 
 describe( 'VerificationService', () => {
     let db: FakeDataSource;
-    let users: { findByIdOrFail: ReturnType<typeof vi.fn> };
+    let users: Record<'findByIdOrFail' | 'findByIdWithPassword' | 'existsByEmail', ReturnType<typeof vi.fn>>;
     let sessions: { revokeOthers: ReturnType<typeof vi.fn> };
     let codes: Record<'issue' | 'discard' | 'consume', ReturnType<typeof vi.fn>>;
     let mail: { send: ReturnType<typeof vi.fn> };
@@ -34,7 +36,11 @@ describe( 'VerificationService', () => {
         vi.spyOn( Logger.prototype, 'error' ).mockImplementation( () => undefined );
         vi.spyOn( Logger.prototype, 'warn' ).mockImplementation( () => undefined );
         db = fakeDataSource();
-        users = { findByIdOrFail: vi.fn().mockResolvedValue( SAM ) };
+        users = {
+            findByIdOrFail: vi.fn().mockResolvedValue( SAM ),
+            findByIdWithPassword: vi.fn(),
+            existsByEmail: vi.fn().mockResolvedValue( false ),
+        };
         sessions = { revokeOthers: vi.fn() };
         codes = { issue: vi.fn().mockResolvedValue( '482913' ), discard: vi.fn(), consume: vi.fn() };
         mail = { send: vi.fn() };
@@ -51,7 +57,7 @@ describe( 'VerificationService', () => {
         it( 'emails a verification code after signup', async () => {
             await service.welcome( SAM );
 
-            expect( codes.issue ).toHaveBeenCalledWith( 'u', EmailCodePurpose.VerifyEmail );
+            expect( codes.issue ).toHaveBeenCalledWith( 'u', EmailCodePurpose.VerifyEmail, { newEmail: null } );
             expect( mail.send ).toHaveBeenCalledWith( expect.objectContaining( {
                 to: 'sam@example.com',
                 subject: '482913 is your StudyLog code',
@@ -128,7 +134,7 @@ describe( 'VerificationService', () => {
             await service.forgotPassword( 'sam@example.com' );
 
             expect( db.repo( User ).findOneBy ).toHaveBeenCalledWith( { email: 'sam@example.com' } );
-            expect( codes.issue ).toHaveBeenCalledWith( 'u', EmailCodePurpose.ResetPassword );
+            expect( codes.issue ).toHaveBeenCalledWith( 'u', EmailCodePurpose.ResetPassword, { newEmail: null } );
             expect( mail.send ).toHaveBeenCalledWith( expect.objectContaining( { subject: '482913 is your StudyLog password reset code' } ) );
         } );
 
@@ -175,6 +181,91 @@ describe( 'VerificationService', () => {
             await expect( service.resetPassword( 'sam@example.com', '000000', 'a-new-password' ) ).rejects.toThrow( WRONG_CODE );
             expect( db.repo( User ).update ).not.toHaveBeenCalled();
             expect( sessions.revokeOthers ).not.toHaveBeenCalled();
+        } );
+    } );
+
+    describe( 'requestEmailChange', () => {
+        beforeEach( async () => {
+            users.findByIdWithPassword.mockResolvedValue( { ...SAM, passwordHash: await argon2.hash( 'right-password' ) } );
+        } );
+
+        it( 'emails a code to the new address, keeping the address with the code', async () => {
+            await service.requestEmailChange( 'u', 'sam@new.co', 'right-password' );
+
+            expect( users.existsByEmail ).toHaveBeenCalledWith( 'sam@new.co' );
+            expect( codes.issue ).toHaveBeenCalledWith( 'u', EmailCodePurpose.ChangeEmail, { newEmail: 'sam@new.co' } );
+            expect( mail.send ).toHaveBeenCalledWith( expect.objectContaining( {
+                to: 'sam@new.co',
+                subject: '482913 is your StudyLog code',
+                text: expect.stringContaining( 'use this address for your account' ) as unknown,
+            } ) );
+        } );
+
+        it( 'needs the right password', async () => {
+            await expect( service.requestEmailChange( 'u', 'sam@new.co', 'wrong' ) ).rejects.toThrow( UnauthorizedException );
+
+            users.findByIdWithPassword.mockResolvedValue( null );
+            await expect( service.requestEmailChange( 'u', 'sam@new.co', 'right-password' ) ).rejects.toThrow( UnauthorizedException );
+            expect( codes.issue ).not.toHaveBeenCalled();
+        } );
+
+        it( 'refuses the current email, and one another account uses', async () => {
+            await expect( service.requestEmailChange( 'u', 'sam@example.com', 'right-password' ) ).rejects.toThrow( BadRequestException );
+
+            users.existsByEmail.mockResolvedValue( true );
+            await expect( service.requestEmailChange( 'u', 'taken@new.co', 'right-password' ) )
+                .rejects.toThrow( 'That email is already used by another account' );
+            expect( codes.issue ).not.toHaveBeenCalled();
+        } );
+    } );
+
+    describe( 'confirmEmailChange', () => {
+        const changed = { ...SAM, email: 'sam@new.co', emailVerifiedAt: new Date() };
+
+        beforeEach( () => {
+            codes.consume.mockResolvedValue( { newEmail: 'sam@new.co' } );
+            users.findByIdOrFail.mockResolvedValueOnce( SAM ).mockResolvedValueOnce( changed );
+        } );
+
+        it( 'switches to the verified new address and tells the old one', async () => {
+            const user = await service.confirmEmailChange( 'u', '482913' );
+
+            expect( codes.consume ).toHaveBeenCalledWith( 'u', EmailCodePurpose.ChangeEmail, '482913' );
+            expect( db.repo( User ).update ).toHaveBeenCalledWith(
+                { id: 'u' },
+                { email: 'sam@new.co', emailVerifiedAt: expect.any( Date ) as unknown },
+            );
+            expect( mail.send ).toHaveBeenCalledWith( expect.objectContaining( {
+                to: 'sam@example.com',
+                subject: 'Your StudyLog email was changed',
+                html: expect.stringContaining( 'changed to sam@new.co' ) as unknown,
+            } ) );
+            expect( user.email ).toBe( 'sam@new.co' );
+        } );
+
+        it( 'still switches when the notice can\'t be sent', async () => {
+            mail.send.mockRejectedValue( new Error( 'SMTP down' ) );
+
+            await expect( service.confirmEmailChange( 'u', '482913' ) ).resolves.toMatchObject( { email: 'sam@new.co' } );
+        } );
+
+        it( 'changes nothing on a wrong code', async () => {
+            codes.consume.mockRejectedValue( new BadRequestException( WRONG_CODE ) );
+
+            await expect( service.confirmEmailChange( 'u', '000000' ) ).rejects.toThrow( WRONG_CODE );
+            expect( db.repo( User ).update ).not.toHaveBeenCalled();
+        } );
+
+        it( 'refuses if someone signed up with the address in the meantime, and passes other errors on', async () => {
+            const taken = new QueryFailedError( 'UPDATE', [], Object.assign( new Error( 'duplicate' ), { code: '23505' } ) );
+
+            db.repo( User ).update.mockRejectedValueOnce( taken );
+            await expect( service.confirmEmailChange( 'u', '482913' ) ).rejects.toThrow( ConflictException );
+
+            users.findByIdOrFail.mockResolvedValue( SAM );
+            db.repo( User ).update.mockRejectedValueOnce( new Error( 'connection lost' ) );
+            await expect( service.confirmEmailChange( 'u', '482913' ) ).rejects.toThrow( 'connection lost' );
+            expect( mail.send ).not.toHaveBeenCalled();
         } );
     } );
 } );

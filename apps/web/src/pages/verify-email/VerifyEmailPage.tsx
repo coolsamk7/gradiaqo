@@ -91,9 +91,11 @@ export function VerifyEmailPage() {
             subtitle={`We sent a 6-digit code to ${user.email}. Enter it below to verify your email.`}
             alternative={(
                 <>
-                    Not now?
+                    Wrong address?
                     {' '}
-                    <Link to={from}>Back to StudyLog</Link>
+                    <Link to="/app/settings" state={{ changeEmail: true }}>Use a different email</Link>
+                    {' · '}
+                    <Link to={from}>Not now</Link>
                 </>
             )}
         >
