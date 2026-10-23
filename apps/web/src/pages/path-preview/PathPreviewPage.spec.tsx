@@ -202,6 +202,7 @@ describe( 'PathPreviewPage', () => {
         renderApp( `/app/catalog/${PATH.id}` );
 
         expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'This path isn\'t available.' );
+        expect( within( screen.getByRole( 'main' ) ).getByRole( 'link', { name: 'Browse paths' } ) ).toHaveAttribute( 'href', '/app/catalog' );
         expect( screen.queryByRole( 'button', { name: 'Try again' } ) ).not.toBeInTheDocument();
     } );
 

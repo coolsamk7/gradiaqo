@@ -51,7 +51,7 @@ export function usePath( enrollmentId: string ) {
 
 function describeLoadError( error: unknown ): PathState {
     if ( error instanceof ApiError && ( error.status === 404 || error.status === 400 ) ) {
-        return { status: 'error', message: 'This learning path isn\'t on your list.', notFound: true };
+        return { status: 'error', message: 'This learning path isn\'t on your list. The link may be wrong, or you left the path.', notFound: true };
     }
 
     return {

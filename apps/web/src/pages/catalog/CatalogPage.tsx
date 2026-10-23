@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 
 import { useAuth } from '../../auth/auth-context.ts';
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { LoadError, Loading } from '../../components/LoadStates.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import styles from './Catalog.module.css';
 import { isSource, SOURCES } from './catalog-paths.ts';
+import { CatalogSkeleton } from './CatalogSkeleton.tsx';
 import { PathCard } from './PathCard.tsx';
 import { useCatalog } from './use-catalog.ts';
 
@@ -95,31 +97,20 @@ export function CatalogPage() {
                 </label>
             </div>
 
-            {state.status === 'loading' && (
-                <div className={app.status} role="status">
-                    <span className={app.spinner} aria-hidden="true" />
-                    Loading paths…
-                </div>
-            )}
+            {state.status === 'loading' && <Loading text="Loading paths…"><CatalogSkeleton /></Loading>}
 
-            {state.status === 'error' && (
-                <div className={app.error} role="alert">
-                    <p>{state.message}</p>
-                    <button type="button" className={`${shared.button} ${shared.secondary} ${shared.small}`} onClick={reload}>
-                        Try again
-                    </button>
-                </div>
-            )}
+            {state.status === 'error' && <LoadError message={state.message} retry={reload} />}
 
             {state.status === 'ready' && state.paths.length === 0 && (
                 <section className={`${app.card} ${styles.empty}`} aria-labelledby="empty-title">
                     <span className={styles.chip}><Icon name={search ? 'search' : 'compass'} size={20} /></span>
                     <h2 id="empty-title" className={app.cardTitle}>{search ? `No paths match “${search}”` : 'No paths here yet'}</h2>
-                    <p className={app.muted}>
+                    <p className={`${app.muted} ${styles.emptyText}`}>
                         {search
-                            ? 'Try another word or another filter.'
-                            : 'Paths appear here once they\'re published. Try another filter.'}
+                            ? 'Try another word or another filter, or build your own path from your notes and problems.'
+                            : 'Paths appear here once they\'re published. Try another filter, or build your own path.'}
                     </p>
+                    <Link to="/app/my-paths" className={`${shared.button} ${shared.secondary}`}>Build a path</Link>
                 </section>
             )}
 

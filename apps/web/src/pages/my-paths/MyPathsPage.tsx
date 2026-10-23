@@ -5,10 +5,10 @@ import { Link, useSearchParams } from 'react-router';
 
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { CardSkeleton, LoadError, Loading } from '../../components/LoadStates.tsx';
 import { relativeDay } from '../../format/format.ts';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
-import { LoadError, Loading } from './LoadStates.tsx';
 import styles from './MyPaths.module.css';
 import { NewPathDialog } from './NewPathDialog.tsx';
 import { useMyPaths } from './use-my-paths.ts';
@@ -36,7 +36,7 @@ export function MyPathsPage() {
                 )}
             </div>
 
-            {organizations.status === 'loading' && <Loading text="Loading your paths…" />}
+            {organizations.status === 'loading' && <Loading text="Loading your paths…"><CardSkeleton lines={4} /></Loading>}
             {organizations.status === 'error' && <LoadError message={organizations.message} retry={reloadOrganizations} />}
 
             {current && (
@@ -64,7 +64,7 @@ export function MyPathsPage() {
                             : `Paths here are for the members of ${current.name}: they find them in Browse paths.`}
                     </p>
 
-                    {paths.state.status === 'loading' && <Loading text="Loading your paths…" />}
+                    {paths.state.status === 'loading' && <Loading text="Loading your paths…"><CardSkeleton lines={4} /></Loading>}
                     {paths.state.status === 'error' && <LoadError message={paths.state.message} retry={paths.reload} />}
                     {paths.state.status === 'ready' && paths.state.value.length === 0 && (
                         <section className={`${app.card} ${styles.empty}`} aria-labelledby="empty-title">
