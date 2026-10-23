@@ -1,9 +1,11 @@
 # StudyLog
 
-Study time tracker. Turborepo monorepo using Yarn workspaces.
+Study time tracker built around learning paths: follow a path (official, from one of your organizations, shared by
+the community, or one you build yourself), log study sessions, track your progress, and see analytics and how ready
+you are for an interview. Turborepo monorepo using Yarn workspaces.
 
 - `apps/api`: NestJS backend
-- `apps/web`: React web app (Vite), at http://localhost:5173; empty for now (see `apps/web/README.md`)
+- `apps/web`: React web app (Vite), at http://localhost:5173; its pages are listed in `apps/web/README.md`
 - `apps/cli`: command-line tools (database migrations), built with nest-commander (`@studylog/cli`)
 - `apps/e2e`: UI tests: the web app in a real browser against the real API and a test database (Playwright, `@studylog/e2e`)
 - `packages/common`: shared configs for every app/package: ESLint rules (`@studylog/common/eslint/*`, with `react` for the web app), tsconfigs (`@studylog/common/tsconfig/*`), coverage and mutation testing settings
