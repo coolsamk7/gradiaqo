@@ -83,7 +83,8 @@ yarn test                            # unit tests in every app and package (no d
 yarn workspace @studylog/api test:e2e # end-to-end tests against the database from yarn db:up
 ```
 
-- Unit tests sit next to the code (`*.spec.ts`, Vitest). Services are tested against an in-memory stand-in for
+- Unit tests sit next to the code (`*.spec.ts`, Vitest), except in the API, where they mirror `src/` under
+  `test/unit/` (`src/catalog/items.service.ts` → `test/unit/catalog/items.service.spec.ts`). Services are tested against an in-memory stand-in for
   TypeORM (`apps/api/test/unit/fake-data-source.ts`): each test sets up only the database answers its rule depends
   on and checks the calls it expects. Permission tests use the real CASL rules.
 
