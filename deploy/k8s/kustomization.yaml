@@ -1,0 +1,37 @@
+# StudyLog on k3s (see deploy/k8s/README.md). Apply with: kubectl apply -k deploy/k8s
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: studylog
+
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - api.yaml
+  - web.yaml
+  - ingress.yaml
+
+# Copied from the *.example files and filled in on the server; both are git-ignored.
+# A change to either gets a new name (hash suffix), so the pods using it restart with the new values.
+configMapGenerator:
+  - name: studylog-config
+    envs:
+      - config.env
+secretGenerator:
+  - name: studylog-secrets
+    envs:
+      - secrets.env
+
+# The address in config.env (DOMAIN) is also the Ingress host and its certificate's name.
+replacements:
+  - source:
+      kind: ConfigMap
+      name: studylog-config
+      fieldPath: data.DOMAIN
+    targets:
+      - select:
+          kind: Ingress
+          name: studylog
+        fieldPaths:
+          - spec.rules.0.host
+          - spec.tls.0.hosts.0

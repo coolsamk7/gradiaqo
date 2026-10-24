@@ -16,3 +16,6 @@ reports
 
 # Excel lock files
 ~$*
+
+# Kubernetes settings and secrets, filled in on the server (deploy/k8s/*.env.example are the templates)
+deploy/k8s/*.env

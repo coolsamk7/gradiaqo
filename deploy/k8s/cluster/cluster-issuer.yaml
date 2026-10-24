@@ -1,0 +1,17 @@
+# Let's Encrypt certificates through cert-manager, proven over HTTP on port 80 via Traefik.
+# Once per cluster, after installing cert-manager: set your email (expiry warnings go there), then
+#   kubectl apply -f deploy/k8s/cluster/cluster-issuer.yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: you@example.com
+    privateKeySecretRef:
+      name: letsencrypt-account-key
+    solvers:
+      - http01:
+          ingress:
+            ingressClassName: traefik

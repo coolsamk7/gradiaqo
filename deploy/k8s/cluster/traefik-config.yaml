@@ -1,0 +1,13 @@
+# Keeps the visitor's IP address all the way to the API (rate limits and logs are per client IP).
+# By default k3s's load balancer replaces it with the node's address. With one node, Local loses nothing.
+# Once per cluster: sudo cp deploy/k8s/cluster/traefik-config.yaml /var/lib/rancher/k3s/server/manifests/
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    service:
+      spec:
+        externalTrafficPolicy: Local
