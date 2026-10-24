@@ -32,8 +32,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check DOMAIN is set
-        run: test -n "${{ vars.DOMAIN }}" || ( echo "Set the repository variable DOMAIN, e.g. studylog.example.com" && exit 1 )
+      # Just the host name: a stray space or https:// would be baked into the web app and break every API call.
+      - name: Check DOMAIN
+        env:
+          DOMAIN: ${{ vars.DOMAIN }}
+        run: |
+          [[ "$DOMAIN" =~ ^[a-z0-9.-]+$ ]] || {
+            echo "The repository variable DOMAIN must be just the host name, like studylog.example.com (got: '$DOMAIN')"
+            exit 1
+          }
 
       - uses: docker/setup-buildx-action@v3
 
