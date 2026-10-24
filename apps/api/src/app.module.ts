@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
 import { appConfig } from './config/app.config.js';
 import { authConfig } from './config/auth.config.js';
+import { refreshCookieConfig } from './config/cookie.config.js';
 import { databaseConfig } from './config/database.config.js';
 import { validateEnv } from './config/env.js';
 import { mailConfig } from './config/mail.config.js';
@@ -28,7 +29,7 @@ import { UsersModule } from './users/users.module.js';
         ConfigModule.forRoot( {
             isGlobal: true,
             validate: validateEnv,
-            load: [ appConfig, authConfig, databaseConfig, mailConfig ],
+            load: [ appConfig, authConfig, databaseConfig, mailConfig, refreshCookieConfig ],
         } ),
         LoggerModule.forRoot( { service: 'studylog-api', ignorePaths: [ '/docs', '/health' ] } ),
         ThrottlerModule.forRootAsync( {
