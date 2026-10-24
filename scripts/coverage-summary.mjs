@@ -1,6 +1,6 @@
 // Combines each app's and package's coverage/coverage-summary.json (written by `vitest run --coverage`) into one
-// table in the terminal and a root coverage/index.html that links to every package's full report.
-// Run through `yarn test:cov`.
+// table in the terminal, a root coverage/index.html that links to every package's full report, and
+// coverage/summary.md, which CI posts on pull requests. Run through `yarn test:cov`.
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -88,6 +88,21 @@ ${rows.map( ( row ) => `<tr><td><a href="${row.report}">${row.name}</a></td>${ME
 </html>
 `;
 
+// ---------- Markdown (the pull request comment) ----------
+
+// Every package must stay at 100% (see packages/common/vitest/coverage.js), so anything less is flagged.
+const mdCell = ( /** @type {Count} */ count ) => `${percent( count ) < 100 ? '⚠️ ' : ''}${format( count )}`;
+const markdown = [
+    '## Test coverage',
+    '',
+    `| Package | ${METRICS.map( ( metric ) => metric[0].toUpperCase() + metric.slice( 1 ) ).join( ' | ' )} |`,
+    `| --- | ${METRICS.map( () => '---:' ).join( ' | ' )} |`,
+    ...rows.map( ( row ) => `| \`${row.name}\` | ${METRICS.map( ( metric ) => mdCell( row.summary[metric] ) ).join( ' | ' )} |` ),
+    `| **Total** | ${METRICS.map( ( metric ) => `**${mdCell( total[metric] )}**` ).join( ' | ' )} |`,
+    '',
+].join( '\n' );
+
 mkdirSync( join( ROOT, 'coverage' ), { recursive: true } );
 writeFileSync( join( ROOT, 'coverage', 'index.html' ), html );
+writeFileSync( join( ROOT, 'coverage', 'summary.md' ), markdown );
 console.log( `\nFull reports: ${relative( process.cwd(), join( ROOT, 'coverage', 'index.html' ) )}\n` );

@@ -1,6 +1,6 @@
 # Lint, build and every test, on each pull request to master and each push to it. The Images workflow runs this first
 # and only builds when it passes. To block merging a red pull request: Settings → Branches → a rule for master that
-# requires the "Lint, build, unit tests" and "UI tests" checks.
+# requires the "Lint, build, unit tests" and "UI tests" checks. Pull requests also get a comment with the coverage.
 name: CI
 
 on:
@@ -22,6 +22,10 @@ jobs:
   check:
     name: Lint, build, unit tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # The coverage comment.
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - run: corepack enable
@@ -30,7 +34,20 @@ jobs:
           node-version: 22
           cache: yarn
       - run: yarn install --immutable
-      - run: yarn turbo run lint build test
+      - run: yarn turbo run lint build
+      # Fails below 100% coverage in any package (packages/common/vitest/coverage.js); --continue so every package
+      # still reports.
+      - id: coverage
+        run: yarn turbo run test:cov --concurrency=2 --continue
+      # The table, also when coverage dropped: on the run's Summary page, and as one comment on the pull request that
+      # each push updates.
+      - if: ${{ !cancelled() && steps.coverage.outcome != 'skipped' }}
+        run: node scripts/coverage-summary.mjs && cat coverage/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - if: ${{ !cancelled() && github.event_name == 'pull_request' && hashFiles('coverage/summary.md') != '' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: coverage
+          path: coverage/summary.md
 
   ui:
     name: UI tests
