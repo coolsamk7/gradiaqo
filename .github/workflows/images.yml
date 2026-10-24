@@ -1,7 +1,8 @@
 # Builds the production images (Dockerfile targets api and web) and pushes them to GitHub's registry, for clusters
 # that pull images instead of building them (Civo, see deploy/k8s/README.md). Run it from the Actions tab, or push a
 # tag like v1.2.0. Needs the repository variable DOMAIN (Settings → Secrets and variables → Actions → Variables):
-# the address the web app calls the API on is baked in at build time.
+# the address the web app calls the API on is baked in at build time. Lint and every test run first (ci.yml): no
+# image is pushed from code that fails them.
 name: Images
 
 on:
@@ -14,7 +15,11 @@ permissions:
   packages: write
 
 jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
   build:
+    needs: test
     runs-on: ubuntu-latest
     strategy:
       matrix:

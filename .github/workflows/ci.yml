@@ -1,0 +1,69 @@
+# Lint, build and every test, on each pull request to master and each push to it. The Images workflow runs this first
+# and only builds when it passes. To block merging a red pull request: Settings → Branches → a rule for master that
+# requires the "Lint, build, unit tests" and "UI tests" checks.
+name: CI
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+  workflow_call:
+
+permissions:
+  contents: read
+
+# A new push to a pull request cancels its run still in progress.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Lint, build, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      - run: yarn install --immutable
+      - run: yarn turbo run lint build test
+
+  ui:
+    name: UI tests
+    runs-on: ubuntu-latest
+    # The same database and Mailpit as `yarn db:up` (docker-compose.yml); the tests create studylog_e2e in it.
+    services:
+      db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: studylog
+          POSTGRES_PASSWORD: studylog
+          POSTGRES_DB: studylog
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd "pg_isready -U studylog -d studylog"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      mail:
+        image: axllent/mailpit:v1.27
+        ports: [ "1025:1025", "8025:8025" ]
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      - run: yarn install --immutable
+      - run: yarn workspace @studylog/e2e playwright install --with-deps chromium
+      - run: yarn test:ui
+      # Traces and screenshots of the failed tests: download from the run's Summary page.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/e2e/playwright-report
+          retention-days: 14
