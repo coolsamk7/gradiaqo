@@ -151,6 +151,17 @@ everything here.
 
 6. **Configure and start**: fill in `config.env` and `secrets.env` as in step 3, then
    `kubectl apply -k deploy/civo`.
+7. **Email**: Civo blocks the mail ports 25, 465 and 587 going out, so `SMTP_PORT` is 2525 (Brevo's alternative).
+   Brevo also refuses SMTP logins from IP addresses it doesn't know: add the node's public IP under Brevo → Security
+   → Authorized IPs. To check, from the API pod:
+
+   ```bash
+   kubectl -n studylog exec deploy/api -c api -- node -e 'require("/app/node_modules/nodemailer").createTransport({
+     host: process.env.SMTP_HOST, port: +process.env.SMTP_PORT, auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
+   }).verify().then(() => console.log("SMTP OK"), (e) => console.log(e.message))'
+   ```
+
+   `Connection timeout` means the port is blocked; `Unauthorized IP address` means the IP isn't authorized yet.
 
 The data volume is a Civo volume (`civo-volume`), billed separately from the node. To update: run the Images
 workflow, then `kubectl -n studylog rollout restart deployment api web`. To roll back, set `newTag` in
