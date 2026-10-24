@@ -17,6 +17,11 @@ permissions:
 jobs:
   test:
     uses: ./.github/workflows/ci.yml
+    # A called workflow gets at most what the caller grants: ci.yml asks for pull-requests to comment on them, though
+    # it only does when run for a pull request, never from here.
+    permissions:
+      contents: read
+      pull-requests: write
 
   build:
     needs: test
