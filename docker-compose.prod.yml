@@ -1,0 +1,81 @@
+# Production: the database, the API and Caddy (web app + HTTPS) on one server. See deploy/README.md.
+#   docker compose -f docker-compose.prod.yml --env-file deploy/.env up -d --build
+# Only Caddy is reachable from outside (ports 80 and 443); the API and the database stay on the internal network.
+name: studylog-prod
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-studylog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-studylog}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Applies pending database migrations, then exits; the API starts only after it succeeded.
+  migrate:
+    image: studylog-api
+    build: &api-build
+      context: .
+      target: api
+      args:
+        VITE_API_URL: https://${DOMAIN:?set DOMAIN in deploy/.env}
+    command: ["node", "apps/cli/dist/main.js", "migration:run"]
+    environment:
+      DATABASE_URL: &database-url postgresql://${POSTGRES_USER:-studylog}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-studylog}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: studylog-api
+    build: *api-build
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: *database-url
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in deploy/.env}
+      COOKIE_SECURE: "true"
+      # Caddy is the one proxy in front of the API: client IPs (rate limits, logs) come from X-Forwarded-For.
+      TRUST_PROXY: 1
+      # The web app is on the same origin, so no cross-origin access is needed.
+      CORS_ORIGINS: https://${DOMAIN}
+      SWAGGER_ENABLED: "false"
+      LOG_LEVEL: info
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    image: studylog-web
+    build:
+      <<: *api-build
+      target: web
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      # Certificates: keep them, or Let's Encrypt's rate limits bite after a few rebuilds.
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:
