@@ -81,11 +81,13 @@ describe( 'InvitationsService', () => {
             const [ sent ] = mail.send.mock.calls[0] as [ { to: string; subject: string; text: string; html: string } ];
 
             expect( sent.to ).toBe( 'priya@example.com' );
-            expect( sent.subject ).toBe( 'Sam K invited you to Study Group on StudyLog' );
-            expect( sent.text ).toContain( 'Sam K invited you to join Study Group on StudyLog as an admin.' );
+            expect( sent.subject ).toBe( 'Sam K invited you to Study Group on Gradiaqo' );
+            expect( sent.text ).toContain( 'Sam K invited you to join Study Group on Gradiaqo as an admin.' );
             expect( sent.text ).toContain( 'to accept: https://app.example.com/app/organizations' );
             expect( sent.text ).toContain( 'expires in 14 days' );
-            expect( sent.html ).toContain( '<a href="https://app.example.com/app/organizations">Open StudyLog</a>' );
+            // A button to accept, and the plain link for clients that hide it.
+            expect( sent.html ).toMatch( /<a href="https:\/\/app\.example\.com\/app\/organizations" style="[^"]+">Join Study Group<\/a>/ );
+            expect( sent.html ).toContain( 'Or open this link: <a href="https://app.example.com/app/organizations"' );
         } );
 
         it( 'says "someone" when the inviter\'s account is gone, and "a member"', async () => {
@@ -96,7 +98,7 @@ describe( 'InvitationsService', () => {
 
             const [ sent ] = mail.send.mock.calls[0] as [ { subject: string; text: string } ];
 
-            expect( sent.subject ).toBe( 'Someone invited you to Study Group on StudyLog' );
+            expect( sent.subject ).toBe( 'Someone invited you to Study Group on Gradiaqo' );
             expect( sent.text ).toContain( 'as a member.' );
         } );
 
