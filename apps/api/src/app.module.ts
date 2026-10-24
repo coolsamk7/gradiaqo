@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +9,11 @@ import { LoggerModule } from '@studylog/logger';
 
 import { AuthModule } from './auth/auth.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
+import { appConfig } from './config/app.config.js';
+import { authConfig } from './config/auth.config.js';
+import { databaseConfig } from './config/database.config.js';
 import { validateEnv } from './config/env.js';
+import { mailConfig } from './config/mail.config.js';
 import { HealthModule } from './health/health.module.js';
 import { ModerationModule } from './moderation/moderation.module.js';
 import { OrganizationsModule } from './organizations/organizations.module.js';
@@ -18,23 +23,28 @@ import { UsersModule } from './users/users.module.js';
 
 @Module( {
     imports: [
-        // Checks every setting at startup and converts them to numbers/booleans (see config/env.ts).
-        ConfigModule.forRoot( { isGlobal: true, validate: validateEnv } ),
+        // Checks every setting at startup (see config/env.ts), then offers them typed, by area: inject
+        // `@Inject( mailConfig.KEY ) mail: ConfigType<typeof mailConfig>`.
+        ConfigModule.forRoot( {
+            isGlobal: true,
+            validate: validateEnv,
+            load: [ appConfig, authConfig, databaseConfig, mailConfig ],
+        } ),
         LoggerModule.forRoot( { service: 'studylog-api', ignorePaths: [ '/docs', '/health' ] } ),
         ThrottlerModule.forRootAsync( {
-            inject: [ ConfigService ],
-            useFactory: ( config: ConfigService ) => ( {
+            inject: [ appConfig.KEY ],
+            useFactory: ( app: ConfigType<typeof appConfig> ) => ( {
                 throttlers: [ { name: 'default', ...RATE_LIMITS.default } ],
                 errorMessage: 'Too many requests; try again later',
                 // Off only for the UI tests (apps/e2e), which log in far more often than people do.
-                skipIf: () => !config.getOrThrow<boolean>( 'RATE_LIMITS_ENABLED' ),
+                skipIf: () => !app.rateLimitsEnabled,
             } ),
         } ),
         TypeOrmModule.forRootAsync( {
-            inject: [ ConfigService ],
+            inject: [ databaseConfig.KEY ],
             // Shared with the CLI. The schema is changed only by migrations (`yarn cli migration:run`), never synchronize.
-            useFactory: ( config: ConfigService ) => ( {
-                ...createDataSourceOptions( { url: config.getOrThrow<string>( 'DATABASE_URL' ) } ),
+            useFactory: ( database: ConfigType<typeof databaseConfig> ) => ( {
+                ...createDataSourceOptions( { url: database.url } ),
                 autoLoadEntities: true,
             } ),
         } ),

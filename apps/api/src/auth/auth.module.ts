@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Session } from '@studylog/database';
 
+import { authConfig } from '../config/auth.config.js';
 import { MailModule } from '../mail/mail.module.js';
 import { OrganizationsModule } from '../organizations/organizations.module.js';
 import { UsersModule } from '../users/users.module.js';
@@ -23,11 +24,11 @@ import { VerificationService } from './verification.service.js';
         TypeOrmModule.forFeature( [ Session ] ),
         JwtModule.registerAsync( {
             global: true,
-            inject: [ ConfigService ],
-            useFactory: ( config: ConfigService ) => ( {
-                secret: config.getOrThrow<string>( 'JWT_SECRET' ),
+            inject: [ authConfig.KEY ],
+            useFactory: ( auth: ConfigType<typeof authConfig> ) => ( {
+                secret: auth.jwtSecret,
                 signOptions: {
-                    expiresIn: config.getOrThrow<number>( 'JWT_EXPIRES_IN_SECONDS' ),
+                    expiresIn: auth.jwtExpiresInSeconds,
                 },
             } ),
         } ),

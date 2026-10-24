@@ -1,5 +1,5 @@
 import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import type { Request, Response } from 'express';
 
 import type { AccountService } from '../../../src/auth/account.service.js';
@@ -7,6 +7,7 @@ import { AuthController, REFRESH_COOKIE } from '../../../src/auth/auth.controlle
 import { CurrentUser } from '../../../src/auth/auth.guard.js';
 import type { AuthService } from '../../../src/auth/auth.service.js';
 import type { VerificationService } from '../../../src/auth/verification.service.js';
+import type { authConfig } from '../../../src/config/auth.config.js';
 import type { UsersService } from '../../../src/users/users.service.js';
 import { httpContext, paramDecoratorFactory } from '../param-decorator.js';
 
@@ -14,10 +15,7 @@ import { httpContext, paramDecoratorFactory } from '../param-decorator.js';
  * The controller's own job: moving the refresh token between the response body and an httpOnly cookie.
  */
 
-const config = {
-    getOrThrow: ( key: string ) =>
-        ( { COOKIE_SECURE: true, REFRESH_TOKEN_TTL_DAYS: 180 } as Record<string, unknown> )[key],
-} as unknown as ConfigService;
+const config = { cookieSecure: true, refreshTokenTtlDays: 180 } as ConfigType<typeof authConfig>;
 
 describe( 'AuthController cookies', () => {
     const auth = { signup: vi.fn(), login: vi.fn(), refresh: vi.fn(), logout: vi.fn() };

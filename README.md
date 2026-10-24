@@ -167,6 +167,11 @@ Settings are checked at startup (`apps/api/src/config/env.ts`): a missing or inv
 list of every problem. `JWT_SECRET` must be at least 32 characters, and `NODE_ENV=production` requires
 `COOKIE_SECURE=true`.
 
+Code reads settings through `@nestjs/config` namespaces, typed and grouped by area: `app`, `auth`, `database` and
+`mail` (`apps/api/src/config/*.config.ts`). Inject only the group you need, e.g.
+`@Inject( mailConfig.KEY ) mail: ConfigType<typeof mailConfig>`, then read `mail.host`. To add a setting, declare it
+in `env.ts` and expose it from the matching config.
+
 ### Protection
 
 - **Rate limits** per client IP (`apps/api/src/rate-limits.ts`): 300 requests/minute by default; tighter on login

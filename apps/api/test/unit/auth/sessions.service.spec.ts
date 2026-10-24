@@ -1,18 +1,19 @@
 import { createHash } from 'node:crypto';
 
 import { UnauthorizedException } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import type { Session } from '@studylog/database';
 import type { Repository } from 'typeorm';
 import { Not } from 'typeorm';
 
 import { SessionsService } from '../../../src/auth/sessions.service.js';
+import type { authConfig } from '../../../src/config/auth.config.js';
 import type { FakeRepository } from '../fake-data-source.js';
 import { fakeRepository } from '../fake-data-source.js';
 
 const SESSION_ID = '11111111-1111-4111-8111-111111111111';
 const hash = ( secret: string ) => createHash( 'sha256' ).update( secret ).digest( 'hex' );
-const config = { getOrThrow: () => 180 } as unknown as ConfigService;
+const config = { refreshTokenTtlDays: 180 } as ConfigType<typeof authConfig>;
 
 describe( 'SessionsService', () => {
     let sessions: FakeRepository;
