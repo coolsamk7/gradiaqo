@@ -60,7 +60,7 @@ describe( 'VerificationService', () => {
             expect( codes.issue ).toHaveBeenCalledWith( 'u', EmailCodePurpose.VerifyEmail, { newEmail: null } );
             expect( mail.send ).toHaveBeenCalledWith( expect.objectContaining( {
                 to: 'sam@example.com',
-                subject: '482913 is your StudyLog code',
+                subject: '482913 is your Gradiaqo code',
                 text: expect.stringContaining( 'Hi Sam,' ) as unknown,
             } ) );
         } );
@@ -135,7 +135,7 @@ describe( 'VerificationService', () => {
 
             expect( db.repo( User ).findOneBy ).toHaveBeenCalledWith( { email: 'sam@example.com' } );
             expect( codes.issue ).toHaveBeenCalledWith( 'u', EmailCodePurpose.ResetPassword, { newEmail: null } );
-            expect( mail.send ).toHaveBeenCalledWith( expect.objectContaining( { subject: '482913 is your StudyLog password reset code' } ) );
+            expect( mail.send ).toHaveBeenCalledWith( expect.objectContaining( { subject: '482913 is your Gradiaqo password reset code' } ) );
         } );
 
         it( 'answers the same for an unknown email, a code asked for too soon, or a failed email', async () => {
@@ -196,7 +196,7 @@ describe( 'VerificationService', () => {
             expect( codes.issue ).toHaveBeenCalledWith( 'u', EmailCodePurpose.ChangeEmail, { newEmail: 'sam@new.co' } );
             expect( mail.send ).toHaveBeenCalledWith( expect.objectContaining( {
                 to: 'sam@new.co',
-                subject: '482913 is your StudyLog code',
+                subject: '482913 is your Gradiaqo code',
                 text: expect.stringContaining( 'use this address for your account' ) as unknown,
             } ) );
         } );
@@ -237,7 +237,7 @@ describe( 'VerificationService', () => {
             );
             expect( mail.send ).toHaveBeenCalledWith( expect.objectContaining( {
                 to: 'sam@example.com',
-                subject: 'Your StudyLog email was changed',
+                subject: 'Your Gradiaqo email was changed',
                 html: expect.stringContaining( 'changed to sam@new.co' ) as unknown,
             } ) );
             expect( user.email ).toBe( 'sam@new.co' );

@@ -60,11 +60,18 @@ describe( 'mail templates', () => {
         const mail = verifyEmailMail( 'sam@example.com', 'Sam', '482913', 15 );
 
         expect( mail.to ).toBe( 'sam@example.com' );
-        expect( mail.subject ).toBe( '482913 is your StudyLog code' );
-        expect( mail.text ).toBe( 'Hi Sam,\n\nEnter this code in StudyLog to verify your email:\n\n482913\n\n'
-            + 'It expires in 15 minutes. If you didn\'t ask for it, you can ignore this email.\n\nStudyLog' );
-        expect( mail.html ).toContain( '>482913</p>' );
-        expect( resetPasswordMail( 'sam@example.com', 'Sam', '000123', 15 ).text ).toContain( 'reset your StudyLog password' );
+        expect( mail.subject ).toBe( '482913 is your Gradiaqo code' );
+        expect( mail.text ).toBe( 'Hi Sam,\n\nEnter this code in Gradiaqo to verify your email:\n\n482913\n\n'
+            + 'It expires in 15 minutes. If you didn\'t ask for it, you can ignore this email.\n\nGradiaqo' );
+        // One tile per digit, in order.
+        expect( [ ...mail.html.matchAll( /font-size:28px;font-weight:700;color:#0e0e0c">(.)<\/td>/g ) ].map( ( match ) => match[1] ).join( '' ) )
+            .toBe( '482913' );
+        expect( mail.html ).toContain( '>Verify your email</td>' );
+        expect( mail.html ).toContain( 'Expires in 15 minutes</td>' );
+        // The inbox preview, hidden in the email itself.
+        expect( mail.html ).toContain( 'opacity:0">Your code is 482913. It expires in 15 minutes.</div>' );
+        expect( mail.html ).toMatch( /^<!doctype html>.*<title>482913 is your Gradiaqo code<\/title>.*<\/html>$/ );
+        expect( resetPasswordMail( 'sam@example.com', 'Sam', '000123', 15 ).text ).toContain( 'reset your Gradiaqo password' );
     } );
 
     it( 'escapes names in the HTML', () => {
