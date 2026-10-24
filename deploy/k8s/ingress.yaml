@@ -1,0 +1,37 @@
+# The public entry: Traefik (bundled with k3s) takes ports 80 and 443 and sends everything to the web pod.
+# cert-manager gets and renews the Let's Encrypt certificate (cluster/cluster-issuer.yaml).
+# The host comes from DOMAIN in config.env (see replacements in kustomization.yaml).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: studylog
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    # http:// → https:// (the Middleware below).
+    traefik.ingress.kubernetes.io/router.middlewares: studylog-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - DOMAIN
+      secretName: studylog-tls
+  rules:
+    - host: DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  name: http
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

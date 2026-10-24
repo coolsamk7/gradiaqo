@@ -1,0 +1,84 @@
+# The NestJS API, reachable inside the cluster as api:3000 (the web pod's Caddy sends API requests there).
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  selector:
+    app: api
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  # One: rate limit counters are kept in memory (see the README's Protection section), and migrations run on start.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+      # Applies pending migrations before the API starts. If it fails, the old pod keeps serving.
+      initContainers:
+        - name: migrate
+          image: studylog-api:latest
+          # Built and imported on the node (see the README); switch to IfNotPresent/Always with a registry.
+          imagePullPolicy: Never
+          command: [ "node", "apps/cli/dist/main.js", "migration:run" ]
+          envFrom:
+            - secretRef:
+                name: studylog-secrets
+          env:
+            - name: DATABASE_URL
+              value: postgresql://studylog:$(POSTGRES_PASSWORD)@postgres:5432/studylog
+          securityContext: &container-security
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ "ALL" ]
+      containers:
+        - name: api
+          image: studylog-api:latest
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: studylog-config
+            - secretRef:
+                name: studylog-secrets
+          env:
+            - name: DATABASE_URL
+              value: postgresql://studylog:$(POSTGRES_PASSWORD)@postgres:5432/studylog
+          securityContext: *container-security
+          # Ready once it can reach the database; /health answers 503 when it can't.
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          # Alive while it accepts connections, so a database outage doesn't restart it.
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              memory: 512Mi

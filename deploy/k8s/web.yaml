@@ -1,0 +1,57 @@
+# Caddy with the built web app (deploy/Caddyfile): serves the app's pages and files, and sends everything else to
+# the API. Plain HTTP here: Traefik, k3s's ingress, handles HTTPS in front of it.
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  selector:
+    app: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: studylog-web:latest
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            # A port instead of a domain: Caddy serves plain HTTP and doesn't try to get certificates.
+            - name: DOMAIN
+              value: ":80"
+            # Trust X-Forwarded-For from Traefik (a pod address), so the API sees the visitor's IP, not Traefik's.
+            - name: TRUSTED_PROXIES
+              value: private_ranges
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              memory: 128Mi

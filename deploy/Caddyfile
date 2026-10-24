@@ -1,5 +1,13 @@
 # One site for the web app and the API (same origin, so the refresh cookie works as in development).
 # The web app owns a few paths; everything else goes to the API, so new API routes need no change here.
+{
+	servers {
+		# Proxies in front of Caddy whose X-Forwarded-For is kept, so the API sees the visitor's IP. None with Docker
+		# Compose (Caddy faces the internet); Traefik on Kubernetes (TRUSTED_PROXIES=private_ranges, deploy/k8s).
+		trusted_proxies static {$TRUSTED_PROXIES:127.0.0.1/32}
+	}
+}
+
 {$DOMAIN} {
 	encode zstd gzip
 
