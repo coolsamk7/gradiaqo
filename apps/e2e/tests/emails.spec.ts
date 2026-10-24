@@ -19,7 +19,7 @@ test.describe( 'Emails', () => {
         await page.getByRole( 'button', { name: 'Verify email' } ).click();
         await expect( page.getByRole( 'alert' ) ).toContainText( 'That code is wrong or has expired' );
 
-        const code = await latestCode( user.email, /is your StudyLog code$/ );
+        const code = await latestCode( user.email, /is your Gradiaqo code$/ );
 
         await page.getByRole( 'textbox', { name: 'Digit 1 of 6' } ).click();
         await page.keyboard.type( code );
@@ -34,7 +34,7 @@ test.describe( 'Emails', () => {
 
     test( 'a new code can be sent, and only the newest one works', async ( { page, api } ) => {
         const user = await api.signUp();
-        const first = await latestCode( user.email, /is your StudyLog code$/ );
+        const first = await latestCode( user.email, /is your Gradiaqo code$/ );
 
         await logIn( page, user );
         await page.goto( '/verify-email' );
@@ -84,7 +84,7 @@ test.describe( 'Emails', () => {
         await dialog.getByRole( 'button', { name: 'Send code' } ).click();
         await expect( dialog.getByRole( 'status' ) ).toContainText( `We sent a 6-digit code to ${newEmail}.` );
 
-        await dialog.getByLabel( 'Code' ).fill( await latestCode( newEmail, /is your StudyLog code$/ ) );
+        await dialog.getByLabel( 'Code' ).fill( await latestCode( newEmail, /is your Gradiaqo code$/ ) );
         await dialog.getByRole( 'button', { name: 'Confirm new email' } ).click();
 
         await expect( page.getByRole( 'status' ) ).toHaveText( `Email changed. Log in with ${newEmail} from now on.` );
@@ -100,9 +100,9 @@ test.describe( 'Emails', () => {
         const invited = `invited-${owner.email}`;
 
         await api.invite( owner, 'Study Group', invited );
-        const email = await latestEmail( invited, /invited you to Study Group on StudyLog$/ );
+        const email = await latestEmail( invited, /invited you to Study Group on Gradiaqo$/ );
 
-        expect( email.Subject ).toBe( 'Olive Tester invited you to Study Group on StudyLog' );
+        expect( email.Subject ).toBe( 'Olive Tester invited you to Study Group on Gradiaqo' );
         const link = /to accept: (\S+)/.exec( email.Text )![1];
 
         // Not logged in: the link asks to log in, and "Create an account" from there comes back to it.
