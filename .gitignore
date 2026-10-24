@@ -13,3 +13,6 @@ coverage
 *.tsbuildinfo
 reports
 .stryker-tmp
+
+# Excel lock files
+~$*

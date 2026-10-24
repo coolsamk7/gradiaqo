@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 
 import { AuthProvider } from './auth/AuthProvider.tsx';
 import { RequireAuth } from './auth/RequireAuth.tsx';
+import { CatalogPage as AdminCatalogPage } from './pages/admin/CatalogPage.tsx';
 import { ReportsPage } from './pages/admin/ReportsPage.tsx';
 import { RequireSuperadmin } from './pages/admin/RequireSuperadmin.tsx';
 import { AnalyticsPage } from './pages/analytics/AnalyticsPage.tsx';
@@ -26,6 +28,9 @@ import { SignupPage } from './pages/signup/SignupPage.tsx';
 import { VerifyEmailPage } from './pages/verify-email/VerifyEmailPage.tsx';
 
 /** The routes. The router itself is set up in main.tsx (tests use a MemoryRouter). */
+/** A page for superadmins only. */
+const admin = ( page: ReactNode ) => <RequireAuth><RequireSuperadmin>{page}</RequireSuperadmin></RequireAuth>;
+
 export function App() {
     return (
         <AuthProvider>
@@ -49,12 +54,22 @@ export function App() {
                 <Route path="/app/my-paths/:organizationId/:pathId" element={<RequireAuth><PathBuilderPage /></RequireAuth>} />
                 <Route path="/app/organizations" element={<RequireAuth><OrganizationsPage /></RequireAuth>} />
                 <Route path="/app/organizations/:organizationId" element={<RequireAuth><OrganizationPage /></RequireAuth>} />
-                {/* The global catalog editor will be the admin home; until then it's the reports. */}
                 <Route
                     path="/app/admin"
-                    element={<RequireAuth><RequireSuperadmin><Navigate to="/app/admin/reports" replace /></RequireSuperadmin></RequireAuth>}
+                    element={admin( <Navigate to="/app/admin/catalog" replace /> )}
                 />
-                <Route path="/app/admin/reports" element={<RequireAuth><RequireSuperadmin><ReportsPage /></RequireSuperadmin></RequireAuth>} />
+                <Route
+                    path="/app/admin/catalog"
+                    element={admin( <AdminCatalogPage /> )}
+                />
+                <Route
+                    path="/app/admin/catalog/paths/:pathId"
+                    element={admin( <PathBuilderPage global /> )}
+                />
+                <Route
+                    path="/app/admin/reports"
+                    element={admin( <ReportsPage /> )}
+                />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </AuthProvider>

@@ -23,6 +23,7 @@ import type {
     LearningModule,
     LearningPath,
     LearningPathTree,
+    ManagedLearningPath,
     ReorderRequest,
     UpdateLearningPathRequest,
 } from '@studylog/schemas';
@@ -44,11 +45,11 @@ export class LearningPathsController {
     ) {}
 
     @Get()
-    @ApiOperation( { summary: 'List learning paths in order, including drafts and archived ones' } )
-    @TypeboxResponse( Responses.LearningPathList )
+    @ApiOperation( { summary: 'List learning paths in order, including drafts and archived ones, with their sizes' } )
+    @TypeboxResponse( Responses.ManagedLearningPathList )
     list(
         @CatalogOwner() owner: CatalogOwnerId,
-    ): Promise<LearningPath[]> {
+    ): Promise<ManagedLearningPath[]> {
         return this.learningPathsService.list( owner );
     }
 
@@ -67,12 +68,12 @@ export class LearningPathsController {
 
     @Put( 'order' )
     @ApiOperation( { summary: 'Reorder learning paths: send every path id in the new order' } )
-    @TypeboxResponse( Responses.LearningPathList )
+    @TypeboxResponse( Responses.ManagedLearningPathList )
     @ApiBadRequestResponse( { description: 'ids is not exactly the current paths' } )
     reorder(
         @CatalogOwner() owner: CatalogOwnerId,
         @Body( { schema: ReorderBody } ) dto: ReorderRequest,
-    ): Promise<LearningPath[]> {
+    ): Promise<ManagedLearningPath[]> {
         return this.learningPathsService.reorder( owner, dto.ids );
     }
 

@@ -1,4 +1,4 @@
-import type { CreateItemRequest } from '@studylog/schemas';
+import type { CreateItemRequest, ItemJson, UpdateItemRequest } from '@studylog/schemas';
 import { Difficulty, ItemType } from '@studylog/schemas/enums';
 
 import type { FieldErrors } from '../../forms/form-errors.ts';
@@ -41,6 +41,9 @@ export const DETAIL_INPUTS: Record<ItemType, DetailInput[]> = {
 export const HAS_DIFFICULTY: ReadonlySet<ItemType> = new Set( [ ItemType.Problem, ItemType.Exercise ] );
 
 export const DIFFICULTIES = Object.values( Difficulty );
+
+/** The form's fields in the order they're shown, to focus the first one with a problem. */
+export const ITEM_FIELD_ORDER: ItemField[] = [ 'title', 'url', 'author', 'provider', 'content', 'instructions', 'answer', 'difficulty', 'minutes' ];
 
 export function emptyItem( type: ItemType = ItemType.Problem ): ItemValues {
     return {
@@ -149,4 +152,33 @@ export function itemFieldErrors( apiErrors: Record<string, string> ): FieldError
     }
 
     return errors;
+}
+
+/** The form filled in from an existing item, to edit it. */
+export function fromItem( item: Pick<ItemJson, 'type' | 'title' | 'details' | 'difficulty' | 'estimatedMinutes'> ): ItemValues {
+    const values = emptyItem( item.type );
+
+    for ( const { field } of DETAIL_INPUTS[item.type] ) {
+        const value = item.details[field];
+
+        values[field] = typeof value === 'string' ? value : '';
+    }
+
+    return {
+        ...values,
+        title: item.title,
+        difficulty: item.difficulty ?? '',
+        minutes: item.estimatedMinutes === null ? '' : String( item.estimatedMinutes ),
+    };
+}
+
+/** The API's body for saving an edited item: like a new one, but without the type, and emptied fields cleared. */
+export function toItemUpdate( values: ItemValues ): UpdateItemRequest {
+    const { type: _, ...rest } = toItemRequest( values );
+
+    return {
+        ...rest,
+        difficulty: rest.difficulty ?? null,
+        estimatedMinutes: rest.estimatedMinutes ?? null,
+    };
 }

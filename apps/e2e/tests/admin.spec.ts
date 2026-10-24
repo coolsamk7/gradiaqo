@@ -18,6 +18,7 @@ test.describe( 'Admin', () => {
 
         await logIn( page, ADMIN );
         await page.getByRole( 'navigation', { name: 'Admin and settings' } ).getByRole( 'link', { name: 'Admin' } ).click();
+        await page.getByRole( 'navigation', { name: 'Admin', exact: true } ).getByRole( 'link', { name: /^Reports/ } ).click();
         await expect( page ).toHaveURL( '/app/admin/reports' );
 
         const report = page.getByRole( 'region', { name: `Report on ${copied.title}` } );
@@ -45,6 +46,69 @@ test.describe( 'Admin', () => {
         await page.getByRole( 'tab', { name: 'Resolved' } ).click();
         await expect( page.getByRole( 'region', { name: 'Resolved reports' } ).getByRole( 'listitem' ).filter( { hasText: fine.title } ) )
             .toContainText( 'Dismissed' );
+    } );
+
+    // Everything stays a draft and is deleted at the end, so learners' catalogs don't change for the other tests.
+    test( 'a superadmin builds an official path and an item as drafts, publishes parts, and deletes them', async ( { page } ) => {
+        const tag = randomUUID().slice( 0, 8 );
+        const title = `Official Draft ${tag}`;
+
+        await logIn( page, ADMIN );
+        await page.getByRole( 'navigation', { name: 'Admin and settings' } ).getByRole( 'link', { name: 'Admin' } ).click();
+        await expect( page ).toHaveURL( '/app/admin/catalog' );
+        await expect( page.getByRole( 'region', { name: 'Paths' } ) ).toContainText( 'Data Structures & AlgorithmsPublished' );
+
+        await page.getByRole( 'button', { name: 'New path' } ).click();
+        await page.getByRole( 'dialog', { name: 'New path' } ).getByLabel( 'Title' ).fill( title );
+        await page.getByRole( 'button', { name: 'Create path' } ).click();
+        await expect( page.getByRole( 'heading', { level: 1, name: title } ) ).toBeVisible();
+        await expect( page.getByText( 'Global catalog · a draft: learners see it once it\'s published' ) ).toBeVisible();
+
+        const structure = page.getByRole( 'region', { name: 'Structure' } );
+
+        await structure.getByRole( 'button', { name: 'Add a module' } ).click();
+        await structure.getByLabel( 'Module title' ).fill( 'Basics' );
+        await structure.getByLabel( 'Module title' ).press( 'Enter' );
+        await expect( structure.getByRole( 'button', { name: /^Basics\s*Draft$/ } ) ).toBeVisible();
+        await page.getByLabel( 'Status' ).selectOption( 'published' );
+        await expect( structure.getByRole( 'button', { name: 'Basics', exact: true } ) ).toBeVisible();
+
+        await page.getByRole( 'link', { name: 'Back to the global catalog' } ).click();
+        const row = page.getByRole( 'region', { name: 'Paths' } ).getByRole( 'row' ).filter( { hasText: title } );
+
+        await expect( row ).toContainText( `${title}Draft10Today` );
+
+        // An item, published and then taken back to draft so it can be deleted.
+        await page.getByRole( 'button', { name: 'Items' } ).click();
+        await page.getByRole( 'button', { name: 'New item' } ).click();
+        const dialog = page.getByRole( 'dialog', { name: 'New item' } );
+
+        await dialog.getByLabel( 'Type' ).selectOption( 'note' );
+        await dialog.getByLabel( 'Title', { exact: true } ).fill( `Cheat Sheet ${tag}` );
+        await dialog.getByLabel( 'Note' ).fill( 'Queue, visited set, level by level.' );
+        await dialog.getByRole( 'button', { name: 'Create item' } ).click();
+        await expect( dialog ).toBeHidden();
+
+        await page.getByRole( 'searchbox', { name: 'Search items' } ).fill( tag );
+        // Searching waits for typing to stop; then only this item is listed (under the header row).
+        await expect( page.getByRole( 'region', { name: 'Items' } ).getByRole( 'row' ) ).toHaveCount( 2 );
+        const item = page.getByRole( 'region', { name: 'Items' } ).getByRole( 'row' ).filter( { hasText: `Cheat Sheet ${tag}` } );
+
+        await expect( item ).toContainText( `Cheat Sheet ${tag}NoteDraft—Today` );
+        await item.getByRole( 'button', { name: `More for Cheat Sheet ${tag}` } ).click();
+        await page.getByRole( 'button', { name: 'Publish' } ).click();
+        await expect( item ).toContainText( 'Published' );
+        await item.getByRole( 'button', { name: `More for Cheat Sheet ${tag}` } ).click();
+        await page.getByRole( 'button', { name: 'Move to draft' } ).click();
+        await expect( item ).toContainText( 'Draft' );
+        await item.getByRole( 'button', { name: `More for Cheat Sheet ${tag}` } ).click();
+        await page.getByRole( 'button', { name: 'Delete' } ).click();
+        await expect( page.getByRole( 'region', { name: 'Items' } ) ).toContainText( 'No items match.' );
+
+        await page.getByRole( 'button', { name: 'Paths' } ).click();
+        await row.getByRole( 'button', { name: `More for ${title}` } ).click();
+        await page.getByRole( 'button', { name: 'Delete' } ).click();
+        await expect( row ).toHaveCount( 0 );
     } );
 
     test( 'the admin pages don\'t exist for other users', async ( { page, api } ) => {

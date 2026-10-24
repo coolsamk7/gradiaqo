@@ -36,6 +36,14 @@ export function ReportsPage() {
 
     return (
         <AppLayout>
+            <Link
+                to="/app/admin/catalog"
+                className={`${shared.button} ${shared.ghost} ${shared.small} ${styles.back}`}
+                aria-label="Back to the global catalog"
+            >
+                <Icon name="chevron-left" />
+                Global catalog
+            </Link>
             <div className={app.header}>
                 <div className={app.titleBlock}>
                     <div className={styles.titleRow}>

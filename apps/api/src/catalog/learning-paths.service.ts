@@ -1,7 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { Enrollment, LearningPath, Organization, PathVisibility } from '@studylog/database';
-import type { CreateLearningPathRequest, LearningPathTree, UpdateLearningPathRequest } from '@studylog/schemas';
+import type {
+    CreateLearningPathRequest,
+    LearningPathTree,
+    ManagedLearningPath,
+    UpdateLearningPathRequest,
+} from '@studylog/schemas';
 import { DataSource } from 'typeorm';
 
 import type { CatalogOwner } from './catalog.helpers.js';
@@ -27,11 +32,30 @@ export class LearningPathsService {
         private readonly catalogTree: CatalogTreeService,
     ) {}
 
-    list( owner: CatalogOwner ): Promise<LearningPath[]> {
-        return this.dataSource.getRepository( LearningPath ).find( {
+    /** The owner's paths in order, with how many modules and (distinct) items each has, drafts included. */
+    async list( owner: CatalogOwner ): Promise<ManagedLearningPath[]> {
+        const paths = await this.dataSource.getRepository( LearningPath ).find( {
             where: { organizationId: ownedBy( owner ) },
             order: { position: 'ASC', createdAt: 'ASC' },
         } );
+        const sizes: { pathId: string; modules: number; items: number }[] = paths.length === 0
+            ? []
+            : await this.dataSource.query(
+                    `SELECT m.learning_path_id AS "pathId", COUNT(DISTINCT m.id)::int AS modules, COUNT(DISTINCT ti.item_id)::int AS items
+             FROM modules m
+             LEFT JOIN topics t ON t.module_id = m.id
+             LEFT JOIN topic_items ti ON ti.topic_id = t.id
+             WHERE m.learning_path_id = ANY($1)
+             GROUP BY m.learning_path_id`,
+                    [ paths.map( ( path ) => path.id ) ],
+                );
+        const byPath = new Map( sizes.map( ( size ) => [ size.pathId, size ] ) );
+
+        return paths.map( ( path ) => ( {
+            ...path,
+            moduleCount: byPath.get( path.id )?.modules ?? 0,
+            itemCount: byPath.get( path.id )?.items ?? 0,
+        } ) );
     }
 
     /** A path of this owner's catalog; any other path is "not found". */
@@ -106,7 +130,7 @@ export class LearningPathsService {
         await this.dataSource.getRepository( LearningPath ).remove( path );
     }
 
-    async reorder( owner: CatalogOwner, ids: string[] ): Promise<LearningPath[]> {
+    async reorder( owner: CatalogOwner, ids: string[] ): Promise<ManagedLearningPath[]> {
         await this.dataSource.transaction( async ( manager ) => {
             const current = await manager.find( LearningPath, {
                 select: { id: true },

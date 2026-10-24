@@ -124,6 +124,23 @@ describe( 'LearningPathsService', () => {
         } );
     } );
 
+    it( 'lists the paths in order with how many modules and items each has', async () => {
+        db.repo( LearningPath ).find.mockResolvedValue( [ { id: 'a' }, { id: 'b' } ] );
+        db.query.mockResolvedValue( [ { pathId: 'a', modules: 2, items: 5 } ] );
+
+        expect( await service.list( null ) ).toEqual( [
+            { id: 'a', moduleCount: 2, itemCount: 5 },
+            { id: 'b', moduleCount: 0, itemCount: 0 },
+        ] );
+        expect( db.repo( LearningPath ).find ).toHaveBeenCalledWith( expect.objectContaining( { order: { position: 'ASC', createdAt: 'ASC' } } ) );
+        expect( db.query ).toHaveBeenCalledWith( expect.stringContaining( 'COUNT(DISTINCT ti.item_id)' ), [ [ 'a', 'b' ] ] );
+
+        db.query.mockClear();
+        db.repo( LearningPath ).find.mockResolvedValue( [] );
+        expect( await service.list( GROUP ) ).toEqual( [] );
+        expect( db.query ).not.toHaveBeenCalled();
+    } );
+
     it( 'reorder needs every path of the catalog exactly once', async () => {
         db.repo( LearningPath ).find.mockResolvedValue( [ { id: 'a' }, { id: 'b' } ] );
 

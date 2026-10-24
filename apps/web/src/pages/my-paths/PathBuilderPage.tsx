@@ -1,5 +1,5 @@
 import type { LearningPathTreeJson, MyOrganizationJson } from '@studylog/schemas';
-import { PathVisibility } from '@studylog/schemas/enums';
+import { CatalogStatus, PathVisibility } from '@studylog/schemas/enums';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
@@ -7,6 +7,7 @@ import { useAuth } from '../../auth/auth-context.ts';
 import { AppLayout } from '../../components/AppLayout.tsx';
 import { Icon } from '../../components/Icon.tsx';
 import { CardSkeleton, LoadError, Loading } from '../../components/LoadStates.tsx';
+import { StatusBadge } from '../../components/StatusBadge.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import styles from './Builder.module.css';
@@ -17,25 +18,26 @@ import { saveErrorMessage } from './problems.ts';
 import { StructureCard } from './StructureCard.tsx';
 import { TopicItems } from './TopicItems.tsx';
 import type { Send } from './use-path-builder.ts';
-import { usePathBuilder } from './use-path-builder.ts';
+import { catalogBase, usePathBuilder } from './use-path-builder.ts';
 
 /**
  * Builds a path (Figma: M4 · Build your own › Path builder): its modules and topics on the left, the chosen one on
- * the right with, for a topic, its items. Every change is saved right away.
+ * the right with, for a topic, its items. Every change is saved right away. With `global`, a path of the global
+ * catalog (superadmins): parts start as drafts, so their status can be changed too.
  */
-export function PathBuilderPage() {
+export function PathBuilderPage( { global = false }: { global?: boolean } ) {
     const { organizationId = '', pathId = '' } = useParams();
-    const { state, reload, send } = usePathBuilder( organizationId, pathId );
+    const { state, reload, send } = usePathBuilder( global ? { kind: 'global' } : { kind: 'organization', organizationId }, pathId );
 
     return (
         <AppLayout>
             <Link
-                to={`/app/my-paths?org=${organizationId}`}
+                to={global ? '/app/admin/catalog' : `/app/my-paths?org=${organizationId}`}
                 className={`${shared.button} ${shared.ghost} ${shared.small} ${styles.back}`}
-                aria-label="Back to my paths"
+                aria-label={global ? 'Back to the global catalog' : 'Back to my paths'}
             >
                 <Icon name="chevron-left" />
-                My paths
+                {global ? 'Global catalog' : 'My paths'}
             </Link>
 
             {state.status === 'loading' && <Loading text="Loading the path…"><CardSkeleton lines={5} /></Loading>}
@@ -47,7 +49,8 @@ export function PathBuilderPage() {
 
 interface BuilderProps {
     path: LearningPathTreeJson;
-    organization: MyOrganizationJson;
+    /** Null in the global catalog. */
+    organization: MyOrganizationJson | null;
     send: Send;
 }
 
@@ -61,7 +64,13 @@ function Builder( { path, organization, send }: BuilderProps ) {
             <div className={styles.columns}>
                 <StructureCard path={path} selected={selected} onSelect={setSelection} send={send} />
                 <div className={styles.side}>
-                    <NodeEditor key={nodeKey( selected )} selected={selected} path={path} send={send} />
+                    <NodeEditor
+                        key={nodeKey( selected )}
+                        selected={selected}
+                        path={path}
+                        send={send}
+                        withStatus={organization === null}
+                    />
                     {selected.kind === 'topic' && (
                         <TopicItems key={`items-${selected.topic.id}`} topic={selected.topic} send={send} />
                     )}
@@ -87,7 +96,10 @@ function PathHeader( { path, organization, send, onEdit }: BuilderProps & { onEd
     const [ error, setError ] = useState<string>();
     const isPublic = path.visibility === PathVisibility.Public;
     // A moderator took it out of the public catalog: it can't be made public again.
-    const canPublish = organization.isPersonal && ( isPublic || path.publicBlockedAt === null );
+    const canPublish = organization?.isPersonal === true && ( isPublic || path.publicBlockedAt === null );
+    // In the global catalog only drafts can be deleted.
+    const canDelete = organization !== null || path.status === CatalogStatus.Draft;
+    const home = organization ? `/app/my-paths?org=${organization.id}` : '/app/admin/catalog';
 
     const run = async ( change: () => Promise<unknown> ) => {
         setBusy( true );
@@ -106,8 +118,10 @@ function PathHeader( { path, organization, send, onEdit }: BuilderProps & { onEd
     } ) );
 
     const remove = () => run( async () => {
-        await request( `/organizations/${organization.id}/catalog/paths/${path.id}`, { method: 'DELETE' } );
-        void navigate( `/app/my-paths?org=${organization.id}` );
+        const scope = organization ? { kind: 'organization' as const, organizationId: organization.id } : { kind: 'global' as const };
+
+        await request( `${catalogBase( scope )}/paths/${path.id}`, { method: 'DELETE' } );
+        void navigate( home );
     } );
 
     return (
@@ -115,14 +129,13 @@ function PathHeader( { path, organization, send, onEdit }: BuilderProps & { onEd
             <div className={app.titleBlock}>
                 <div className={styles.titleRow}>
                     <h1 className={app.title}>{path.title}</h1>
-                    {organization.isPersonal && (
+                    {!organization && <StatusBadge status={path.status} />}
+                    {organization?.isPersonal && (
                         <span className={`${app.badge} ${isPublic ? app.badgeSuccess : ''}`}>{isPublic ? 'Public' : 'Private'}</span>
                     )}
                 </div>
                 <p className={app.muted}>
-                    {organization.isPersonal
-                        ? 'Saved · changes are live for everyone who follows this path'
-                        : `In ${organization.name} · changes are live for every member who follows this path`}
+                    {subtitle( path, organization )}
                 </p>
             </div>
 
@@ -150,13 +163,41 @@ function PathHeader( { path, organization, send, onEdit }: BuilderProps & { onEd
                                 <Icon name="edit" />
                                 Edit details
                             </button>
-                            <button type="button" className={`${shared.button} ${shared.ghost}`} onClick={() => setConfirming( true )}>
-                                <Icon name="trash" />
-                                Delete path
-                            </button>
+                            {!organization && path.status === CatalogStatus.Draft && (
+                                <button
+                                    type="button"
+                                    className={`${shared.button} ${shared.primary}`}
+                                    disabled={busy}
+                                    onClick={() => void run( () => send( `/paths/${path.id}`, { method: 'PATCH', body: { status: CatalogStatus.Published } } ) )}
+                                >
+                                    Publish
+                                </button>
+                            )}
+                            {canDelete && (
+                                <button type="button" className={`${shared.button} ${shared.ghost}`} onClick={() => setConfirming( true )}>
+                                    <Icon name="trash" />
+                                    Delete path
+                                </button>
+                            )}
                         </div>
                     )}
             {error && <p className={styles.error} role="alert">{error}</p>}
         </div>
     );
+}
+
+/** What happens to changes: who sees them, and (in the global catalog) whether learners see the path yet. */
+function subtitle( path: LearningPathTreeJson, organization: MyOrganizationJson | null ): string {
+    if ( organization?.isPersonal ) {
+        return 'Saved · changes are live for everyone who follows this path';
+    }
+    if ( organization ) {
+        return `In ${organization.name} · changes are live for every member who follows this path`;
+    }
+
+    return {
+        [CatalogStatus.Draft]: 'Global catalog · a draft: learners see it once it\'s published',
+        [CatalogStatus.Published]: 'Global catalog · changes are live for everyone who follows this path',
+        [CatalogStatus.Archived]: 'Global catalog · archived: it\'s out of the catalog, and its followers keep it',
+    }[path.status];
 }

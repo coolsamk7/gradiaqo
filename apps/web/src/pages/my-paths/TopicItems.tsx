@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Icon } from '../../components/Icon.tsx';
 import { Menu } from '../../components/Menu.tsx';
+import { StatusBadge } from '../../components/StatusBadge.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import styles from './Builder.module.css';
@@ -92,7 +93,10 @@ function ItemRow( { item, first, last, onOptional, onMove, onRemove }: ItemRowPr
         <li className={styles.item}>
             <span className={styles.itemIcon}><Icon name={TYPE_ICONS[item.type]} /></span>
             <div className={styles.itemMain}>
-                <span className={styles.itemTitle}>{item.title}</span>
+                <span className={styles.itemTitle}>
+                    {item.title}
+                    <StatusBadge status={item.status} unlessPublished />
+                </span>
                 <span className={`${app.muted} ${app.small}`}>{itemMeta( item )}</span>
             </div>
             <label className={styles.switch}>
