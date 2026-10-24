@@ -200,18 +200,20 @@ describe( 'ReportsPage', () => {
         let answer: () => Response | Promise<Response> = pending;
 
         api( { 'GET /admin/reports': () => answer() } );
-        renderApp( '/app/admin/reports' );
+        const loading = renderApp( '/app/admin/reports' );
 
         expect( await screen.findByText( 'Loading the reports…' ) ).toHaveAttribute( 'role', 'status' );
         expect( screen.getByRole( 'tab', { name: 'Open' } ) ).toBeInTheDocument();
+        // Gone before the answers change: on a slow machine its request could otherwise get them too.
+        loading.unmount();
 
         answer = () => Promise.reject( new TypeError( 'Failed to fetch' ) );
         renderApp( '/app/admin/reports' );
-        expect( ( await screen.findAllByRole( 'alert' ) ).at( -1 ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
 
         answer = () => json( 500, {} );
-        await userEvent.setup().click( screen.getAllByRole( 'button', { name: 'Try again' } ).at( -1 )! );
-        expect( ( await screen.findAllByRole( 'alert' ) ).at( -1 ) ).toHaveTextContent( 'Something went wrong while loading.' );
+        await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Something went wrong while loading.' );
     } );
 
     it( 'doesn\'t exist for anyone but superadmins', async () => {

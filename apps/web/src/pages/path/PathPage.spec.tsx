@@ -198,7 +198,8 @@ describe( 'PathPage', () => {
 
             expect( topic( 'Tree Traversals' ).open ).toBe( true );
             expect( topic( 'Two Pointers' ).open ).toBe( false );
-            expect( scrolled ).toEqual( [ topic( 'Tree Traversals' ) ] );
+            // Scrolled from an effect, which can run just after the heading shows up on a busy machine.
+            await waitFor( () => expect( scrolled ).toEqual( [ topic( 'Tree Traversals' ) ] ) );
         } finally {
             Reflect.deleteProperty( Element.prototype, 'scrollIntoView' );
         }
