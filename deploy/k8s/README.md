@@ -2,6 +2,7 @@
 
 The same app as the Docker Compose deployment (`deploy/README.md`), on a one-node [k3s](https://k3s.io) cluster.
 Steps 1 to 3 of that guide (create the server, open ports 80 and 443, choose the address) apply here unchanged.
+On Civo's managed k3s, see [Civo](#civo) instead of steps 1 and 2.
 
 ```
 internet ──▶ Traefik (k3s, HTTPS) ──▶ web: Caddy + web app ──▶ api ──▶ postgres
@@ -56,7 +57,10 @@ docker build --target web --build-arg VITE_API_URL=https://$DOMAIN -t studylog-w
 docker save studylog-api:latest studylog-web:latest | sudo k3s ctr images import -
 ```
 
-`VITE_API_URL` is baked into the web app, so changing the address means building again.
+`VITE_API_URL` is baked into the web app, so changing the address means building again. Building needs more memory
+than a 2 GB server has: on one that small, build on your machine and copy them over
+(`docker save studylog-api:latest studylog-web:latest | ssh <server> sudo k3s ctr images import -`), or use the
+registry images as on Civo.
 
 ## 3. Configure and start
 
@@ -110,6 +114,45 @@ Copy them off the server too (see `deploy/README.md`). To restore one:
 kubectl -n studylog exec -i postgres-0 -- \
   pg_restore -U studylog -d studylog --clean --if-exists < ~/backups/studylog-2026-10-19.dump
 ```
+
+## Civo
+
+Civo's Kubernetes is managed k3s: there's no server to log in to, so the images come from GitHub's registry
+(`.github/workflows/images.yml`) and `deploy/civo` points the manifests at them. A 1 CPU / 2 GB node is enough for
+everything here.
+
+1. **Images**: on GitHub, add the repository variable `DOMAIN` (Settings → Secrets and variables → Actions →
+   Variables), then run the **Images** workflow from the Actions tab. It pushes `ghcr.io/coolsamk7/studylog-api` and
+   `studylog-web`, tagged `latest` and `sha-<commit>`.
+2. **Cluster**: create it with one node and keep the default Traefik (it takes ports 80 and 443 on the node; the
+   *LoadBalancer* variant adds a paid Civo load balancer). Download the kubeconfig and check:
+
+   ```bash
+   kubectl get ingressclass                        # traefik
+   kubectl api-resources | grep -i middleware      # traefik.io; if only traefik.containo.us, see deploy/civo
+   ```
+
+   `cluster/traefik-config.yaml` doesn't apply here (Civo installs Traefik itself, bound to the node's ports, so it
+   already sees visitors' IPs).
+3. **Address**: point your domain's `A` record at the node's public IP (`kubectl get nodes -o wide`), or use
+   `<ip-with-dashes>.sslip.io`. It must be the same as `DOMAIN` from step 1.
+4. **cert-manager and the issuer**: as in step 1 above (the `kubectl apply` lines).
+5. **Registry login** (private images; a read-only token: GitHub → Settings → Developer settings → Personal access
+   tokens → classic, scope `read:packages`):
+
+   ```bash
+   kubectl create namespace studylog
+   kubectl -n studylog create secret docker-registry ghcr-pull \
+     --docker-server=ghcr.io --docker-username=coolsamk7 --docker-password=<token>
+   ```
+
+6. **Configure and start**: fill in `config.env` and `secrets.env` as in step 3, then
+   `kubectl apply -k deploy/civo`.
+
+The data volume is a Civo volume (`civo-volume`), billed separately from the node. To update: run the Images
+workflow, then `kubectl -n studylog rollout restart deployment api web`. To roll back, set `newTag` in
+`deploy/civo/kustomization.yaml` to an earlier `sha-<commit>` and apply again. Backups work as below, run from your
+machine with the Civo kubeconfig.
 
 ## Good to know
 
