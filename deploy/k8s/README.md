@@ -124,16 +124,19 @@ everything here.
 1. **Images**: on GitHub, add the repository variable `DOMAIN` (Settings → Secrets and variables → Actions →
    Variables), then run the **Images** workflow from the Actions tab. It pushes `ghcr.io/coolsamk7/studylog-api` and
    `studylog-web`, tagged `latest` and `sha-<commit>`.
-2. **Cluster**: create it with one node and keep the default Traefik (it takes ports 80 and 443 on the node; the
-   *LoadBalancer* variant adds a paid Civo load balancer). Download the kubeconfig and check:
+2. **Cluster**: create it with one node (K3s, Flannel) and keep the default Traefik (it takes ports 80 and 443 on the
+   node; the *LoadBalancer* variant adds a paid Civo load balancer). Firewall: ports 80 and 443, and 6443 from your
+   IP only. Download the kubeconfig, then install Traefik's resource types, which Civo leaves out (needed for the
+   http → https redirect). Civo's Traefik is 2.9 (check with the first command); use the file for that version:
 
    ```bash
-   kubectl get ingressclass                        # traefik
-   kubectl api-resources | grep -i middleware      # traefik.io; if only traefik.containo.us, see deploy/civo
+   kubectl -n kube-system get ds traefik -o jsonpath='{.spec.template.spec.containers[0].image}'   # …traefik:2.9.4
+   kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9.4/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
    ```
 
-   `cluster/traefik-config.yaml` doesn't apply here (Civo installs Traefik itself, bound to the node's ports, so it
-   already sees visitors' IPs).
+   `deploy/civo` adds the `traefik` IngressClass (Civo has none) and uses Traefik 2.9's API group for the redirect;
+   with Traefik 2.10 or newer, drop that patch there. `cluster/traefik-config.yaml` doesn't apply (Civo's Traefik is
+   bound to the node's ports, so it already sees visitors' IPs).
 3. **Address**: point your domain's `A` record at the node's public IP (`kubectl get nodes -o wide`), or use
    `<ip-with-dashes>.sslip.io`. It must be the same as `DOMAIN` from step 1.
 4. **cert-manager and the issuer**: as in step 1 above (the `kubectl apply` lines).

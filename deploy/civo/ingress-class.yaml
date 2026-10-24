@@ -1,0 +1,8 @@
+# Civo installs Traefik without an IngressClass, and Traefik 2.9 skips an Ingress whose class doesn't exist. This is
+# the class ingress.yaml and cert-manager's HTTP check (cluster/cluster-issuer.yaml) ask for.
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: traefik
+spec:
+  controller: traefik.io/ingress-controller
