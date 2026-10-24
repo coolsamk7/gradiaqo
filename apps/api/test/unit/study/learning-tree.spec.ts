@@ -1,6 +1,6 @@
 import { OrderParentType, ProgressStatus, RuleMode, RuleScope } from '@studylog/schemas';
 
-import type { CatalogModuleNode } from '../../../src/catalog/catalog-tree.service.js';
+import type { CatalogModuleNode } from '../../../src/catalog/services/catalog-tree.service.js';
 import { applyOrders, orderChildren, selectContent, withProgress } from '../../../src/study/learning-tree.js';
 
 // Only the fields these functions use; the rest of each node doesn't matter here.

@@ -1,4 +1,4 @@
-import type { Mail } from './mail.service.js';
+import type { Mail } from './services/mail.service.js';
 
 /*
  * The emails StudyLog sends. Short, plain and the same in text and HTML, so they read well everywhere and don't

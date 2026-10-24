@@ -3,17 +3,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Item, LearningModule, LearningPath, Topic, TopicItem } from '@studylog/database';
 
 import { OrganizationsModule } from '../organizations/organizations.module.js';
-import { CatalogAccessService } from './catalog-access.service.js';
-import { CatalogScopeGuard } from './catalog-auth.decorator.js';
-import { CatalogTreeService } from './catalog-tree.service.js';
-import { ItemsController } from './items.controller.js';
-import { ItemsService } from './items.service.js';
-import { LearningPathsController } from './learning-paths.controller.js';
-import { LearningPathsService } from './learning-paths.service.js';
-import { ModulesController } from './modules.controller.js';
-import { ModulesService } from './modules.service.js';
-import { TopicsController } from './topics.controller.js';
-import { TopicsService } from './topics.service.js';
+import { ItemsController } from './controllers/items.controller.js';
+import { LearningPathsController } from './controllers/learning-paths.controller.js';
+import { ModulesController } from './controllers/modules.controller.js';
+import { TopicsController } from './controllers/topics.controller.js';
+import { CatalogScopeGuard } from './decorators/catalog-auth.decorator.js';
+import { CatalogAccessService } from './services/catalog-access.service.js';
+import { CatalogTreeService } from './services/catalog-tree.service.js';
+import { ItemsService } from './services/items.service.js';
+import { LearningPathsService } from './services/learning-paths.service.js';
+import { ModulesService } from './services/modules.service.js';
+import { TopicsService } from './services/topics.service.js';
 
 /**
  * The learning catalog (paths → modules → topics → items): the global one, managed by superadmins under

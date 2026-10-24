@@ -8,8 +8,8 @@ import { QueryFailedError } from 'typeorm';
 import { AuthService } from '../../../../src/auth/services/auth.service.js';
 import type { SessionsService } from '../../../../src/auth/services/sessions.service.js';
 import type { VerificationService } from '../../../../src/auth/services/verification.service.js';
-import type { OrganizationsService } from '../../../../src/organizations/organizations.service.js';
-import type { UsersService } from '../../../../src/users/users.service.js';
+import type { OrganizationsService } from '../../../../src/organizations/services/organizations.service.js';
+import type { UsersService } from '../../../../src/users/services/users.service.js';
 import { fakeDataSource } from '../../fake-data-source.js';
 
 const signup = { email: 'sam@example.com', firstName: 'Sam', lastName: 'K', password: 'supersecret1' };

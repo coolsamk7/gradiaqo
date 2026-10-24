@@ -84,9 +84,10 @@ yarn workspace @studylog/api test:e2e # end-to-end tests against the database fr
 ```
 
 - Unit tests sit next to the code (`*.spec.ts`, Vitest), except in the API, where they mirror `src/` under
-  `test/unit/` (`src/catalog/items.service.ts` → `test/unit/catalog/items.service.spec.ts`). Services are tested against an in-memory stand-in for
-  TypeORM (`apps/api/test/unit/fake-data-source.ts`): each test sets up only the database answers its rule depends
-  on and checks the calls it expects. Permission tests use the real CASL rules.
+  `test/unit/` (`src/catalog/services/items.service.ts` → `test/unit/catalog/services/items.service.spec.ts`).
+  Services are tested against an in-memory stand-in for TypeORM (`apps/api/test/unit/fake-data-source.ts`): each
+  test sets up only the database answers its rule depends on and checks the calls it expects. Permission tests use
+  the real CASL rules.
 
 ### UI tests (Playwright)
 
@@ -240,6 +241,9 @@ app.useLogger( app.get( Logger ) ); // Logger from '@studylog/logger'
   and includes the request id automatically.
 
 ## Adding endpoints
+
+Each API module (`apps/api/src/<module>/`) keeps `<module>.module.ts` and plain helpers at its top, and the rest by
+role: `controllers/`, `services/`, `guards/` and `decorators/` (e.g. `src/auth/guards/auth.guard.ts`).
 
 Validation is TypeBox (via `@gradiaqo/nestjs-typebox`), not class-validator.
 

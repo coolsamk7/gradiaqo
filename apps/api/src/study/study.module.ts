@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
 
 import { CatalogModule } from '../catalog/catalog.module.js';
-import { EnrollmentsController } from './enrollments.controller.js';
-import { EnrollmentsService } from './enrollments.service.js';
-import { InsightsController } from './insights.controller.js';
-import { InsightsService } from './insights.service.js';
-import { ProgressController } from './progress.controller.js';
-import { ProgressService } from './progress.service.js';
-import { PublishedCatalogController } from './published-catalog.controller.js';
-import { StatsController } from './stats.controller.js';
-import { StatsService } from './stats.service.js';
-import { StudySessionsController } from './study-sessions.controller.js';
-import { StudySessionsService } from './study-sessions.service.js';
+import { EnrollmentsController } from './controllers/enrollments.controller.js';
+import { InsightsController } from './controllers/insights.controller.js';
+import { ProgressController } from './controllers/progress.controller.js';
+import { PublishedCatalogController } from './controllers/published-catalog.controller.js';
+import { StatsController } from './controllers/stats.controller.js';
+import { StudySessionsController } from './controllers/study-sessions.controller.js';
+import { EnrollmentsService } from './services/enrollments.service.js';
+import { InsightsService } from './services/insights.service.js';
+import { ProgressService } from './services/progress.service.js';
+import { StatsService } from './services/stats.service.js';
+import { StudySessionsService } from './services/study-sessions.service.js';
 
 /**
  * The user's side of the catalog: browsing published paths, enrollments (with their own selection and order),
