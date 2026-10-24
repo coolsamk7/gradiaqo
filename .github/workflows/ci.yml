@@ -1,14 +1,11 @@
-# Lint, build and every test, on each pull request to master and each push to it. The Images workflow runs this first
-# and only builds when it passes. To block merging a red pull request: Settings → Branches → a rule for master that
-# requires the "Lint, build, unit tests" and "UI tests" checks. Pull requests also get a comment with the coverage.
+# Lint, build and every test, on each pull request to master. Not again after merging: the master ruleset requires
+# both checks to pass on a branch that's up to date with master, so what lands there is what was tested, and what the
+# Images workflow builds. Pull requests also get a comment with the coverage.
 name: CI
 
 on:
   pull_request:
     branches: [ master ]
-  push:
-    branches: [ master ]
-  workflow_call:
 
 permissions:
   contents: read
@@ -34,6 +31,13 @@ jobs:
           node-version: 22
           cache: yarn
       - run: yarn install --immutable
+      # Turbo's task cache: a task whose inputs (code, lockfile, config) didn't change since a saved run is replayed,
+      # logs and coverage reports included, instead of run again. GitHub shares caches from master with pull requests.
+      - uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-check-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-check-${{ runner.os }}-
       - run: yarn turbo run lint build
       # Fails below 100% coverage in any package (packages/common/vitest/coverage.js); --continue so every package
       # still reports.
@@ -75,7 +79,25 @@ jobs:
           node-version: 22
           cache: yarn
       - run: yarn install --immutable
-      - run: yarn workspace @studylog/e2e playwright install --with-deps chromium
+      # The builds the UI tests need (the tests themselves always run: turbo.json doesn't cache them).
+      - uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-ui-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-ui-${{ runner.os }}-
+      # Chromium, downloaded once per Playwright version; the system libraries it needs are installed every time.
+      - id: playwright
+        working-directory: apps/e2e
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - id: browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - if: steps.browsers.outputs.cache-hit != 'true'
+        run: yarn workspace @studylog/e2e playwright install --with-deps chromium
+      - if: steps.browsers.outputs.cache-hit == 'true'
+        run: yarn workspace @studylog/e2e playwright install-deps chromium
       - run: yarn test:ui
       # Traces and screenshots of the failed tests: download from the run's Summary page.
       - if: failure()
