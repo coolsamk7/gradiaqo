@@ -6,7 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Session } from '@studylog/database';
 import { Not, Repository } from 'typeorm';
 
-import { authConfig } from '../config/auth.config.js';
+import { authConfig } from '../../config/auth.config.js';
 
 export interface ClientMeta {
     userAgent?: string;

@@ -37,7 +37,8 @@ import type {
     UpdateOrganizationRequest,
 } from '@studylog/schemas';
 
-import { AuthGuard, CurrentUser } from '../auth/auth.guard.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { AuthGuard } from '../auth/guards/auth.guard.js';
 import { OrganizationAuth } from './organization-auth.decorator.js';
 import { assertShared, OrganizationsService, toOrganizationResponse } from './organizations.service.js';
 

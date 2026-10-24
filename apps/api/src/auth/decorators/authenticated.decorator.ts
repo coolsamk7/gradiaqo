@@ -1,7 +1,7 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
-import { AuthGuard } from './auth.guard.js';
+import { AuthGuard } from '../guards/auth.guard.js';
 
 /** For routes any logged-in user can call, about their own data. */
 export const Authenticated = () =>

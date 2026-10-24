@@ -5,8 +5,8 @@ import type { AccessTokenPayload } from '@studylog/casl';
 import { Responses, StatsQueryParams } from '@studylog/nestjs';
 import type { StatsQuery, StudyStats } from '@studylog/schemas';
 
-import { CurrentUser } from '../auth/auth.guard.js';
-import { Authenticated } from '../auth/authenticated.decorator.js';
+import { Authenticated } from '../auth/decorators/authenticated.decorator.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { StatsService } from './stats.service.js';
 
 @ApiTags( 'me: stats' )

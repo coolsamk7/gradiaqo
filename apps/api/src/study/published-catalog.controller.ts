@@ -15,8 +15,8 @@ import type {
 } from '@studylog/schemas';
 import { DataSource } from 'typeorm';
 
-import { CurrentUser } from '../auth/auth.guard.js';
-import { Authenticated } from '../auth/authenticated.decorator.js';
+import { Authenticated } from '../auth/decorators/authenticated.decorator.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { CatalogAccessService } from '../catalog/catalog-access.service.js';
 import { CatalogTreeService } from '../catalog/catalog-tree.service.js';
 import { ItemsService } from '../catalog/items.service.js';

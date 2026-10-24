@@ -7,10 +7,10 @@ import type { LoginRequest, SignupRequest } from '@studylog/schemas';
 import * as argon2 from 'argon2';
 import { DataSource, QueryFailedError } from 'typeorm';
 
-import { OrganizationsService } from '../organizations/organizations.service.js';
-import type { PublicUser } from '../users/public-user.js';
-import { toPublicUser } from '../users/public-user.js';
-import { UsersService } from '../users/users.service.js';
+import { OrganizationsService } from '../../organizations/organizations.service.js';
+import type { PublicUser } from '../../users/public-user.js';
+import { toPublicUser } from '../../users/public-user.js';
+import { UsersService } from '../../users/users.service.js';
 import type { ClientMeta } from './sessions.service.js';
 import { SessionsService } from './sessions.service.js';
 import { VerificationService } from './verification.service.js';

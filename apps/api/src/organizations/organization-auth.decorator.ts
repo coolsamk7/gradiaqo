@@ -2,7 +2,7 @@ import { applyDecorators, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiForbiddenResponse, ApiNotFoundResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { AbilityGuard } from '@studylog/casl';
 
-import { AuthGuard } from '../auth/auth.guard.js';
+import { AuthGuard } from '../auth/guards/auth.guard.js';
 import { OrganizationGuard } from './organization.guard.js';
 
 /**

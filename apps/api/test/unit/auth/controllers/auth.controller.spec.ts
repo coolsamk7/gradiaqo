@@ -2,14 +2,14 @@ import { InternalServerErrorException, UnauthorizedException } from '@nestjs/com
 import type { ConfigType } from '@nestjs/config';
 import type { Request, Response } from 'express';
 
-import type { AccountService } from '../../../src/auth/account.service.js';
-import { AuthController, REFRESH_COOKIE } from '../../../src/auth/auth.controller.js';
-import { CurrentUser } from '../../../src/auth/auth.guard.js';
-import type { AuthService } from '../../../src/auth/auth.service.js';
-import type { VerificationService } from '../../../src/auth/verification.service.js';
-import type { authConfig } from '../../../src/config/auth.config.js';
-import type { UsersService } from '../../../src/users/users.service.js';
-import { httpContext, paramDecoratorFactory } from '../param-decorator.js';
+import { AuthController, REFRESH_COOKIE } from '../../../../src/auth/controllers/auth.controller.js';
+import { CurrentUser } from '../../../../src/auth/decorators/current-user.decorator.js';
+import type { AccountService } from '../../../../src/auth/services/account.service.js';
+import type { AuthService } from '../../../../src/auth/services/auth.service.js';
+import type { VerificationService } from '../../../../src/auth/services/verification.service.js';
+import type { authConfig } from '../../../../src/config/auth.config.js';
+import type { UsersService } from '../../../../src/users/users.service.js';
+import { httpContext, paramDecoratorFactory } from '../../param-decorator.js';
 
 /*
  * The controller's own job: moving the refresh token between the response body and an httpOnly cookie.

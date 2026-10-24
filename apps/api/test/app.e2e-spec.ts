@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 
-import { AppModule } from './../src/app.module.js';
+import { AppModule } from '../src/app.module.js';
 
 // Needs the database from `yarn db:up` and apps/api/.env.
 describe( 'Health (e2e)', () => {

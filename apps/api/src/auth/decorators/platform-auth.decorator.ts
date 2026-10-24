@@ -2,7 +2,7 @@ import { applyDecorators, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiForbiddenResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { AbilityGuard } from '@studylog/casl';
 
-import { AuthGuard } from './auth.guard.js';
+import { AuthGuard } from '../guards/auth.guard.js';
 
 /**
  * For routes outside any organization: logged in → allowed by `@CheckAbilities()` under platform-level

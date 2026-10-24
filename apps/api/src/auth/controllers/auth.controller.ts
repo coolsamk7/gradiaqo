@@ -54,16 +54,17 @@ import type {
 } from '@studylog/schemas';
 import type { CookieOptions, Request, Response } from 'express';
 
-import { authConfig } from '../config/auth.config.js';
-import { RateLimit } from '../rate-limits.js';
-import { toPublicUser } from '../users/public-user.js';
-import { UsersService } from '../users/users.service.js';
-import { AccountService } from './account.service.js';
-import { AuthGuard, CurrentUser } from './auth.guard.js';
-import type { AuthResult } from './auth.service.js';
-import { AuthService } from './auth.service.js';
-import type { ClientMeta } from './sessions.service.js';
-import { VerificationService } from './verification.service.js';
+import { authConfig } from '../../config/auth.config.js';
+import { RateLimit } from '../../rate-limits.js';
+import { toPublicUser } from '../../users/public-user.js';
+import { UsersService } from '../../users/users.service.js';
+import { CurrentUser } from '../decorators/current-user.decorator.js';
+import { AuthGuard } from '../guards/auth.guard.js';
+import { AccountService } from '../services/account.service.js';
+import type { AuthResult } from '../services/auth.service.js';
+import { AuthService } from '../services/auth.service.js';
+import type { ClientMeta } from '../services/sessions.service.js';
+import { VerificationService } from '../services/verification.service.js';
 
 export const REFRESH_COOKIE = 'refresh_token';
 

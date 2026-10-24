@@ -1,6 +1,6 @@
 import { THROTTLER_LIMIT, THROTTLER_TTL } from '@nestjs/throttler/dist/throttler.constants.js';
 
-import { AuthController } from '../../src/auth/auth.controller.js';
+import { AuthController } from '../../src/auth/controllers/auth.controller.js';
 import { PathReportsController } from '../../src/moderation/reports.controller.js';
 import { OrganizationInvitationsController } from '../../src/organizations/invitations.controller.js';
 import { RATE_LIMITS } from '../../src/rate-limits.js';
