@@ -8,7 +8,7 @@ import { DataSource, Not } from 'typeorm';
 
 import type { PublicUser } from '../../users/public-user.js';
 import { toPublicUser } from '../../users/public-user.js';
-import { UsersService } from '../../users/users.service.js';
+import { UsersService } from '../../users/services/users.service.js';
 import { SessionsService } from './sessions.service.js';
 
 /** The logged-in user managing their own account. Changing the email is in VerificationService (it needs a code). */

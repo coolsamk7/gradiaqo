@@ -1,0 +1,24 @@
+import type { ExecutionContext } from '@nestjs/common';
+
+import { CatalogScopeGuard } from '../../../../src/catalog/decorators/catalog-auth.decorator.js';
+import type { OrganizationGuard } from '../../../../src/organizations/guards/organization.guard.js';
+
+const contextFor = ( params: object ) =>
+    ( { switchToHttp: () => ( { getRequest: () => ( { params } ) } ) } ) as unknown as ExecutionContext;
+
+describe( 'CatalogScopeGuard', () => {
+    const organizationGuard = { canActivate: vi.fn().mockResolvedValue( true ) };
+    const guard = new CatalogScopeGuard( organizationGuard as unknown as OrganizationGuard );
+
+    it( 'checks membership on /organizations/:organizationId/catalog routes', async () => {
+        await expect( guard.canActivate( contextFor( { organizationId: 'org-1' } ) ) ).resolves.toBe( true );
+        expect( organizationGuard.canActivate ).toHaveBeenCalledOnce();
+    } );
+
+    it( 'leaves /admin/catalog routes to platform rules (an X-Organization-Id header can\'t switch catalogs)', () => {
+        organizationGuard.canActivate.mockClear();
+
+        expect( guard.canActivate( contextFor( {} ) ) ).toBe( true );
+        expect( organizationGuard.canActivate ).not.toHaveBeenCalled();
+    } );
+} );

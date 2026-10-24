@@ -1,7 +1,7 @@
 import type { EnrollmentOrder, EnrollmentRule, MyModule, MyTopic, ProgressCount } from '@studylog/schemas';
 import { OrderParentType, ProgressStatus, RuleMode, RuleScope } from '@studylog/schemas';
 
-import type { CatalogModuleNode, CatalogTopicNode } from '../catalog/catalog-tree.service.js';
+import type { CatalogModuleNode, CatalogTopicNode } from '../catalog/services/catalog-tree.service.js';
 
 /*
  * Pure functions that turn a published path into one user's view of it: the parts their rules select, in

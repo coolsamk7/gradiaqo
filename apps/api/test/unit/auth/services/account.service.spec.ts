@@ -5,7 +5,7 @@ import type { DataSource } from 'typeorm';
 
 import { AccountService } from '../../../../src/auth/services/account.service.js';
 import type { SessionsService } from '../../../../src/auth/services/sessions.service.js';
-import type { UsersService } from '../../../../src/users/users.service.js';
+import type { UsersService } from '../../../../src/users/services/users.service.js';
 import type { FakeDataSource } from '../../fake-data-source.js';
 import { fakeDataSource } from '../../fake-data-source.js';
 

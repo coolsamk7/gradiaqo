@@ -6,7 +6,7 @@ import { CurrentUser } from '../../../../src/auth/decorators/current-user.decora
 import type { AccountService } from '../../../../src/auth/services/account.service.js';
 import type { AuthService } from '../../../../src/auth/services/auth.service.js';
 import type { VerificationService } from '../../../../src/auth/services/verification.service.js';
-import type { UsersService } from '../../../../src/users/users.service.js';
+import type { UsersService } from '../../../../src/users/services/users.service.js';
 import { httpContext, paramDecoratorFactory } from '../../param-decorator.js';
 
 /*

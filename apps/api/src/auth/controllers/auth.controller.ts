@@ -57,7 +57,7 @@ import type { Request, Response } from 'express';
 import { refreshCookieConfig } from '../../config/cookie.config.js';
 import { RateLimit } from '../../rate-limits.js';
 import { toPublicUser } from '../../users/public-user.js';
-import { UsersService } from '../../users/users.service.js';
+import { UsersService } from '../../users/services/users.service.js';
 import { CurrentUser } from '../decorators/current-user.decorator.js';
 import { AuthGuard } from '../guards/auth.guard.js';
 import { AccountService } from '../services/account.service.js';

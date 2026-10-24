@@ -16,8 +16,8 @@ import type { EmailCodesService } from '../../../../src/auth/services/email-code
 import { WRONG_CODE } from '../../../../src/auth/services/email-codes.service.js';
 import type { SessionsService } from '../../../../src/auth/services/sessions.service.js';
 import { VerificationService } from '../../../../src/auth/services/verification.service.js';
-import type { MailService } from '../../../../src/mail/mail.service.js';
-import type { UsersService } from '../../../../src/users/users.service.js';
+import type { MailService } from '../../../../src/mail/services/mail.service.js';
+import type { UsersService } from '../../../../src/users/services/users.service.js';
 import type { FakeDataSource } from '../../fake-data-source.js';
 import { fakeDataSource } from '../../fake-data-source.js';
 

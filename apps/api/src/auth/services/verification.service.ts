@@ -11,11 +11,11 @@ import { EmailCodePurpose, User } from '@studylog/database';
 import * as argon2 from 'argon2';
 import { DataSource, QueryFailedError } from 'typeorm';
 
-import { MailService } from '../../mail/mail.service.js';
+import { MailService } from '../../mail/services/mail.service.js';
 import { changeEmailMail, emailChangedMail, resetPasswordMail, verifyEmailMail } from '../../mail/templates.js';
 import type { PublicUser } from '../../users/public-user.js';
 import { toPublicUser } from '../../users/public-user.js';
-import { UsersService } from '../../users/users.service.js';
+import { UsersService } from '../../users/services/users.service.js';
 import { CODE_TTL_MINUTES, EmailCodesService, WRONG_CODE } from './email-codes.service.js';
 import { SessionsService } from './sessions.service.js';
 
