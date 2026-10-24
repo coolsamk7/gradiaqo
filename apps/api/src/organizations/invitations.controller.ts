@@ -13,8 +13,8 @@ import { CheckAbilities, CurrentOrganization } from '@studylog/casl';
 import { CreateInvitationBody, Responses } from '@studylog/nestjs';
 import type { CreateInvitationRequest, Invitation, MyInvitation, MyOrganization } from '@studylog/schemas';
 
-import { CurrentUser } from '../auth/auth.guard.js';
-import { Authenticated } from '../auth/authenticated.decorator.js';
+import { Authenticated } from '../auth/decorators/authenticated.decorator.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { RateLimit } from '../rate-limits.js';
 import { UsersService } from '../users/users.service.js';
 import { InvitationsService } from './invitations.service.js';

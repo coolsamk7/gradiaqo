@@ -19,9 +19,9 @@ import type {
     ResolveReportRequest,
 } from '@studylog/schemas';
 
-import { CurrentUser } from '../auth/auth.guard.js';
-import { Authenticated } from '../auth/authenticated.decorator.js';
-import { PlatformAuth } from '../auth/platform-auth.decorator.js';
+import { Authenticated } from '../auth/decorators/authenticated.decorator.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { PlatformAuth } from '../auth/decorators/platform-auth.decorator.js';
 import { RateLimit } from '../rate-limits.js';
 import { ReportsService } from './reports.service.js';
 

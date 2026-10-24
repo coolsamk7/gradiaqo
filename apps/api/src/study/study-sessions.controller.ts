@@ -34,8 +34,8 @@ import type {
     UpdateStudySessionRequest,
 } from '@studylog/schemas';
 
-import { CurrentUser } from '../auth/auth.guard.js';
-import { Authenticated } from '../auth/authenticated.decorator.js';
+import { Authenticated } from '../auth/decorators/authenticated.decorator.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { StudySessionsService } from './study-sessions.service.js';
 
 @ApiTags( 'me: study sessions' )

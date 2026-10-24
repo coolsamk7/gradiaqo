@@ -8,13 +8,13 @@ import { authConfig } from '../config/auth.config.js';
 import { MailModule } from '../mail/mail.module.js';
 import { OrganizationsModule } from '../organizations/organizations.module.js';
 import { UsersModule } from '../users/users.module.js';
-import { AccountService } from './account.service.js';
-import { AuthController } from './auth.controller.js';
-import { AuthGuard } from './auth.guard.js';
-import { AuthService } from './auth.service.js';
-import { EmailCodesService } from './email-codes.service.js';
-import { SessionsService } from './sessions.service.js';
-import { VerificationService } from './verification.service.js';
+import { AuthController } from './controllers/auth.controller.js';
+import { AuthGuard } from './guards/auth.guard.js';
+import { AccountService } from './services/account.service.js';
+import { AuthService } from './services/auth.service.js';
+import { EmailCodesService } from './services/email-codes.service.js';
+import { SessionsService } from './services/sessions.service.js';
+import { VerificationService } from './services/verification.service.js';
 
 @Module( {
     imports: [

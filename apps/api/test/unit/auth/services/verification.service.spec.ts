@@ -12,14 +12,14 @@ import * as argon2 from 'argon2';
 import type { DataSource } from 'typeorm';
 import { QueryFailedError } from 'typeorm';
 
-import type { EmailCodesService } from '../../../src/auth/email-codes.service.js';
-import { WRONG_CODE } from '../../../src/auth/email-codes.service.js';
-import type { SessionsService } from '../../../src/auth/sessions.service.js';
-import { VerificationService } from '../../../src/auth/verification.service.js';
-import type { MailService } from '../../../src/mail/mail.service.js';
-import type { UsersService } from '../../../src/users/users.service.js';
-import type { FakeDataSource } from '../fake-data-source.js';
-import { fakeDataSource } from '../fake-data-source.js';
+import type { EmailCodesService } from '../../../../src/auth/services/email-codes.service.js';
+import { WRONG_CODE } from '../../../../src/auth/services/email-codes.service.js';
+import type { SessionsService } from '../../../../src/auth/services/sessions.service.js';
+import { VerificationService } from '../../../../src/auth/services/verification.service.js';
+import type { MailService } from '../../../../src/mail/mail.service.js';
+import type { UsersService } from '../../../../src/users/users.service.js';
+import type { FakeDataSource } from '../../fake-data-source.js';
+import { fakeDataSource } from '../../fake-data-source.js';
 
 const SAM = { id: 'u', email: 'sam@example.com', firstName: 'Sam', emailVerifiedAt: null as Date | null };
 

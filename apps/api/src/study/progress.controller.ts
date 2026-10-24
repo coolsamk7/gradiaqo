@@ -5,8 +5,8 @@ import type { AccessTokenPayload } from '@studylog/casl';
 import { ListProgressQueryParams, Responses, UpdateProgressBody } from '@studylog/nestjs';
 import type { ItemProgress, ItemProgressPage, ListProgressQuery, UpdateProgressRequest } from '@studylog/schemas';
 
-import { CurrentUser } from '../auth/auth.guard.js';
-import { Authenticated } from '../auth/authenticated.decorator.js';
+import { Authenticated } from '../auth/decorators/authenticated.decorator.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { ProgressService } from './progress.service.js';
 
 @ApiTags( 'me: progress' )

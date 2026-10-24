@@ -28,7 +28,7 @@ import type {
     UpdateLearningPathRequest,
 } from '@studylog/schemas';
 
-import { CurrentUser } from '../auth/auth.guard.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { CatalogOwner as CatalogOwnerId } from './catalog.helpers.js';
 import { CatalogAuth, CatalogOwner } from './catalog-auth.decorator.js';
 import { LearningPathsService } from './learning-paths.service.js';

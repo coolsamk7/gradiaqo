@@ -1,15 +1,9 @@
-import {
-    CanActivate,
-    createParamDecorator,
-    ExecutionContext,
-    Injectable,
-    UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { AccessTokenPayload, AuthorizedRequest } from '@studylog/casl';
 import type { Request, Response } from 'express';
 
-type AuthedRequest = Request & AuthorizedRequest;
+export type AuthedRequest = Request & AuthorizedRequest;
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -37,9 +31,3 @@ export class AuthGuard implements CanActivate {
         return true;
     }
 }
-
-/** The JWT payload of the logged-in user. Only use on routes protected by AuthGuard. */
-export const CurrentUser = createParamDecorator(
-    ( _data: unknown, context: ExecutionContext ): AccessTokenPayload =>
-        context.switchToHttp().getRequest<AuthedRequest>().user!,
-);

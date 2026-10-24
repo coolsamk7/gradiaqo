@@ -6,10 +6,10 @@ import type { Session } from '@studylog/database';
 import type { Repository } from 'typeorm';
 import { Not } from 'typeorm';
 
-import { SessionsService } from '../../../src/auth/sessions.service.js';
-import type { authConfig } from '../../../src/config/auth.config.js';
-import type { FakeRepository } from '../fake-data-source.js';
-import { fakeRepository } from '../fake-data-source.js';
+import { SessionsService } from '../../../../src/auth/services/sessions.service.js';
+import type { authConfig } from '../../../../src/config/auth.config.js';
+import type { FakeRepository } from '../../fake-data-source.js';
+import { fakeRepository } from '../../fake-data-source.js';
 
 const SESSION_ID = '11111111-1111-4111-8111-111111111111';
 const hash = ( secret: string ) => createHash( 'sha256' ).update( secret ).digest( 'hex' );

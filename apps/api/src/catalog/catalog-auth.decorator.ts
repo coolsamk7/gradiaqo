@@ -5,7 +5,7 @@ import type { AuthorizedRequest } from '@studylog/casl';
 import { AbilityGuard } from '@studylog/casl';
 import type { Request } from 'express';
 
-import { AuthGuard } from '../auth/auth.guard.js';
+import { AuthGuard } from '../auth/guards/auth.guard.js';
 import { OrganizationGuard } from '../organizations/organization.guard.js';
 import type { CatalogOwner as CatalogOwnerId } from './catalog.helpers.js';
 

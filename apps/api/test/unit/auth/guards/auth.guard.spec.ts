@@ -2,7 +2,7 @@ import type { ExecutionContext } from '@nestjs/common';
 import { UnauthorizedException } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
 
-import { AuthGuard } from '../../../src/auth/auth.guard.js';
+import { AuthGuard } from '../../../../src/auth/guards/auth.guard.js';
 
 function contextFor( request: object, response = { setHeader: vi.fn() } ): ExecutionContext {
     const http = { getRequest: () => request, getResponse: () => response };

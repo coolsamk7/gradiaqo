@@ -12,8 +12,8 @@ import type {
     SetInterviewGoalRequest,
 } from '@studylog/schemas';
 
-import { CurrentUser } from '../auth/auth.guard.js';
-import { Authenticated } from '../auth/authenticated.decorator.js';
+import { Authenticated } from '../auth/decorators/authenticated.decorator.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { InsightsService } from './insights.service.js';
 
 @ApiTags( 'me: insights' )

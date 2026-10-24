@@ -10,7 +10,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
-import { REFRESH_COOKIE } from './auth/auth.controller.js';
+import { REFRESH_COOKIE } from './auth/controllers/auth.controller.js';
 import { appConfig } from './config/app.config.js';
 import { corsOptions } from './cors.js';
 

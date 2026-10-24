@@ -25,7 +25,7 @@ import { CheckAbilities } from '@studylog/casl';
 import { CreateItemBody, ListItemsQueryParams, Responses, UpdateItemBody } from '@studylog/nestjs';
 import type { CreateItemRequest, Item, ListItemsQuery, ManagedItemPage, UpdateItemRequest } from '@studylog/schemas';
 
-import { CurrentUser } from '../auth/auth.guard.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { CatalogOwner as CatalogOwnerId } from './catalog.helpers.js';
 import { CatalogAuth, CatalogOwner } from './catalog-auth.decorator.js';
 import { ItemsService } from './items.service.js';

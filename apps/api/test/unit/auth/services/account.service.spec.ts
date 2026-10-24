@@ -3,11 +3,11 @@ import { Membership, OrganizationRole, User } from '@studylog/database';
 import * as argon2 from 'argon2';
 import type { DataSource } from 'typeorm';
 
-import { AccountService } from '../../../src/auth/account.service.js';
-import type { SessionsService } from '../../../src/auth/sessions.service.js';
-import type { UsersService } from '../../../src/users/users.service.js';
-import type { FakeDataSource } from '../fake-data-source.js';
-import { fakeDataSource } from '../fake-data-source.js';
+import { AccountService } from '../../../../src/auth/services/account.service.js';
+import type { SessionsService } from '../../../../src/auth/services/sessions.service.js';
+import type { UsersService } from '../../../../src/users/users.service.js';
+import type { FakeDataSource } from '../../fake-data-source.js';
+import { fakeDataSource } from '../../fake-data-source.js';
 
 const organization = ( id: string, isPersonal = false ) => ( { id, name: `Org ${id}`, isPersonal } );
 const ownerOf = ( org: ReturnType<typeof organization> ) => ( { organizationId: org.id, organization: org } );

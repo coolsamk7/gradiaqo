@@ -3,9 +3,9 @@ import { EmailCode, EmailCodePurpose } from '@studylog/database';
 import * as argon2 from 'argon2';
 import type { DataSource } from 'typeorm';
 
-import { EmailCodesService, MAX_ATTEMPTS, WRONG_CODE } from '../../../src/auth/email-codes.service.js';
-import type { FakeDataSource } from '../fake-data-source.js';
-import { fakeDataSource } from '../fake-data-source.js';
+import { EmailCodesService, MAX_ATTEMPTS, WRONG_CODE } from '../../../../src/auth/services/email-codes.service.js';
+import type { FakeDataSource } from '../../fake-data-source.js';
+import { fakeDataSource } from '../../fake-data-source.js';
 
 const NOW = new Date( '2026-10-23T10:00:00Z' );
 const VERIFY = EmailCodePurpose.VerifyEmail;
