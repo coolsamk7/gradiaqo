@@ -432,16 +432,18 @@ describe( 'OrganizationPage', () => {
         let answer: () => Response | Promise<Response> = pending;
 
         api( { [`GET ${URL}/members`]: () => answer() } );
-        renderApp( `/app/organizations/${CLUB.id}` );
+        const loading = renderApp( `/app/organizations/${CLUB.id}` );
 
         expect( await screen.findByText( 'Loading the organization…' ) ).toHaveAttribute( 'role', 'status' );
+        // Gone before the answers change: on a slow machine its request could otherwise get them too.
+        loading.unmount();
 
         answer = () => json( 404, { statusCode: 404, message: 'Not Found' } );
         renderApp( `/app/organizations/${CLUB.id}` );
-        expect( ( await screen.findAllByRole( 'alert' ) ).at( -1 ) ).toHaveTextContent( 'This organization isn\'t here, or you\'re not a member.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'This organization isn\'t here, or you\'re not a member.' );
 
         answer = () => json( 200, [ ME ] );
-        await userEvent.setup().click( screen.getAllByRole( 'button', { name: 'Try again' } ).at( -1 )! );
+        await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
         await waitFor( () => expect( rows().map( ( item ) => item.textContent ) )
             .toEqual( [ 'SKSam Khan (you)sam@example.comOwnerJoined Sep 2026' ] ) );
     } );

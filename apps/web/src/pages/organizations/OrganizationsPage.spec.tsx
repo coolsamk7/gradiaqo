@@ -115,16 +115,18 @@ describe( 'OrganizationsPage', () => {
         let answer: () => Response | Promise<Response> = pending;
 
         api( { 'GET /organizations': () => answer() } );
-        renderApp( '/app/organizations' );
+        const loading = renderApp( '/app/organizations' );
 
         expect( await screen.findByText( 'Loading your organizations…' ) ).toHaveAttribute( 'role', 'status' );
+        // Gone before the answers change: on a slow machine its request could otherwise get them too.
+        loading.unmount();
 
         answer = () => json( 500, {} );
         renderApp( '/app/organizations' );
-        expect( ( await screen.findAllByRole( 'alert' ) ).at( -1 ) ).toHaveTextContent( 'Something went wrong while loading.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Something went wrong while loading.' );
 
         answer = () => json( 200, [ WORKSPACE ] );
-        await userEvent.setup().click( screen.getAllByRole( 'button', { name: 'Try again' } ).at( -1 )! );
+        await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
         expect( await screen.findByRole( 'link', { name: 'Open workspace' } ) ).toBeInTheDocument();
     } );
 
