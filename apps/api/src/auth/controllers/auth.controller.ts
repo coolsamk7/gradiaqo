@@ -52,9 +52,9 @@ import type {
     User,
     VerifyEmailRequest,
 } from '@studylog/schemas';
-import type { CookieOptions, Request, Response } from 'express';
+import type { Request, Response } from 'express';
 
-import { authConfig } from '../../config/auth.config.js';
+import { refreshCookieConfig } from '../../config/cookie.config.js';
 import { RateLimit } from '../../rate-limits.js';
 import { toPublicUser } from '../../users/public-user.js';
 import { UsersService } from '../../users/users.service.js';
@@ -71,24 +71,13 @@ export const REFRESH_COOKIE = 'refresh_token';
 @ApiTags( 'auth' )
 @Controller( 'auth' )
 export class AuthController {
-    private readonly cookieOptions: CookieOptions;
-
     constructor(
         private readonly authService: AuthService,
         private readonly usersService: UsersService,
         private readonly accountService: AccountService,
         private readonly verification: VerificationService,
-        @Inject( authConfig.KEY ) auth: ConfigType<typeof authConfig>,
-    ) {
-        this.cookieOptions = {
-            httpOnly: true,
-            secure: auth.cookieSecure,
-            sameSite: 'strict',
-            // Only sent to the auth endpoints, not with every API call.
-            path: '/auth',
-            maxAge: auth.refreshTokenTtlDays * 24 * 60 * 60 * 1000,
-        };
-    }
+        @Inject( refreshCookieConfig.KEY ) private readonly cookieOptions: ConfigType<typeof refreshCookieConfig>,
+    ) {}
 
     @Post( 'signup' )
     @RateLimit( 'signup' )

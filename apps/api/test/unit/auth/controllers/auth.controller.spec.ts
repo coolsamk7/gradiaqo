@@ -1,5 +1,4 @@
 import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import type { ConfigType } from '@nestjs/config';
 import type { Request, Response } from 'express';
 
 import { AuthController, REFRESH_COOKIE } from '../../../../src/auth/controllers/auth.controller.js';
@@ -7,7 +6,6 @@ import { CurrentUser } from '../../../../src/auth/decorators/current-user.decora
 import type { AccountService } from '../../../../src/auth/services/account.service.js';
 import type { AuthService } from '../../../../src/auth/services/auth.service.js';
 import type { VerificationService } from '../../../../src/auth/services/verification.service.js';
-import type { authConfig } from '../../../../src/config/auth.config.js';
 import type { UsersService } from '../../../../src/users/users.service.js';
 import { httpContext, paramDecoratorFactory } from '../../param-decorator.js';
 
@@ -15,7 +13,7 @@ import { httpContext, paramDecoratorFactory } from '../../param-decorator.js';
  * The controller's own job: moving the refresh token between the response body and an httpOnly cookie.
  */
 
-const config = { cookieSecure: true, refreshTokenTtlDays: 180 } as ConfigType<typeof authConfig>;
+const cookieOptions = { httpOnly: true, secure: true, sameSite: 'strict', path: '/auth', maxAge: 60_000 } as const;
 
 describe( 'AuthController cookies', () => {
     const auth = { signup: vi.fn(), login: vi.fn(), refresh: vi.fn(), logout: vi.fn() };
@@ -34,7 +32,7 @@ describe( 'AuthController cookies', () => {
         users as unknown as UsersService,
         account as unknown as AccountService,
         verification as unknown as VerificationService,
-        config,
+        cookieOptions,
     );
     const response = () => ( { cookie: vi.fn(), clearCookie: vi.fn() } );
     const request = ( cookie?: string ) => ( { cookies: cookie ? { [REFRESH_COOKIE]: cookie } : {}, headers: {}, ip: '1.2.3.4' } ) as unknown as Request;
@@ -43,20 +41,14 @@ describe( 'AuthController cookies', () => {
         vi.clearAllMocks();
     } );
 
-    it( 'login sets the refresh token as a secure httpOnly cookie scoped to /auth, and keeps it out of the body', async () => {
+    it( 'login sets the refresh token as a cookie with the configured options, and keeps it out of the body', async () => {
         auth.login.mockResolvedValue( { accessToken: 'access', refreshToken: 'refresh', user: { id: 'u' } } );
         const res = response();
 
         const body = await controller.login( { email: 'a@b.co', password: 'x' }, request(), res as unknown as Response );
 
         expect( body ).toEqual( { accessToken: 'access', user: { id: 'u' } } );
-        expect( res.cookie ).toHaveBeenCalledWith( REFRESH_COOKIE, 'refresh', {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
-            path: '/auth',
-            maxAge: 180 * 24 * 60 * 60 * 1000,
-        } );
+        expect( res.cookie ).toHaveBeenCalledWith( REFRESH_COOKIE, 'refresh', cookieOptions );
     } );
 
     describe( 'refresh', () => {
@@ -87,7 +79,7 @@ describe( 'AuthController cookies', () => {
             const res = response();
 
             await expect( controller.refresh( request( 'stolen' ), res as unknown as Response ) ).rejects.toThrow( UnauthorizedException );
-            expect( res.clearCookie ).toHaveBeenCalledWith( REFRESH_COOKIE, expect.objectContaining( { path: '/auth' } ) );
+            expect( res.clearCookie ).toHaveBeenCalledWith( REFRESH_COOKIE, { httpOnly: true, secure: true, sameSite: 'strict', path: '/auth' } );
         } );
     } );
 

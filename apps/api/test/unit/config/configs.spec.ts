@@ -1,5 +1,6 @@
 import { appConfig } from '../../../src/config/app.config.js';
 import { authConfig } from '../../../src/config/auth.config.js';
+import { refreshCookieConfig } from '../../../src/config/cookie.config.js';
 import { databaseConfig } from '../../../src/config/database.config.js';
 import { mailConfig } from '../../../src/config/mail.config.js';
 
@@ -38,14 +39,24 @@ describe( 'configs', () => {
         } );
     } );
 
-    it( 'auth: secret, token lifetimes and the cookie flag, with defaults', () => {
-        vi.stubEnv( 'COOKIE_SECURE', 'true' );
-
+    it( 'auth: secret and token lifetimes, with defaults', () => {
         expect( authConfig() ).toEqual( {
             jwtSecret: JWT_SECRET,
             jwtExpiresInSeconds: 900,
             refreshTokenTtlDays: 180,
-            cookieSecure: true,
+        } );
+    } );
+
+    it( 'refreshCookie: httpOnly, same-site, scoped to /auth, secure as configured, and kept as long as the session', () => {
+        vi.stubEnv( 'COOKIE_SECURE', 'true' );
+        vi.stubEnv( 'REFRESH_TOKEN_TTL_DAYS', '30' );
+
+        expect( refreshCookieConfig() ).toEqual( {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            path: '/auth',
+            maxAge: 30 * 24 * 60 * 60 * 1000,
         } );
     } );
 
