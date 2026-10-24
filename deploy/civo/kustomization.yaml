@@ -1,0 +1,52 @@
+# StudyLog on Civo Kubernetes (see "Civo" in deploy/k8s/README.md). Apply with: kubectl apply -k deploy/civo
+# The same app as deploy/k8s, with the images pulled from GitHub's registry (built by .github/workflows/images.yml)
+# instead of imported onto the node. Settings and secrets are still deploy/k8s/config.env and secrets.env.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../k8s
+
+# latest is the newest build. To pin a version or roll back, use a build's sha-<commit> tag instead.
+images:
+  - name: studylog-api
+    newName: ghcr.io/coolsamk7/studylog-api
+    newTag: latest
+  - name: studylog-web
+    newName: ghcr.io/coolsamk7/studylog-web
+    newTag: latest
+
+patches:
+  # Pull from the registry: Always so a restart picks up a new latest; ghcr-pull is the login for private images.
+  - target:
+      kind: Deployment
+      name: api
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/initContainers/0/imagePullPolicy
+        value: Always
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value: [ { name: ghcr-pull } ]
+  - target:
+      kind: Deployment
+      name: web
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value: [ { name: ghcr-pull } ]
+  # Only if the cluster's Traefik is older than 2.10 (kubectl api-resources | grep -i middleware shows
+  # traefik.containo.us instead of traefik.io): uncomment to use the old API group for the redirect.
+  # - target:
+  #     kind: Middleware
+  #     name: redirect-https
+  #   patch: |-
+  #     - op: replace
+  #       path: /apiVersion
+  #       value: traefik.containo.us/v1alpha1
