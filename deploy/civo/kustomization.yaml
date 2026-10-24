@@ -6,6 +6,7 @@ kind: Kustomization
 
 resources:
   - ../k8s
+  - ingress-class.yaml
 
 # latest is the newest build. To pin a version or roll back, use a build's sha-<commit> tag instead.
 images:
@@ -41,12 +42,12 @@ patches:
       - op: add
         path: /spec/template/spec/imagePullSecrets
         value: [ { name: ghcr-pull } ]
-  # Only if the cluster's Traefik is older than 2.10 (kubectl api-resources | grep -i middleware shows
-  # traefik.containo.us instead of traefik.io): uncomment to use the old API group for the redirect.
-  # - target:
-  #     kind: Middleware
-  #     name: redirect-https
-  #   patch: |-
-  #     - op: replace
-  #       path: /apiVersion
-  #       value: traefik.containo.us/v1alpha1
+  # Civo's Traefik is 2.9, older than the traefik.io API group (2.10): its Middleware is traefik.containo.us. Its
+  # CRDs aren't installed either; see "Civo" in deploy/k8s/README.md.
+  - target:
+      kind: Middleware
+      name: redirect-https
+    patch: |-
+      - op: replace
+        path: /apiVersion
+        value: traefik.containo.us/v1alpha1
