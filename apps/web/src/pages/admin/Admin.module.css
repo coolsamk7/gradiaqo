@@ -1,5 +1,9 @@
 /* Admin (Figma: M4 › Admin · Reports). Cards, badges and tabs: styles/app.module.css and organizations' tabs. */
 
+.back {
+    justify-self: start;
+}
+
 .titleRow {
     display: flex;
     flex-wrap: wrap;
@@ -132,4 +136,107 @@
 
 .resolvedTitle {
     margin-bottom: var( --space-1 );
+}
+
+/* ---------- Global catalog ---------- */
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var( --space-3 );
+}
+
+.search {
+    display: flex;
+    align-items: center;
+    gap: var( --space-2 );
+    width: min( 100%, 320px );
+    padding: var( --space-2 ) var( --space-3 );
+    border: 1px solid var( --color-border-strong );
+    border-radius: var( --radius-md );
+    color: var( --color-icon );
+    background: var( --color-surface );
+}
+
+.search:focus-within {
+    border-color: var( --color-border-accent );
+    box-shadow: 0 0 0 1px var( --color-border-accent );
+}
+
+.search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    color: var( --color-text );
+    background: none;
+}
+
+.filter {
+    width: min( 100%, 180px );
+}
+
+.tableCard {
+    padding-block: var( --space-2 );
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: var( --space-3 ) var( --space-2 );
+    border-bottom: 1px solid var( --color-border );
+    text-align: left;
+    white-space: nowrap;
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.table thead th {
+    padding-block: var( --space-2 );
+    color: var( --color-text-muted );
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.table tbody th {
+    width: 100%;
+    font-weight: 500;
+    white-space: normal;
+}
+
+.rowActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var( --space-2 );
+}
+
+.more {
+    padding: var( --space-3 ) var( --space-2 ) var( --space-1 );
+}
+
+.dialogForm {
+    display: grid;
+    gap: var( --space-4 );
+}
+
+.flush {
+    margin: 0;
+}
+
+/* A link styled as one of the tabs (Reports, from the catalog). */
+a.tab {
+    text-decoration: none;
 }

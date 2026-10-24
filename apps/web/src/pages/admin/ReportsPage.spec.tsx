@@ -72,11 +72,11 @@ const byStatus = ( open: () => ReportJson[], resolved: () => ReportJson[] ) => (
 describe( 'ReportsPage', () => {
     it( 'shows the open reports, with what was reported and by whom, and the recently resolved ones', async () => {
         api( { 'GET /admin/reports': byStatus( () => [ OPEN ], () => [ DISMISSED, HIDDEN ] ) } );
-        renderApp( '/app/admin' );
+        renderApp( '/app/admin/reports' );
 
         const card = await screen.findByRole( 'region', { name: 'Report on Alice\'s Favourite Problems' } );
 
-        expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app/admin/reports' );
+        expect( screen.getByRole( 'link', { name: 'Back to the global catalog' } ) ).toHaveAttribute( 'href', '/app/admin/catalog' );
         expect( screen.getByRole( 'heading', { level: 1, name: 'Reports' } ) ).toBeInTheDocument();
         expect( screen.getAllByRole( 'tab' ).map( ( tab ) => tab.textContent ) ).toEqual( [ 'Open · 1', 'Resolved' ] );
         expect( card ).toHaveTextContent( 'Alice\'s Favourite ProblemsCommunityPublic path by Alice WalkerReason: Other' );

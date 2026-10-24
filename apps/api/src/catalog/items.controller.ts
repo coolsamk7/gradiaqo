@@ -23,7 +23,7 @@ import {
 import type { AccessTokenPayload } from '@studylog/casl';
 import { CheckAbilities } from '@studylog/casl';
 import { CreateItemBody, ListItemsQueryParams, Responses, UpdateItemBody } from '@studylog/nestjs';
-import type { CreateItemRequest, Item, ItemPage, ListItemsQuery, UpdateItemRequest } from '@studylog/schemas';
+import type { CreateItemRequest, Item, ListItemsQuery, ManagedItemPage, UpdateItemRequest } from '@studylog/schemas';
 
 import { CurrentUser } from '../auth/auth.guard.js';
 import type { CatalogOwner as CatalogOwnerId } from './catalog.helpers.js';
@@ -38,13 +38,13 @@ export class ItemsController {
     constructor( private readonly itemsService: ItemsService ) {}
 
     @Get()
-    @ApiOperation( { summary: 'Search study material by type, status, tag or title' } )
-    @TypeboxResponse( Responses.ItemPage )
+    @ApiOperation( { summary: 'Search study material by type, status, tag or title, with how many topics use each' } )
+    @TypeboxResponse( Responses.ManagedItemPage )
     @ApiBadRequestResponse( { description: 'Invalid filters' } )
     list(
         @CatalogOwner() owner: CatalogOwnerId,
         @Query( { schema: ListItemsQueryParams } ) query: ListItemsQuery,
-    ): Promise<ItemPage> {
+    ): Promise<ManagedItemPage> {
         return this.itemsService.list( owner, query );
     }
 

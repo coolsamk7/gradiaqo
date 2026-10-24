@@ -164,6 +164,21 @@ export const Item = Type.Object( {
 export type Item = StaticDecode<typeof Item>;
 export type ItemJson = StaticEncode<typeof Item>;
 
+/** An item as its catalog's managers list it: also how many topics use it. */
+export const ManagedItem = Type.Object( {
+    ...Item.properties,
+    topicCount: Type.Integer( { description: 'Topics it is placed in, in any path' } ),
+} );
+export type ManagedItem = StaticDecode<typeof ManagedItem>;
+export type ManagedItemJson = StaticEncode<typeof ManagedItem>;
+
+export const ManagedItemPage = Type.Object( {
+    items: Type.Array( ManagedItem ),
+    total: Type.Integer( { description: 'Matching items across all pages' } ),
+} );
+export type ManagedItemPage = StaticDecode<typeof ManagedItemPage>;
+export type ManagedItemPageJson = StaticEncode<typeof ManagedItemPage>;
+
 export const ItemPage = Type.Object( {
     items: Type.Array( Item ),
     total: Type.Integer( { description: 'Matching items across all pages' } ),
@@ -184,6 +199,15 @@ export type TopicTree = StaticDecode<typeof TopicTree>;
 
 export const LearningModuleTree = Type.Object( { ...LearningModule.properties, topics: Type.Array( TopicTree ) } );
 export type LearningModuleTree = StaticDecode<typeof LearningModuleTree>;
+
+/** A path as its catalog's managers list it, with what's in it (drafts included). */
+export const ManagedLearningPath = Type.Object( {
+    ...LearningPath.properties,
+    moduleCount: Type.Integer(),
+    itemCount: Type.Integer( { description: 'Items in its topics, each counted once' } ),
+} );
+export type ManagedLearningPath = StaticDecode<typeof ManagedLearningPath>;
+export type ManagedLearningPathJson = StaticEncode<typeof ManagedLearningPath>;
 
 /** A whole path with everything under it, in order, including drafts and archived content. */
 export const LearningPathTree = Type.Object( {

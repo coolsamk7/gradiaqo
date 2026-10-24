@@ -193,6 +193,12 @@ domain work for access-token requests, but `/auth/refresh` won't get the cookie.
 The API builds with the **SWC** builder (`nest-cli.json`), with type checking on. Packages build with `tsc`.
 Tsconfigs extend `@studylog/common/tsconfig/nestjs.json`.
 
+## Deployment
+
+One server with Docker Compose: PostgreSQL, the API (migrations run before it starts) and Caddy, which serves the web
+app and the API on one HTTPS address. `Dockerfile` builds the images, `docker-compose.prod.yml` runs them, and
+[deploy/README.md](deploy/README.md) walks through hosting on Oracle Cloud's Always Free tier, updates and backups.
+
 ## Organizations and roles
 
 Every user gets a **personal workspace** at signup (they are its `owner`). Later they can join or create more organizations.
@@ -359,7 +365,7 @@ Learning path   DSA · NestJS · Physics
 
 | Method | Path | Notes |
 |---|---|---|
-| GET / POST | `/admin/catalog/paths` | List in order / create |
+| GET / POST | `/admin/catalog/paths` | List in order, with `moduleCount` and `itemCount` / create |
 | PUT | `/admin/catalog/paths/order` | `{ ids }` |
 | GET / PATCH / DELETE | `/admin/catalog/paths/:pathId` | GET returns the whole tree |
 | POST | `/admin/catalog/paths/:pathId/modules` | |

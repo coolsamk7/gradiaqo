@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Icon } from '../../components/Icon.tsx';
 import { Menu } from '../../components/Menu.tsx';
+import { StatusBadge } from '../../components/StatusBadge.tsx';
 import app from '../../styles/app.module.css';
 import styles from './Builder.module.css';
 import type { ModuleNode, Selected, Selection } from './builder-tree.ts';
@@ -112,6 +113,7 @@ function ModuleBranch( { module, selected, onSelect, send, first, last, onMove, 
                     onClick={() => onSelect( { kind: 'module', id: module.id } )}
                 >
                     {module.title}
+                    <StatusBadge status={module.status} unlessPublished />
                 </button>
                 <Menu
                     label={`More for ${module.title}`}
@@ -138,6 +140,7 @@ function ModuleBranch( { module, selected, onSelect, send, first, last, onMove, 
                                     onClick={() => onSelect( { kind: 'topic', id: topic.id } )}
                                 >
                                     <span>{topic.title}</span>
+                                    <StatusBadge status={topic.status} unlessPublished />
                                     <span className={styles.count}>{topic.items.length}</span>
                                 </button>
                                 <Menu

@@ -5,25 +5,34 @@ import type { RequestOptions } from '../../api/client.ts';
 import { useAuth } from '../../auth/auth-context.ts';
 import { loadErrorMessage } from './problems.ts';
 
+/** Whose catalog a path is in: an organization's (e.g. the user's workspace), or the global one (superadmins). */
+export type CatalogScope = { kind: 'organization'; organizationId: string } | { kind: 'global' };
+
 export type BuilderState =
     | { status: 'loading' }
     | { status: 'error'; message: string }
-    | { status: 'ready'; path: LearningPathTreeJson; organization: MyOrganizationJson };
+    /** `organization` is null in the global catalog. */
+    | { status: 'ready'; path: LearningPathTreeJson; organization: MyOrganizationJson | null };
 
 type Ready = Extract<BuilderState, { status: 'ready' }>;
 
 export type Send = <T = unknown>( path: string, options?: Omit<RequestOptions, 'accessToken'> ) => Promise<T>;
 
+/** Where a scope's catalog is in the API. */
+export const catalogBase = ( scope: CatalogScope ): string =>
+    ( scope.kind === 'global' ? '/admin/catalog' : `/organizations/${encodeURIComponent( scope.organizationId )}/catalog` );
+
 /**
  * A path being built, with everything in it, and the organization it belongs to. `send()` makes a change (paths
- * relative to the organization's catalog, e.g. "/topics/{id}") and then loads the path again, since one change can move things at every level. It rejects
- * when the change wasn't saved, so the form that sent it can say why.
+ * relative to the catalog, e.g. "/topics/{id}") and then loads the path again, since one change can move things at
+ * every level. It rejects when the change wasn't saved, so the form that sent it can say why.
  */
-export function usePathBuilder( organizationId: string, pathId: string ) {
+export function usePathBuilder( scope: CatalogScope, pathId: string ) {
     const { request } = useAuth();
     const [ state, setState ] = useState<BuilderState>( { status: 'loading' } );
     const [ attempt, setAttempt ] = useState( 0 );
-    const base = `/organizations/${encodeURIComponent( organizationId )}/catalog`;
+    const base = catalogBase( scope );
+    const organizationId = scope.kind === 'organization' ? scope.organizationId : undefined;
 
     const fetchPath = useCallback(
         () => request<LearningPathTreeJson>( `${base}/paths/${encodeURIComponent( pathId )}` ),
@@ -31,7 +40,11 @@ export function usePathBuilder( organizationId: string, pathId: string ) {
     );
 
     useEffect( () => {
-        Promise.all( [ fetchPath(), request<MyOrganizationJson>( `/organizations/${encodeURIComponent( organizationId )}` ) ] ).then(
+        const organization = organizationId === undefined
+            ? Promise.resolve( null )
+            : request<MyOrganizationJson>( `/organizations/${encodeURIComponent( organizationId )}` );
+
+        Promise.all( [ fetchPath(), organization ] ).then(
             ( [ path, organization ] ) => setState( { status: 'ready', path, organization } ),
             ( error: unknown ) => setState( { status: 'error', message: loadErrorMessage( error ) } ),
         );

@@ -83,12 +83,13 @@ describe( 'AppLayout', () => {
             'GET /me/enrollments': pending,
             'GET /me/study-sessions': pending,
             'GET /admin/reports': pending,
+            'GET /admin/catalog/paths': pending,
         } );
         renderApp( '/app' );
         await userEvent.setup().click( await screen.findByRole( 'link', { name: 'Admin' } ) );
 
-        expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app/admin/reports' );
-        expect( screen.getByRole( 'heading', { level: 1, name: 'Reports' } ) ).toBeInTheDocument();
+        expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app/admin/catalog' );
+        expect( screen.getByRole( 'heading', { level: 1, name: 'Global catalog' } ) ).toBeInTheDocument();
         expect( screen.getByRole( 'link', { name: 'Admin' } ) ).toHaveAttribute( 'aria-current', 'page' );
     } );
 } );

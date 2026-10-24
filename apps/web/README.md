@@ -30,7 +30,8 @@ yarn workspace @studylog/web test    # unit tests (Vitest + Testing Library, jsd
 | `/app/settings` | Settings (`src/pages/settings`): your name, email (checked with a code sent to the new address), password, and deleting your account |
 | `/app/organizations` | Organizations (`src/pages/organizations`): invitations waiting for you (accept or decline), then a card per organization with its members and paths; New organization |
 | `/app/organizations/:organizationId` | One organization: members (search; owners and admins change roles and remove people; anyone can leave), invitations (owners and admins invite by email and revoke) and its published paths, as tabs (`?tab=`). Owners and admins rename it; owners delete it after typing its name |
-| `/app/admin/reports` | Reports (`src/pages/admin`), superadmins only (others get "not found"): open reports on community paths, to dismiss or hide the path with a note; resolved ones (`?tab=resolved`), where a path hidden by mistake can be un-hidden. `/app/admin` leads here for now |
+| `/app/admin/reports` | Reports (`src/pages/admin`), superadmins only (others get "not found"): open reports on community paths, to dismiss or hide the path with a note; resolved ones (`?tab=resolved`), where a path hidden by mistake can be un-hidden |
+| `/app/admin/catalog` | Global catalog (`src/pages/admin`), superadmins only; `/app/admin` leads here: official paths (search, status filter, size) and items (`?tab=items`: search, type filter, how many topics use each), created as drafts, published, archived, or deleted while still drafts. Paths open in the path builder at `/app/admin/catalog/paths/:pathId`, which also sets each part's status |
 | anything else | Not found |
 
 ## Talking to the API

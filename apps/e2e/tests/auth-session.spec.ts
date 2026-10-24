@@ -72,8 +72,8 @@ test.describe( 'Session', () => {
 
         await expect( more.getByRole( 'link' ) ).toHaveText( [ 'Admin', 'Settings' ] );
         await more.getByRole( 'link', { name: 'Admin' } ).click();
-        await expect( page ).toHaveURL( '/app/admin/reports' );
-        await expect( page.getByRole( 'heading', { level: 1, name: 'Reports' } ) ).toBeVisible();
+        await expect( page ).toHaveURL( '/app/admin/catalog' );
+        await expect( page.getByRole( 'heading', { level: 1, name: 'Global catalog' } ) ).toBeVisible();
     } );
 
     test( 'logging out goes home and closes the session for good', async ( { page } ) => {

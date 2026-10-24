@@ -1,7 +1,9 @@
 import type { LearningPathTreeJson } from '@studylog/schemas';
+import type { CatalogStatus } from '@studylog/schemas/enums';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 
+import { STATUS_LABELS } from '../../format/catalog-status.ts';
 import { fieldProps } from '../../forms/field-props.ts';
 import { FormField } from '../../forms/FormField.tsx';
 import app from '../../styles/app.module.css';
@@ -15,6 +17,8 @@ interface NodeEditorProps {
     selected: Selected;
     path: LearningPathTreeJson;
     send: Send;
+    /** In the global catalog: parts start as drafts, and their status is changed here (saved right away). */
+    withStatus?: boolean;
 }
 
 /** What the editor needs to know about the chosen part: what to call it, where to save it, and what deleting does. */
@@ -44,7 +48,7 @@ function describe( selected: Selected, path: LearningPathTreeJson ) {
 }
 
 /** The title and description of the chosen path, module or topic; a module or topic can be deleted here too. */
-export function NodeEditor( { selected, path, send }: NodeEditorProps ) {
+export function NodeEditor( { selected, path, send, withStatus = false }: NodeEditorProps ) {
     const { node, noun, url, context, deletes } = describe( selected, path );
     const [ title, setTitle ] = useState( node.title );
     const [ description, setDescription ] = useState( node.description ?? '' );
@@ -115,6 +119,24 @@ export function NodeEditor( { selected, path, send }: NodeEditorProps ) {
                         }}
                     />
                 </FormField>
+
+                {withStatus && (
+                    <FormField field={`${field}-status`} label="Status" hint="Learners only see published parts.">
+                        <select
+                            {...fieldProps( `${field}-status`, undefined, 'yes' )}
+                            value={node.status}
+                            disabled={busy}
+                            onChange={( event ) => void run( () => send( url, {
+                                method: 'PATCH',
+                                body: { status: event.target.value as CatalogStatus },
+                            } ) )}
+                        >
+                            {Object.entries( STATUS_LABELS ).map( ( [ value, label ] ) => (
+                                <option key={value} value={value}>{label}</option>
+                            ) )}
+                        </select>
+                    </FormField>
+                )}
 
                 <div className={styles.editorActions}>
                     {confirming && deletes

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { ItemType } from '@studylog/database';
 import { Item } from '@studylog/database';
 import { ItemDetails } from '@studylog/nestjs';
-import type { CreateItemRequest, ItemPage, ListItemsQuery, UpdateItemRequest } from '@studylog/schemas';
+import type { CreateItemRequest, ListItemsQuery, ManagedItemPage, UpdateItemRequest } from '@studylog/schemas';
 import { Repository } from 'typeorm';
 
 import type { CatalogOwner } from './catalog.helpers.js';
@@ -19,7 +19,7 @@ export class ItemsService {
     async list(
         owner: CatalogOwner,
         { type, status, search, tag, limit = 50, offset = 0 }: ListItemsQuery,
-    ): Promise<ItemPage> {
+    ): Promise<ManagedItemPage> {
         const query = this.items
             .createQueryBuilder( 'item' )
             .where( owner === null ? 'item.organization_id IS NULL' : 'item.organization_id = :owner', { owner } )
@@ -43,8 +43,15 @@ export class ItemsService {
         }
 
         const [ items, total ] = await query.getManyAndCount();
+        const usage: { itemId: string; topics: number }[] = items.length === 0
+            ? []
+            : await this.items.query(
+                    `SELECT item_id AS "itemId", COUNT(*)::int AS topics FROM topic_items WHERE item_id = ANY($1) GROUP BY item_id`,
+                    [ items.map( ( item ) => item.id ) ],
+                );
+        const topics = new Map( usage.map( ( row ) => [ row.itemId, row.topics ] ) );
 
-        return { items, total };
+        return { items: items.map( ( item ) => ( { ...item, topicCount: topics.get( item.id ) ?? 0 } ) ), total };
     }
 
     /** An item of this owner's catalog; any other item is "not found". */

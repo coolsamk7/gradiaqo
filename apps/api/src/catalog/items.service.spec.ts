@@ -63,6 +63,21 @@ describe( 'ItemsService', () => {
     } );
 
     describe( 'list', () => {
+        it( 'says how many topics use each item, without asking when there are none', async () => {
+            db.repo( Item ).createQueryBuilder.mockReturnValue( fakeQueryBuilder( [ { id: 'a' }, { id: 'b' } ] ) );
+            db.repo( Item ).query.mockResolvedValue( [ { itemId: 'a', topics: 4 } ] );
+
+            const page = await service.list( null, {} );
+
+            expect( page.items ).toEqual( [ { id: 'a', topicCount: 4 }, { id: 'b', topicCount: 0 } ] );
+            expect( db.repo( Item ).query ).toHaveBeenCalledWith( expect.stringContaining( 'FROM topic_items' ), [ [ 'a', 'b' ] ] );
+
+            db.repo( Item ).query.mockClear();
+            db.repo( Item ).createQueryBuilder.mockReturnValue( fakeQueryBuilder( [] ) );
+            expect( ( await service.list( null, {} ) ).items ).toEqual( [] );
+            expect( db.repo( Item ).query ).not.toHaveBeenCalled();
+        } );
+
         it( 'filters by catalog and escapes LIKE wildcards in the search', async () => {
             const query = fakeQueryBuilder( [ { id: 'i' } ], 7 );
 
@@ -70,7 +85,7 @@ describe( 'ItemsService', () => {
 
             const page = await service.list( 'org-1', { search: '100%_done', tag: 'array', limit: 5, offset: 10 } );
 
-            expect( page ).toEqual( { items: [ { id: 'i' } ], total: 7 } );
+            expect( page ).toEqual( { items: [ { id: 'i', topicCount: 0 } ], total: 7 } );
             expect( query.where ).toHaveBeenCalledWith( 'item.organization_id = :owner', { owner: 'org-1' } );
             expect( query.andWhere ).toHaveBeenCalledWith( 'item.title ILIKE :search', { search: '%100\\%\\_done%' } );
             expect( query.andWhere ).toHaveBeenCalledWith( ':tag = ANY( item.tags )', { tag: 'array' } );
