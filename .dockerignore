@@ -1,0 +1,15 @@
+# Everything the image builds itself, and local-only files.
+**/node_modules
+**/dist
+**/coverage
+**/reports
+**/.turbo
+**/*.tsbuildinfo
+**/.stryker-tmp
+**/test-results
+**/playwright-report
+**/.env
+**/.env.*
+!**/.env.example
+.git
+*.xlsx

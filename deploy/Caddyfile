@@ -1,0 +1,39 @@
+# One site for the web app and the API (same origin, so the refresh cookie works as in development).
+# The web app owns a few paths; everything else goes to the API, so new API routes need no change here.
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Built files: JavaScript, CSS, icons. Their names change with every build, so they can be cached for good.
+	@assets path /assets/*
+	handle @assets {
+		root * /srv/web
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	@files file {
+		root /srv/web
+	}
+	handle @files {
+		root * /srv/web
+		file_server
+	}
+
+	# The web app's pages: the browser loads index.html and the app shows the page.
+	@pages path / /login /signup /app /app/*
+	handle @pages {
+		root * /srv/web
+		header Cache-Control "no-cache"
+		rewrite * /index.html
+		file_server
+	}
+
+	handle {
+		reverse_proxy api:3000
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
