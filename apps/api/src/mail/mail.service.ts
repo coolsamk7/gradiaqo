@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import type { Transporter } from 'nodemailer';
 import { createTransport } from 'nodemailer';
+
+import { mailConfig } from '../config/mail.config.js';
 
 export interface Mail {
     to: string;
@@ -12,7 +14,7 @@ export interface Mail {
 }
 
 /**
- * Sends email over SMTP (see SMTP_* in the config): Mailpit in development, the provider's relay in production.
+ * Sends email over SMTP (see config/mail.config.ts): Mailpit in development, the provider's relay in production.
  * Nothing here knows which provider it is.
  */
 @Injectable()
@@ -21,15 +23,13 @@ export class MailService {
     private readonly transport: Transporter;
     private readonly from: string;
 
-    constructor( config: ConfigService ) {
-        const user = config.getOrThrow<string>( 'SMTP_USER' );
-
-        this.from = config.getOrThrow<string>( 'MAIL_FROM' );
+    constructor( @Inject( mailConfig.KEY ) mail: ConfigType<typeof mailConfig> ) {
+        this.from = mail.from;
         this.transport = createTransport( {
-            host: config.getOrThrow<string>( 'SMTP_HOST' ),
-            port: config.getOrThrow<number>( 'SMTP_PORT' ),
-            secure: config.getOrThrow<boolean>( 'SMTP_SECURE' ),
-            auth: user ? { user, pass: config.getOrThrow<string>( 'SMTP_PASSWORD' ) } : undefined,
+            host: mail.host,
+            port: mail.port,
+            secure: mail.secure,
+            auth: mail.user ? { user: mail.user, pass: mail.password } : undefined,
         } );
     }
 

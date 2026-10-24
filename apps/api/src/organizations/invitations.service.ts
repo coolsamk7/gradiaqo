@@ -1,11 +1,12 @@
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { User } from '@studylog/database';
 import { Membership, OrganizationInvitation, OrganizationRole } from '@studylog/database';
 import type { CreateInvitationRequest, Invitation, MyInvitation, MyOrganization } from '@studylog/schemas';
 import { DataSource, MoreThan, Repository } from 'typeorm';
 
+import { appConfig } from '../config/app.config.js';
 import { MailService } from '../mail/mail.service.js';
 import { invitationMail } from '../mail/templates.js';
 import { toOrganizationResponse } from './organizations.service.js';
@@ -25,9 +26,9 @@ export class InvitationsService {
     constructor(
         @InjectDataSource() private readonly dataSource: DataSource,
         private readonly mail: MailService,
-        config: ConfigService,
+        @Inject( appConfig.KEY ) app: ConfigType<typeof appConfig>,
     ) {
-        this.acceptUrl = `${config.getOrThrow<string>( 'APP_URL' ).replace( /\/+$/, '' )}/app/organizations`;
+        this.acceptUrl = `${app.webAppUrl}/app/organizations`;
     }
 
     /** Pending (unexpired) invitations of an organization, newest first. */

@@ -1,7 +1,7 @@
 import { TypeboxValidationPipe } from '@gradiaqo/nestjs-typebox';
 import type { INestApplication } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -11,7 +11,8 @@ import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
 import { REFRESH_COOKIE } from './auth/auth.controller.js';
-import { corsOptions, parseCorsOrigins } from './cors.js';
+import { appConfig } from './config/app.config.js';
+import { corsOptions } from './cors.js';
 
 async function bootstrap() {
     // Buffer startup logs until pino is ready, then route all Nest logs through it.
@@ -20,8 +21,7 @@ async function bootstrap() {
     app.useLogger( app.get( PinoLogger ) );
 
     // Settings were validated and converted at startup (config/env.ts).
-    const config = app.get( ConfigService );
-    const trustProxy = config.getOrThrow<number>( 'TRUST_PROXY' );
+    const { port, trustProxy, corsOrigins, swaggerEnabled } = app.get<ConfigType<typeof appConfig>>( appConfig.KEY );
 
     // Behind a load balancer, take the client IP (for rate limits and logs) from X-Forwarded-For.
     if ( trustProxy > 0 ) {
@@ -31,8 +31,6 @@ async function bootstrap() {
     // Security headers (no sniffing, no framing, HSTS, a strict Content-Security-Policy, ...).
     app.use( helmet() );
 
-    const corsOrigins = parseCorsOrigins( config.getOrThrow<string>( 'CORS_ORIGINS' ) );
-
     if ( corsOrigins.length > 0 ) {
         app.enableCors( corsOptions( corsOrigins ) );
     }
@@ -40,13 +38,10 @@ async function bootstrap() {
     app.use( cookieParser() );
     // Validates `@Body( { schema } )` / `@Query( { schema } )` / `@Param( name, { schema } )` with TypeBox.
     app.useGlobalPipes( new TypeboxValidationPipe() );
-    const swaggerEnabled = config.getOrThrow<boolean>( 'SWAGGER_ENABLED' );
 
     if ( swaggerEnabled ) {
         setupSwagger( app );
     }
-
-    const port = config.getOrThrow<number>( 'PORT' );
 
     await app.listen( port );
 

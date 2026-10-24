@@ -8,7 +8,8 @@ const Flag = ( defaultValue: boolean ) => Type.Boolean( { default: defaultValue 
 
 /**
  * Every setting the API reads, checked once at startup. Values from `.env` / the environment are strings; they're
- * converted to numbers and booleans here, so code reads typed values from ConfigService.
+ * converted to numbers and booleans here. Code reads them typed and grouped by area from the configs next to this
+ * file (`app.config.ts`, `auth.config.ts`, ...), not from ConfigService.
  */
 export const Env = Type.Object( {
     NODE_ENV: Type.Union( [ Type.Literal( 'development' ), Type.Literal( 'production' ), Type.Literal( 'test' ) ], {

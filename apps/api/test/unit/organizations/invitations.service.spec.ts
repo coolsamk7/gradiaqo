@@ -1,9 +1,10 @@
 import { BadRequestException, ConflictException, Logger, NotFoundException } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import type { User } from '@studylog/database';
 import { Membership, OrganizationInvitation, OrganizationRole } from '@studylog/database';
 import type { DataSource } from 'typeorm';
 
+import type { appConfig } from '../../../src/config/app.config.js';
 import type { MailService } from '../../../src/mail/mail.service.js';
 import { InvitationsService } from '../../../src/organizations/invitations.service.js';
 import type { FakeDataSource } from '../fake-data-source.js';
@@ -31,12 +32,12 @@ describe( 'InvitationsService', () => {
     beforeEach( () => {
         db = fakeDataSource();
         mail = { send: vi.fn() };
-        const config = { getOrThrow: () => 'https://app.example.com/' };
+        const config = { webAppUrl: 'https://app.example.com' } as ConfigType<typeof appConfig>;
 
         service = new InvitationsService(
             db as unknown as DataSource,
             mail as unknown as MailService,
-            config as unknown as ConfigService,
+            config,
         );
     } );
 

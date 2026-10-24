@@ -1,10 +1,12 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Session } from '@studylog/database';
 import { Not, Repository } from 'typeorm';
+
+import { authConfig } from '../config/auth.config.js';
 
 export interface ClientMeta {
     userAgent?: string;
@@ -28,9 +30,9 @@ export class SessionsService {
 
     constructor(
         @InjectRepository( Session ) private readonly sessions: Repository<Session>,
-        config: ConfigService,
+        @Inject( authConfig.KEY ) auth: ConfigType<typeof authConfig>,
     ) {
-        this.ttlMs = config.getOrThrow<number>( 'REFRESH_TOKEN_TTL_DAYS' ) * DAY_MS;
+        this.ttlMs = auth.refreshTokenTtlDays * DAY_MS;
     }
 
     /** Starts a new session and returns its refresh token. */

@@ -5,6 +5,7 @@ import {
     Get,
     HttpCode,
     HttpStatus,
+    Inject,
     Patch,
     Post,
     Req,
@@ -12,7 +13,7 @@ import {
     UnauthorizedException,
     UseGuards,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import {
     ApiBadRequestResponse,
     ApiBearerAuth,
@@ -53,6 +54,7 @@ import type {
 } from '@studylog/schemas';
 import type { CookieOptions, Request, Response } from 'express';
 
+import { authConfig } from '../config/auth.config.js';
 import { RateLimit } from '../rate-limits.js';
 import { toPublicUser } from '../users/public-user.js';
 import { UsersService } from '../users/users.service.js';
@@ -75,15 +77,15 @@ export class AuthController {
         private readonly usersService: UsersService,
         private readonly accountService: AccountService,
         private readonly verification: VerificationService,
-        config: ConfigService,
+        @Inject( authConfig.KEY ) auth: ConfigType<typeof authConfig>,
     ) {
         this.cookieOptions = {
             httpOnly: true,
-            secure: config.getOrThrow<boolean>( 'COOKIE_SECURE' ),
+            secure: auth.cookieSecure,
             sameSite: 'strict',
             // Only sent to the auth endpoints, not with every API call.
             path: '/auth',
-            maxAge: config.getOrThrow<number>( 'REFRESH_TOKEN_TTL_DAYS' ) * 24 * 60 * 60 * 1000,
+            maxAge: auth.refreshTokenTtlDays * 24 * 60 * 60 * 1000,
         };
     }
 

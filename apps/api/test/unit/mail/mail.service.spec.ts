@@ -1,22 +1,21 @@
-import type { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import { createTransport } from 'nodemailer';
 
+import type { mailConfig } from '../../../src/config/mail.config.js';
 import { MailService } from '../../../src/mail/mail.service.js';
 import { resetPasswordMail, verifyEmailMail } from '../../../src/mail/templates.js';
 
 vi.mock( 'nodemailer', () => ( { createTransport: vi.fn() } ) );
 
-const config = ( values: Record<string, unknown> ) => ( {
-    getOrThrow: ( key: string ) => ( {
-        SMTP_HOST: 'smtp-relay.brevo.com',
-        SMTP_PORT: 587,
-        SMTP_SECURE: false,
-        SMTP_USER: 'me@example.com',
-        SMTP_PASSWORD: 'key',
-        MAIL_FROM: 'StudyLog <no-reply@example.com>',
-        ...values,
-    } )[key],
-} ) as unknown as ConfigService;
+const config = ( values: Partial<ConfigType<typeof mailConfig>> ): ConfigType<typeof mailConfig> => ( {
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
+    user: 'me@example.com',
+    password: 'key',
+    from: 'StudyLog <no-reply@example.com>',
+    ...values,
+} );
 
 describe( 'MailService', () => {
     const sendMail = vi.fn();
@@ -47,7 +46,7 @@ describe( 'MailService', () => {
     } );
 
     it( 'logs in only when there is a user (Mailpit needs none), and passes failures on', async () => {
-        const service = new MailService( config( { SMTP_HOST: 'localhost', SMTP_PORT: 1025, SMTP_USER: '' } ) );
+        const service = new MailService( config( { host: 'localhost', port: 1025, user: '' } ) );
 
         expect( vi.mocked( createTransport ).mock.calls.at( -1 )?.[0] ).toMatchObject( { host: 'localhost', port: 1025, auth: undefined } );
 
