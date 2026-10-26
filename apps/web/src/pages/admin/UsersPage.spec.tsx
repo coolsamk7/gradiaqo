@@ -118,6 +118,7 @@ describe( 'UsersPage', () => {
 
         await user.click( screen.getByRole( 'button', { name: 'Previous' } ) );
         await waitFor( () => expect( usersCalls( calls ).at( -1 ) ).toBe( '?limit=50&offset=50' ) );
+        expect( usersCalls( calls ) ).toEqual( [ '?limit=50', '?limit=50&offset=50', '?limit=50&offset=100', '?limit=50&offset=50' ] );
     } );
 
     it( 'promotes and demotes superadmins, showing why a change was refused', async () => {

@@ -2,6 +2,7 @@ import { typebox } from '@gradiaqo/nestjs-typebox';
 import type { ItemType } from '@studylog/schemas';
 import {
     AccessTokenResponse,
+    AdminOrganizationPage,
     AdminUser,
     AdminUserPage,
     Analytics,
@@ -35,6 +36,7 @@ import {
     LearningPathTree,
     LinkItemRequest,
     ListItemsQuery,
+    ListOrganizationsQuery,
     ListProgressQuery,
     ListPublishedPathsQuery,
     ListReportsQuery,
@@ -134,6 +136,7 @@ export const ListStudySessionsQueryParams = typebox( ListStudySessionsQuery, { c
 export const ListPublishedPathsQueryParams = typebox( ListPublishedPathsQuery, { coerce: true, location: 'query' } );
 export const ListReportsQueryParams = typebox( ListReportsQuery, { coerce: true, location: 'query' } );
 export const ListUsersQueryParams = typebox( ListUsersQuery, { coerce: true, location: 'query' } );
+export const ListOrganizationsQueryParams = typebox( ListOrganizationsQuery, { coerce: true, location: 'query' } );
 export const StatsQueryParams = typebox( StatsQuery, { coerce: true, location: 'query' } );
 export const AnalyticsQueryParams = typebox( AnalyticsQuery, { coerce: true, location: 'query' } );
 export const ReadinessQueryParams = typebox( ReadinessQuery, { coerce: true, location: 'query' } );
@@ -190,4 +193,5 @@ export const Responses = {
     AdminUserPage: typebox( AdminUserPage, { name: 'AdminUserPage', direction: 'response' } ),
     AdminUser: typebox( AdminUser, { name: 'AdminUser', direction: 'response' } ),
     PlatformOverview: typebox( PlatformOverview, { name: 'PlatformOverview', direction: 'response' } ),
+    AdminOrganizationPage: typebox( AdminOrganizationPage, { name: 'AdminOrganizationPage', direction: 'response' } ),
 } as const;

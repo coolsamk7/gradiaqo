@@ -48,6 +48,7 @@ describe( 'OverviewPage', () => {
             [ 'Catalog', '/app/admin/catalog' ],
             [ 'Reports · 2', '/app/admin/reports' ],
             [ 'Users', '/app/admin/users' ],
+            [ 'Organizations', '/app/admin/organizations' ],
         ] );
         expect( nav.getByRole( 'link', { name: 'Overview' } ) ).toHaveAttribute( 'aria-current', 'page' );
         expect( nav.getByRole( 'link', { name: 'Catalog' } ) ).not.toHaveAttribute( 'aria-current' );

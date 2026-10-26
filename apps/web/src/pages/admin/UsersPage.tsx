@@ -41,10 +41,11 @@ export function UsersPage() {
     const [ error, setError ] = useState<string>();
     const now = new Date();
 
-    // One request for the whole word, not one per letter; a new search starts at the first page.
+    // One request for the whole word, not one per letter; a new search (only) starts at the first page.
     useEffect( () => {
         const timer = setTimeout(
-            () => setFilters( ( current ) => ( { ...current, search: typed.trim(), offset: 0 } ) ),
+            () => setFilters( ( current ) =>
+                ( current.search === typed.trim() ? current : { ...current, search: typed.trim(), offset: 0 } ) ),
             SEARCH_DELAY_MS,
         );
 
