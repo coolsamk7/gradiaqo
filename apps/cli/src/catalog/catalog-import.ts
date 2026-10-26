@@ -13,6 +13,8 @@ export interface ImportReport {
     items: { created: number; updated: number; linked: number; unlinked: number };
     /** Modules and topics that are in the database but not in the file. They're kept: delete them in Admin. */
     notInFile: string[];
+    /** Items in the path that learners can't see, because they were a draft or archived before the import. */
+    unpublishedItems: string[];
 }
 
 /** Columns compared to decide whether a row needs saving. */
@@ -51,6 +53,7 @@ export async function importPath( manager: EntityManager, file: CatalogPath ): P
         topics: { created: 0, updated: 0 },
         items: { created: 0, updated: 0, linked: 0, unlinked: 0 },
         notInFile: [],
+        unpublishedItems: [],
     };
 
     let path = await manager.findOneBy( LearningPath, { organizationId: IsNull(), slug: file.slug } );
@@ -140,6 +143,11 @@ export async function importPath( manager: EntityManager, file: CatalogPath ): P
     for ( const module of existingModules ) {
         if ( !file.modules.some( ( spec ) => spec.slug === module.slug ) ) {
             report.notInFile.push( `module "${module.title}"` );
+        }
+    }
+    for ( const item of items.values() ) {
+        if ( item.status !== CatalogStatus.Published ) {
+            report.unpublishedItems.push( `"${item.title}" (${item.status})` );
         }
     }
 

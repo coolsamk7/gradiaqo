@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { stripVTControlCharacters } from 'node:util';
 
-import { CatalogStatus, LearningModule, LearningPath } from '@studylog/database';
+import { CatalogStatus, Item, LearningModule, LearningPath } from '@studylog/database';
 import type { DataSource, EntityManager } from 'typeorm';
 
 import type { DatabaseService } from '../database/database.service.js';
@@ -96,6 +96,13 @@ describe( 'catalog:import', () => {
         expect( printed() ).not.toContain( 'Learners see it' );
         expect( errors() ).toBe( '! Not in the file, kept: module "Old"\n' );
 
+        db.rows( Item ).find( ( row ) => row.title === 'Hash maps' )!.status = CatalogStatus.Draft;
+        stderr.length = 0;
+        await command.run( [ join( dir, 'dsa.yaml' ) ], {} );
+        expect( errors() ).toContain(
+            '! Not published, so learners don\'t see it: "Hash maps" (draft) (publish it in Admin › Catalog › Items)\n',
+        );
+
         await writeFile( join( dir, 'dsa.yaml' ), FILE.replace( 'title: DSA', 'title: Data Structures' ) );
         stdout.length = 0;
         await command.run( [ join( dir, 'dsa.yaml' ) ], {} );
@@ -147,11 +154,29 @@ describe( 'catalog:import', () => {
 } );
 
 describe( 'readInput', () => {
+    afterEach( () => {
+        vi.unstubAllEnvs();
+    } );
+
+    it( 'reads a relative path from the folder yarn was run in, or else the current one', async () => {
+        const dir = await mkdtemp( join( tmpdir(), 'catalog-cwd-' ) );
+
+        await writeFile( join( dir, 'y.yaml' ), 'found' );
+        vi.stubEnv( 'CLI_CWD', dir );
+        await expect( readInput( 'y.yaml' ) ).resolves.toBe( 'found' );
+
+        vi.stubEnv( 'CLI_CWD', undefined );
+        vi.spyOn( process, 'cwd' ).mockReturnValue( dir );
+        await expect( readInput( 'y.yaml' ) ).resolves.toBe( 'found' );
+    } );
+
     it( 'reads a file, or stdin for -', async () => {
         const dir = await mkdtemp( join( tmpdir(), 'catalog-input-' ) );
 
         await writeFile( join( dir, 'x.yaml' ), 'from a file' );
         await expect( readInput( join( dir, 'x.yaml' ) ) ).resolves.toBe( 'from a file' );
+        // Relative to where the command was run.
+        await expect( readInput( 'x.yaml', process.stdin, dir ) ).resolves.toBe( 'from a file' );
 
         await expect( readInput( '-', Readable.from( [ Buffer.from( 'from ' ), 'stdin' ] ) ) ).resolves.toBe( 'from stdin' );
     } );

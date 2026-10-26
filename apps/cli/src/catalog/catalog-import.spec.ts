@@ -98,6 +98,7 @@ describe( 'importPath', () => {
             topics: { created: 2, updated: 0 },
             items: { created: 4, updated: 0, linked: 5, unlinked: 0 },
             notInFile: [],
+            unpublishedItems: [],
         } );
     } );
 
@@ -204,10 +205,19 @@ describe( 'importPath', () => {
         const db = fakeManager();
 
         db.add( Item, { organizationId: 'org', type: ItemType.Problem, title: 'Their copy', details: { url: TWO_SUM.details.url } } );
-        db.add( Item, { organizationId: null, type: ItemType.Problem, title: 'Two Sum (old title)', details: { url: TWO_SUM.details.url } } );
-        db.add( Item, { organizationId: null, type: ItemType.Note, title: note.title, details: { content: 'Old.' } } );
+        db.add( Item, {
+            organizationId: null,
+            type: ItemType.Problem,
+            title: 'Two Sum (old title)',
+            details: { url: TWO_SUM.details.url },
+            status: CatalogStatus.Published,
+        } );
+        db.add( Item, { organizationId: null, type: ItemType.Note, title: note.title, details: { content: 'Old.' }, status: CatalogStatus.Archived } );
 
         const report = await importPath( db.manager, file() );
+
+        // The import doesn't change an existing item's status, but says it's hidden.
+        expect( report.unpublishedItems ).toEqual( [ '"When to use a hash map" (archived)' ] );
 
         expect( db.rows( Item ).filter( ( row ) => row.organizationId === null ) ).toHaveLength( 4 );
         expect( db.rows( Item ).find( ( row ) => row.organizationId === 'org' )!.title ).toBe( 'Their copy' );
