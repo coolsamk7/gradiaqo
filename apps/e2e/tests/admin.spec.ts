@@ -118,4 +118,49 @@ test.describe( 'Admin', () => {
         await page.goto( '/app/admin/reports' );
         await expect( page.getByRole( 'heading', { level: 1, name: 'Page not found' } ) ).toBeVisible();
     } );
+
+    test( 'a superadmin finds a user, promotes and demotes them, then removes the account', async ( { page, api, browser } ) => {
+        const uma = await api.signUp( 'Uma' );
+
+        await logIn( page, ADMIN );
+        await page.goto( '/app/admin/catalog' );
+        await page.getByRole( 'navigation', { name: 'Admin', exact: true } ).getByRole( 'link', { name: 'Users' } ).click();
+        await expect( page ).toHaveURL( '/app/admin/users' );
+
+        await page.getByRole( 'searchbox', { name: 'Search users' } ).fill( uma.email );
+        const row = page.getByRole( 'row', { name: new RegExp( uma.email ) } );
+
+        await expect( page.getByRole( 'region', { name: 'Users' } ).getByRole( 'row' ) ).toHaveCount( 2 );
+        await expect( row ).toContainText( 'Uma Tester' );
+        await expect( row ).toContainText( 'UserNot verified' );
+        await expect( row ).toContainText( /Today$/ );
+
+        await row.getByRole( 'button', { name: `More for ${uma.email}` } ).click();
+        await page.getByRole( 'button', { name: 'Make superadmin' } ).click();
+        await expect( row ).toContainText( 'Superadmin' );
+
+        // Uma sees Admin at her next login.
+        const umaContext = await browser.newContext();
+        const umaPage = await umaContext.newPage();
+
+        await logIn( umaPage, uma );
+        await expect( umaPage.getByRole( 'navigation', { name: 'Admin and settings' } ).getByRole( 'link', { name: 'Admin' } ) ).toBeVisible();
+        await umaContext.close();
+
+        await row.getByRole( 'button', { name: `More for ${uma.email}` } ).click();
+        await page.getByRole( 'button', { name: 'Make normal user' } ).click();
+        await expect( row ).toContainText( 'UserNot verified' );
+
+        await row.getByRole( 'button', { name: `More for ${uma.email}` } ).click();
+        await page.getByRole( 'button', { name: 'Remove account' } ).click();
+        const dialog = page.getByRole( 'dialog', { name: 'Remove Uma Tester?' } );
+
+        await dialog.getByLabel( 'Type their email to confirm' ).fill( uma.email );
+        await dialog.getByRole( 'button', { name: 'Remove account' } ).click();
+        await expect( dialog ).toBeHidden();
+        await expect( page.getByText( 'No users match.' ) ).toBeVisible();
+
+        // The account is gone.
+        await expect( api.logIn( uma.email ) ).rejects.toThrow();
+    } );
 } );

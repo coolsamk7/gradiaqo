@@ -71,6 +71,7 @@ export function CatalogPage() {
                 <Link to="/app/admin/reports" className={styles.tab}>
                     {reports.state.status === 'ready' ? `Reports · ${reports.state.value.total}` : 'Reports'}
                 </Link>
+                <Link to="/app/admin/users" className={styles.tab}>Users</Link>
             </nav>
 
             {tab === 'paths' ? <PathsTab /> : <ItemsTab creating={creating} onCreated={() => setCreating( false )} />}

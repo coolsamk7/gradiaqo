@@ -6,6 +6,7 @@ import { RequireAuth } from './auth/RequireAuth.tsx';
 import { CatalogPage as AdminCatalogPage } from './pages/admin/CatalogPage.tsx';
 import { ReportsPage } from './pages/admin/ReportsPage.tsx';
 import { RequireSuperadmin } from './pages/admin/RequireSuperadmin.tsx';
+import { UsersPage } from './pages/admin/UsersPage.tsx';
 import { AnalyticsPage } from './pages/analytics/AnalyticsPage.tsx';
 import { CatalogPage } from './pages/catalog/CatalogPage.tsx';
 import { DashboardPage } from './pages/dashboard/DashboardPage.tsx';
@@ -69,6 +70,10 @@ export function App() {
                 <Route
                     path="/app/admin/reports"
                     element={admin( <ReportsPage /> )}
+                />
+                <Route
+                    path="/app/admin/users"
+                    element={admin( <UsersPage /> )}
                 />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
