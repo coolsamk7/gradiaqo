@@ -366,3 +366,9 @@ a.tab {
     font-size: 12px;
     line-height: 16px;
 }
+
+/* ---------- Organizations ---------- */
+
+.inlineBadge {
+    margin-left: var( --space-2 );
+}

@@ -4,6 +4,7 @@ import { Route, Routes } from 'react-router';
 import { AuthProvider } from './auth/AuthProvider.tsx';
 import { RequireAuth } from './auth/RequireAuth.tsx';
 import { CatalogPage as AdminCatalogPage } from './pages/admin/CatalogPage.tsx';
+import { OrganizationsPage as AdminOrganizationsPage } from './pages/admin/OrganizationsPage.tsx';
 import { OverviewPage } from './pages/admin/OverviewPage.tsx';
 import { ReportsPage } from './pages/admin/ReportsPage.tsx';
 import { RequireSuperadmin } from './pages/admin/RequireSuperadmin.tsx';
@@ -75,6 +76,10 @@ export function App() {
                 <Route
                     path="/app/admin/users"
                     element={admin( <UsersPage /> )}
+                />
+                <Route
+                    path="/app/admin/organizations"
+                    element={admin( <AdminOrganizationsPage /> )}
                 />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

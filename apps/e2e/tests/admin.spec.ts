@@ -177,4 +177,20 @@ test.describe( 'Admin', () => {
         // The account is gone.
         await expect( api.logIn( uma.email ) ).rejects.toThrow();
     } );
+
+    test( 'a superadmin finds an organization by a member\'s email and looks inside, without changing it', async ( { page } ) => {
+        await logIn( page, ADMIN );
+        await page.goto( '/app/admin' );
+        await page.getByRole( 'navigation', { name: 'Admin', exact: true } ).getByRole( 'link', { name: 'Organizations' } ).click();
+        await expect( page ).toHaveURL( '/app/admin/organizations' );
+
+        await page.getByRole( 'searchbox', { name: 'Search organizations' } ).fill( 'bob@example.com' );
+        const row = page.getByRole( 'region', { name: 'Organizations' } ).getByRole( 'row', { name: /Acme Study Group/ } );
+
+        await expect( row ).toContainText( 'Alice Walker' );
+        await row.getByRole( 'link', { name: 'Acme Study Group' } ).click();
+        await expect( page.getByRole( 'heading', { level: 1, name: 'Acme Study Group' } ) ).toBeVisible();
+        await expect( page.getByText( 'Bob Singh' ) ).toBeVisible();
+        await expect( page.getByRole( 'button', { name: 'Rename' } ) ).toHaveCount( 0 );
+    } );
 } );
