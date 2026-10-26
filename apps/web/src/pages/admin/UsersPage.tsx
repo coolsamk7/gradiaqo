@@ -2,7 +2,6 @@ import type { AdminUserJson, AdminUserPageJson } from '@studylog/schemas';
 import { PlatformRole } from '@studylog/schemas/enums';
 import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
 
 import { useLoaded } from '../../api/use-loaded.ts';
 import { useAuth } from '../../auth/auth-context.ts';
@@ -19,6 +18,7 @@ import { FormField } from '../../forms/FormField.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import styles from './Admin.module.css';
+import { AdminNav } from './AdminNav.tsx';
 import { loadError } from './catalog.ts';
 import type { UserFilters } from './users.ts';
 import { actionError, lastActive, PAGE_SIZE, pageLabel, userActions, usersUrl } from './users.ts';
@@ -66,14 +66,6 @@ export function UsersPage() {
 
     return (
         <AppLayout>
-            <Link
-                to="/app/admin/catalog"
-                className={`${shared.button} ${shared.ghost} ${shared.small} ${styles.back}`}
-                aria-label="Back to the global catalog"
-            >
-                <Icon name="chevron-left" />
-                Global catalog
-            </Link>
             <div className={app.header}>
                 <div className={app.titleBlock}>
                     <div className={styles.titleRow}>
@@ -85,6 +77,7 @@ export function UsersPage() {
                     </p>
                 </div>
             </div>
+            <AdminNav />
 
             <div className={styles.toolbar}>
                 <label className={styles.search}>

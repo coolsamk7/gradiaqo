@@ -55,6 +55,8 @@ test.describe( 'Admin', () => {
 
         await logIn( page, ADMIN );
         await page.getByRole( 'navigation', { name: 'Admin and settings' } ).getByRole( 'link', { name: 'Admin' } ).click();
+        await expect( page ).toHaveURL( '/app/admin' );
+        await page.getByRole( 'navigation', { name: 'Admin', exact: true } ).getByRole( 'link', { name: 'Catalog' } ).click();
         await expect( page ).toHaveURL( '/app/admin/catalog' );
         await expect( page.getByRole( 'region', { name: 'Paths' } ) ).toContainText( 'Data Structures & AlgorithmsPublished' );
 
@@ -119,11 +121,23 @@ test.describe( 'Admin', () => {
         await expect( page.getByRole( 'heading', { level: 1, name: 'Page not found' } ) ).toBeVisible();
     } );
 
+    test( 'the overview counts users, sign-ups and the most followed paths', async ( { page, api } ) => {
+        await api.signUp( 'Nina' );
+        await logIn( page, ADMIN );
+        await page.goto( '/app/admin' );
+
+        await expect( page.getByRole( 'heading', { level: 1, name: 'Overview' } ) ).toBeVisible();
+        await expect( page.getByRole( 'term' ).filter( { hasText: 'New sign-ups' } ).locator( '..' ) ).toContainText( /New sign-ups[1-9]/ );
+        await expect( page.getByRole( 'region', { name: 'Sign-ups per day' } ).getByRole( 'listitem' ) ).toHaveCount( 30 );
+        // The seeded learners follow the official DSA path.
+        await expect( page.getByRole( 'region', { name: 'Most followed paths' } ) ).toContainText( 'Data Structures & AlgorithmsOfficial' );
+    } );
+
     test( 'a superadmin finds a user, promotes and demotes them, then removes the account', async ( { page, api, browser } ) => {
         const uma = await api.signUp( 'Uma' );
 
         await logIn( page, ADMIN );
-        await page.goto( '/app/admin/catalog' );
+        await page.goto( '/app/admin' );
         await page.getByRole( 'navigation', { name: 'Admin', exact: true } ).getByRole( 'link', { name: 'Users' } ).click();
         await expect( page ).toHaveURL( '/app/admin/users' );
 

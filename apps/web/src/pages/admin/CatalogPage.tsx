@@ -1,4 +1,4 @@
-import type { ManagedItemJson, ManagedItemPageJson, ManagedLearningPathJson, ReportPageJson } from '@studylog/schemas';
+import type { ManagedItemJson, ManagedItemPageJson, ManagedLearningPathJson } from '@studylog/schemas';
 import { CatalogStatus, ItemType } from '@studylog/schemas/enums';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
@@ -16,6 +16,7 @@ import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import { TYPE_LABELS } from '../path/item-details.ts';
 import styles from './Admin.module.css';
+import { AdminNav } from './AdminNav.tsx';
 import { changeError, formatUpdated, loadError, statusActions } from './catalog.ts';
 import { ItemDialog, NewPathDialog } from './CatalogDialogs.tsx';
 
@@ -29,7 +30,6 @@ const SEARCH_DELAY_MS = 300;
 export function CatalogPage() {
     const [ params, setParams ] = useSearchParams();
     const tab = params.get( 'tab' ) === 'items' ? 'items' : 'paths';
-    const reports = useLoaded<ReportPageJson>( '/admin/reports?limit=1', loadError );
     const [ creating, setCreating ] = useState( false );
 
     return (
@@ -51,28 +51,25 @@ export function CatalogPage() {
                 </button>
             </div>
 
-            <nav className={styles.tabs} aria-label="Admin">
+            <AdminNav />
+            <div className={styles.views} role="group" aria-label="Show">
                 <button
                     type="button"
-                    className={styles.tab}
-                    aria-selected={tab === 'paths'}
+                    className={styles.view}
+                    aria-pressed={tab === 'paths'}
                     onClick={() => setParams( {}, { replace: true } )}
                 >
                     Paths
                 </button>
                 <button
                     type="button"
-                    className={styles.tab}
-                    aria-selected={tab === 'items'}
+                    className={styles.view}
+                    aria-pressed={tab === 'items'}
                     onClick={() => setParams( { tab: 'items' }, { replace: true } )}
                 >
                     Items
                 </button>
-                <Link to="/app/admin/reports" className={styles.tab}>
-                    {reports.state.status === 'ready' ? `Reports · ${reports.state.value.total}` : 'Reports'}
-                </Link>
-                <Link to="/app/admin/users" className={styles.tab}>Users</Link>
-            </nav>
+            </div>
 
             {tab === 'paths' ? <PathsTab /> : <ItemsTab creating={creating} onCreated={() => setCreating( false )} />}
             {tab === 'paths' && creating && <NewPathDialog onClose={() => setCreating( false )} />}

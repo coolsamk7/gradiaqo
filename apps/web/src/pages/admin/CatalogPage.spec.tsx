@@ -67,10 +67,9 @@ const row = ( name: string, title: string ) => rows( name ).find( ( r ) => r.tex
 describe( 'The global catalog', () => {
     it( 'lists the official paths with their status and size, and opens one in the builder', async () => {
         api();
-        renderApp( '/app/admin' );
+        renderApp( '/app/admin/catalog' );
 
         expect( await screen.findByRole( 'heading', { level: 1, name: 'Global catalog' } ) ).toBeInTheDocument();
-        expect( screen.getByTestId( 'location' ) ).toHaveTextContent( '/app/admin/catalog' );
         await screen.findByRole( 'region', { name: 'Paths' } );
 
         expect( rows( 'Paths' ).map( ( r ) => r.textContent ) ).toEqual( [
@@ -81,7 +80,7 @@ describe( 'The global catalog', () => {
         expect( within( row( 'Paths', 'Graph' ) ).getByRole( 'link', { name: 'Edit Graph Algorithms' } ) )
             .toHaveAttribute( 'href', `/app/admin/catalog/paths/${GRAPHS.id}` );
         expect( screen.getByRole( 'link', { name: 'Reports · 1' } ) ).toHaveAttribute( 'href', '/app/admin/reports' );
-        expect( screen.getByRole( 'button', { name: 'Paths' } ) ).toHaveAttribute( 'aria-selected', 'true' );
+        expect( screen.getByRole( 'button', { name: 'Paths' } ) ).toHaveAttribute( 'aria-pressed', 'true' );
     } );
 
     it( 'filters the paths by title and status', async () => {
@@ -210,7 +209,7 @@ describe( 'The global catalog', () => {
             renderApp( '/app/admin/catalog?tab=items' );
             await screen.findByRole( 'region', { name: 'Items' } );
 
-            expect( screen.getByRole( 'button', { name: 'Items' } ) ).toHaveAttribute( 'aria-selected', 'true' );
+            expect( screen.getByRole( 'button', { name: 'Items' } ) ).toHaveAttribute( 'aria-pressed', 'true' );
             expect( screen.getByRole( 'button', { name: 'New item' } ) ).toBeInTheDocument();
             expect( rows( 'Items' ).map( ( r ) => r.textContent ) ).toEqual( [
                 'Two SumProblemPublished4 topicsSep 25Edit',
