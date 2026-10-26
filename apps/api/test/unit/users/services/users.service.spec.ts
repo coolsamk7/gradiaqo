@@ -25,6 +25,12 @@ describe( 'UsersService', () => {
         expect( query.where ).toHaveBeenCalledWith( 'user.email = :email', { email: 'sam@example.com' } );
     } );
 
+    it( 'markActive records the time the user was last seen', async () => {
+        await service.markActive( 'u' );
+
+        expect( db.repo( User ).update ).toHaveBeenCalledWith( { id: 'u' }, { lastActiveAt: expect.any( Date ) as Date } );
+    } );
+
     it( 'toPublicUser drops the password hash', () => {
         expect( toPublicUser( { id: 'u', email: 'e', passwordHash: 'secret' } as User ) ).toEqual( { id: 'u', email: 'e' } );
     } );

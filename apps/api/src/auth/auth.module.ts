@@ -35,6 +35,6 @@ import { VerificationService } from './services/verification.service.js';
     ],
     controllers: [ AuthController ],
     providers: [ AuthService, SessionsService, AccountService, AuthGuard, EmailCodesService, VerificationService ],
-    exports: [ AuthGuard ],
+    exports: [ AuthGuard, AccountService ],
 } )
 export class AuthModule {}

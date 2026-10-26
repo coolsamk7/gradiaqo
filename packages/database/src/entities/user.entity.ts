@@ -40,6 +40,10 @@ export class User {
     @Column( { name: 'email_verified_at', type: 'timestamptz', nullable: true } )
     emailVerifiedAt: Date | null;
 
+    // Set at login and every time the access token is renewed, so it's at most a few minutes behind.
+    @Column( { name: 'last_active_at', type: 'timestamptz', nullable: true } )
+    lastActiveAt: Date | null;
+
     @CreateDateColumn( { name: 'created_at', type: 'timestamptz' } )
     createdAt: Date;
 
