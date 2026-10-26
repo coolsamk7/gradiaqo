@@ -1,0 +1,9 @@
+# The OneDrive login, made with `rclone config` on your machine (see "Backups" in deploy/k8s/README.md). Copy the
+# [onedrive] section from your rclone.conf (`rclone config file` shows where it is) to deploy/k8s/backup/rclone.conf.
+# The remote must be called onedrive. It looks like this:
+
+[onedrive]
+type = onedrive
+token = {"access_token":"…","token_type":"Bearer","refresh_token":"…","expiry":"…"}
+drive_id = …
+drive_type = personal

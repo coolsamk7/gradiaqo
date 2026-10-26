@@ -1,0 +1,117 @@
+# Every night: pg_dump the database, encrypt it, upload it to OneDrive (gradiaqo-backups/), and delete backups older
+# than 30 days. Run one now with: kubectl -n studylog create job --from=cronjob/db-backup db-backup-now
+#
+# OneDrive's login token is renewed on every run and must be saved, or it expires after 90 days unused. So rclone
+# works on a copy of rclone.conf kept on a small volume, refreshed from the secret whenever the secret changes.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-rclone
+spec:
+  accessModes: [ ReadWriteOnce ]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: db-backup
+spec:
+  schedule: "0 2 * * *"
+  timeZone: Asia/Kolkata
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          volumes:
+            - name: work
+              emptyDir: {}
+            - name: rclone
+              persistentVolumeClaim:
+                claimName: backup-rclone
+            - name: login
+              secret:
+                secretName: studylog-backup
+                items:
+                  - key: rclone.conf
+                    path: rclone.conf
+          initContainers:
+            # The same major version as the database, so pg_dump understands it.
+            - name: dump
+              image: postgres:17
+              command: [ "sh", "-ec" ]
+              args:
+                - |
+                  file="/work/studylog-$(date -u +%Y-%m-%d-%H%M).dump"
+                  pg_dump -h postgres -U studylog -d studylog -Fc -f "$file"
+                  pg_restore --list "$file" > /dev/null
+                  echo "Dumped $(du -h "$file" | cut -f1) to $file"
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: studylog-secrets
+                      key: POSTGRES_PASSWORD
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+              resources:
+                requests: { cpu: 50m, memory: 64Mi }
+                limits: { memory: 512Mi }
+          containers:
+            - name: upload
+              image: rclone/rclone:1.68.2
+              command: [ "sh", "-ec" ]
+              args:
+                - |
+                  # A new login in the secret (after `rclone config reconnect`) replaces the saved copy.
+                  if [ ! -f /rclone/rclone.conf ] || ! cmp -s /login/rclone.conf /rclone/seed.conf; then
+                    cp /login/rclone.conf /rclone/rclone.conf
+                    cp /login/rclone.conf /rclone/seed.conf
+                    echo "Using the OneDrive login from the secret"
+                  fi
+                  export RCLONE_CONFIG_BACKUP_PASSWORD="$( rclone obscure "$BACKUP_PASSWORD" )"
+                  export RCLONE_CONFIG_BACKUP_PASSWORD2="$( rclone obscure "$BACKUP_SALT" )"
+                  rclone copy /work backup: --include "*.dump" -v
+                  rclone delete backup: --min-age 30d -v
+                  echo "Backups in OneDrive now:"
+                  rclone lsl backup:
+                  # The backup is done: a ping that doesn't get through mustn't fail it (and upload it again).
+                  if [ -n "$BACKUP_PING_URL" ]; then
+                    wget -q -O /dev/null "$BACKUP_PING_URL" || echo "Couldn't reach BACKUP_PING_URL"
+                  fi
+              env:
+                - name: RCLONE_CONFIG
+                  value: /rclone/rclone.conf
+                # An encrypted folder inside the onedrive remote: file names and contents are both encrypted.
+                - name: RCLONE_CONFIG_BACKUP_TYPE
+                  value: crypt
+                - name: RCLONE_CONFIG_BACKUP_REMOTE
+                  value: onedrive:gradiaqo-backups
+                - name: BACKUP_PASSWORD
+                  valueFrom:
+                    secretKeyRef: { name: studylog-backup, key: BACKUP_PASSWORD }
+                - name: BACKUP_SALT
+                  valueFrom:
+                    secretKeyRef: { name: studylog-backup, key: BACKUP_SALT }
+                - name: BACKUP_PING_URL
+                  valueFrom:
+                    secretKeyRef: { name: studylog-backup, key: BACKUP_PING_URL }
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+                - name: rclone
+                  mountPath: /rclone
+                - name: login
+                  mountPath: /login
+                  readOnly: true
+              resources:
+                requests: { cpu: 50m, memory: 64Mi }
+                limits: { memory: 256Mi }

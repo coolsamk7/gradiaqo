@@ -102,18 +102,49 @@ Old images pile up in both Docker and k3s; clear them now and then with `docker 
 
 ## Backups
 
-The database is the only thing to back up. A nightly dump, keeping the last 14 (`crontab -e`):
+The database is the only thing to back up. Every night at 02:00 (India time) the `db-backup` CronJob dumps it,
+encrypts the dump and uploads it to OneDrive (`gradiaqo-backups/`), then deletes backups older than 30 days
+(`backup/backup.yaml`). The files in OneDrive are unreadable without the backup password, names included.
 
-```cron
-0 3 * * * kubectl -n studylog exec postgres-0 -- pg_dump -U studylog -Fc studylog > ~/backups/studylog-$(date +\%F).dump && ls -1t ~/backups/*.dump | tail -n +15 | xargs -r rm
-```
+**Setting it up** (once, on your machine):
 
-Copy them off the server too (see `deploy/README.md`). To restore one:
+1. Install [rclone](https://rclone.org/install/) and run `rclone config`: **n** (new remote), name it `onedrive`,
+   type `onedrive`, keep the defaults, and log in to Microsoft in the browser when asked. Choose your personal
+   OneDrive (`drive_type = personal`).
+2. Copy the `[onedrive]` section of your rclone config (`rclone config file` shows where it is) to
+   `deploy/k8s/backup/rclone.conf`.
+3. `cp deploy/k8s/backup/backup.env.example deploy/k8s/backup/backup.env` and fill it in. **Keep a copy of
+   `BACKUP_PASSWORD` and `BACKUP_SALT` outside the server**: without them the backups can't be restored.
+4. `kubectl apply -k deploy/civo` (or `deploy/k8s`), then take the first backup now and watch it:
+
+   ```bash
+   kubectl -n studylog create job --from=cronjob/db-backup db-backup-now
+   kubectl -n studylog logs -f job/db-backup-now -c dump
+   kubectl -n studylog logs -f job/db-backup-now -c upload
+   ```
+
+Both files are git-ignored. `kubectl apply -k` needs them from now on, also when nothing about backups changes.
+
+**Is it working?** `kubectl -n studylog get jobs` lists the last runs (`db-backup-<time>`, Complete or Failed). For
+an email when a night's backup doesn't arrive, create a free check on [healthchecks.io](https://healthchecks.io)
+(period 1 day, grace 2 hours) and put its URL in `BACKUP_PING_URL`. The OneDrive login is renewed on every run and
+kept on the `backup-rclone` volume; if it ever stops working, run `rclone config reconnect onedrive:` on your
+machine, copy the section into `rclone.conf` again and apply.
+
+**Restoring** (from your machine, with the same two passwords):
 
 ```bash
+export RCLONE_CONFIG_BACKUP_TYPE=crypt RCLONE_CONFIG_BACKUP_REMOTE=onedrive:gradiaqo-backups
+export RCLONE_CONFIG_BACKUP_PASSWORD="$( rclone obscure 'the BACKUP_PASSWORD' )"
+export RCLONE_CONFIG_BACKUP_PASSWORD2="$( rclone obscure 'the BACKUP_SALT' )"
+rclone lsl backup:                                   # the backups, newest at the bottom
+rclone copy backup:studylog-2026-10-27-2030.dump .   # decrypted on the way down
 kubectl -n studylog exec -i postgres-0 -- \
-  pg_restore -U studylog -d studylog --clean --if-exists < ~/backups/studylog-2026-10-19.dump
+  pg_restore -U studylog -d studylog --clean --if-exists < studylog-2026-10-27-2030.dump
 ```
+
+`--clean` replaces what's in the database with the backup. To look at a backup without touching production,
+restore it into a local database instead (`yarn db:up`, then `pg_restore` with the `.env` connection).
 
 ## Civo
 
@@ -165,8 +196,8 @@ everything here.
 
 The data volume is a Civo volume (`civo-volume`), billed separately from the node. To update: run the Images
 workflow, then `kubectl -n studylog rollout restart deployment api web`. To roll back, set `newTag` in
-`deploy/civo/kustomization.yaml` to an earlier `sha-<commit>` and apply again. Backups work as below, run from your
-machine with the Civo kubeconfig.
+`deploy/civo/kustomization.yaml` to an earlier `sha-<commit>` and apply again. Backups run in the cluster (see
+above).
 
 ## Superadmins
 

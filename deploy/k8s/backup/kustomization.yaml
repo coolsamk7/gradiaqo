@@ -1,0 +1,16 @@
+# Nightly database backups to OneDrive, encrypted (see "Backups" in deploy/k8s/README.md). A component of
+# deploy/k8s, so the CronJob is built together with studylog-secrets and finds it under its generated name.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - backup.yaml
+
+# Filled in on your machine from the *.example files; both are git-ignored. rclone.conf holds the OneDrive login
+# from `rclone config`, backup.env the encryption password.
+secretGenerator:
+  - name: studylog-backup
+    files:
+      - rclone.conf
+    envs:
+      - backup.env
