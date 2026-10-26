@@ -44,6 +44,7 @@ and are run by the CLI (`apps/cli`, reads `DATABASE_URL` from `apps/cli/.env`: `
 | `yarn cli migration:run --fake` | Mark pending migrations as applied without running them (database already has the schema) |
 | `yarn cli migration:revert` | Undo the most recently applied migration |
 | `yarn cli migration:show` | List migrations and whether each is applied |
+| `yarn cli user:promote <email>` | Make a user a superadmin (`--demote` makes them a normal user again) |
 | `yarn cli --help` | All commands |
 
 Changing an entity:
