@@ -39,6 +39,11 @@ export class UsersService {
             .getOne();
     }
 
+    /** Records that the user is using the app now (at login and on every token refresh). */
+    async markActive( id: string ): Promise<void> {
+        await this.users.update( { id }, { lastActiveAt: new Date() } );
+    }
+
     existsByEmail( email: string ): Promise<boolean> {
         return this.users.existsBy( { email } );
     }

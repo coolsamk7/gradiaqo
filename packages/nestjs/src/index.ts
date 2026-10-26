@@ -2,6 +2,8 @@ import { typebox } from '@gradiaqo/nestjs-typebox';
 import type { ItemType } from '@studylog/schemas';
 import {
     AccessTokenResponse,
+    AdminUser,
+    AdminUserPage,
     Analytics,
     AnalyticsQuery,
     AuthResponse,
@@ -37,6 +39,7 @@ import {
     ListPublishedPathsQuery,
     ListReportsQuery,
     ListStudySessionsQuery,
+    ListUsersQuery,
     LoginRequest,
     ManagedItemPage,
     ManagedLearningPath,
@@ -72,6 +75,7 @@ import {
     UpdateProgressRequest,
     UpdateStudySessionRequest,
     UpdateTopicRequest,
+    UpdateUserRoleRequest,
     User,
     VerifyEmailRequest,
 } from '@studylog/schemas';
@@ -111,6 +115,7 @@ export const ForgotPasswordBody = typebox( ForgotPasswordRequest, { name: 'Forgo
 export const ResetPasswordBody = typebox( ResetPasswordRequest, { name: 'ResetPasswordRequest' } );
 export const CreateReportBody = typebox( CreateReportRequest, { name: 'CreateReportRequest' } );
 export const ResolveReportBody = typebox( ResolveReportRequest, { name: 'ResolveReportRequest' } );
+export const UpdateUserRoleBody = typebox( UpdateUserRoleRequest, { name: 'UpdateUserRoleRequest' } );
 
 export const CreateEnrollmentBody = typebox( CreateEnrollmentRequest, { name: 'CreateEnrollmentRequest' } );
 export const UpdateEnrollmentBody = typebox( UpdateEnrollmentRequest, { name: 'UpdateEnrollmentRequest' } );
@@ -127,6 +132,7 @@ export const ListProgressQueryParams = typebox( ListProgressQuery, { coerce: tru
 export const ListStudySessionsQueryParams = typebox( ListStudySessionsQuery, { coerce: true, location: 'query' } );
 export const ListPublishedPathsQueryParams = typebox( ListPublishedPathsQuery, { coerce: true, location: 'query' } );
 export const ListReportsQueryParams = typebox( ListReportsQuery, { coerce: true, location: 'query' } );
+export const ListUsersQueryParams = typebox( ListUsersQuery, { coerce: true, location: 'query' } );
 export const StatsQueryParams = typebox( StatsQuery, { coerce: true, location: 'query' } );
 export const AnalyticsQueryParams = typebox( AnalyticsQuery, { coerce: true, location: 'query' } );
 export const ReadinessQueryParams = typebox( ReadinessQuery, { coerce: true, location: 'query' } );
@@ -180,4 +186,6 @@ export const Responses = {
     Member: typebox( Member, { name: 'Member', direction: 'response' } ),
     Report: typebox( Report, { name: 'Report', direction: 'response' } ),
     ReportPage: typebox( ReportPage, { name: 'ReportPage', direction: 'response' } ),
+    AdminUserPage: typebox( AdminUserPage, { name: 'AdminUserPage', direction: 'response' } ),
+    AdminUser: typebox( AdminUser, { name: 'AdminUser', direction: 'response' } ),
 } as const;

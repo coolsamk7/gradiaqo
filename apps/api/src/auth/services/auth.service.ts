@@ -102,6 +102,7 @@ export class AuthService {
         if ( !user ) {
             throw new UnauthorizedException();
         }
+        await this.usersService.markActive( user.id );
 
         return {
             accessToken: await this.signAccessToken( user ),
@@ -114,6 +115,8 @@ export class AuthService {
     }
 
     private async startSession( user: User, meta: ClientMeta ): Promise<AuthResult> {
+        await this.usersService.markActive( user.id );
+
         return {
             accessToken: await this.signAccessToken( user ),
             refreshToken: await this.sessionsService.create( user.id, meta ),

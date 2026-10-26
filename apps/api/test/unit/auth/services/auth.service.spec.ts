@@ -28,6 +28,7 @@ describe( 'AuthService', () => {
             create: vi.fn( ( data: object ) => Promise.resolve( { id: 'user-1', ...data } ) ),
             findByEmailWithPassword: vi.fn().mockResolvedValue( null ),
             findById: vi.fn(),
+            markActive: vi.fn(),
         };
         sessions = { create: vi.fn().mockResolvedValue( 'session.secret' ), rotate: vi.fn(), revoke: vi.fn() };
         organizations = { createPersonal: vi.fn() };
@@ -52,6 +53,7 @@ describe( 'AuthService', () => {
             expect( created.passwordHash ).not.toBe( signup.password );
             expect( await argon2.verify( created.passwordHash, signup.password ) ).toBe( true );
             expect( organizations.createPersonal ).toHaveBeenCalledOnce();
+            expect( users.markActive ).toHaveBeenCalledWith( 'user-1' );
             expect( result ).toMatchObject( { accessToken: 'access-token', refreshToken: 'session.secret' } );
             expect( result.user ).not.toHaveProperty( 'passwordHash' );
             // The verification code goes out right away.
@@ -99,6 +101,7 @@ describe( 'AuthService', () => {
                 email: 'sam@example.com',
                 platformRole: PlatformRole.Superadmin,
             } );
+            expect( users.markActive ).toHaveBeenCalledWith( 'user-1' );
         } );
     } );
 
@@ -122,6 +125,8 @@ describe( 'AuthService', () => {
         users.findById.mockResolvedValue( { id: 'user-1', email: 'sam@example.com', platformRole: PlatformRole.ApplicationUser } );
 
         expect( await service.refresh( 'old', {} ) ).toEqual( { accessToken: 'access-token', refreshToken: 'rotated' } );
+        // A renewed token means they're using the app now.
+        expect( users.markActive ).toHaveBeenCalledWith( 'user-1' );
     } );
 
     it( 'logout ends the session of the refresh token', async () => {

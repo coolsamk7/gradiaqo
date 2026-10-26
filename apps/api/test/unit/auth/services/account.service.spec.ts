@@ -2,6 +2,7 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { Membership, OrganizationRole, User } from '@studylog/database';
 import * as argon2 from 'argon2';
 import type { DataSource } from 'typeorm';
+import { Not } from 'typeorm';
 
 import { AccountService } from '../../../../src/auth/services/account.service.js';
 import type { SessionsService } from '../../../../src/auth/services/sessions.service.js';
@@ -72,6 +73,12 @@ describe( 'AccountService', () => {
 
             await service.deleteAccount( 'user-1', 'right' );
 
+            expect( db.repo( Membership ).find ).toHaveBeenCalledWith( {
+                where: { userId: 'user-1', role: OrganizationRole.Owner },
+                relations: { organization: true },
+            } );
+            // Alone in "solo": nobody else is a member.
+            expect( db.repo( Membership ).existsBy ).toHaveBeenCalledWith( { organizationId: 'solo', userId: Not( 'user-1' ) } );
             expect( db.manager.remove ).toHaveBeenCalledWith( [ personal, solo ] );
             expect( db.repo( User ).delete ).toHaveBeenCalledWith( { id: 'user-1' } );
         } );
@@ -98,6 +105,16 @@ describe( 'AccountService', () => {
             await expect( service.deleteAccount( 'user-1', 'right' ) ).rejects.toThrow( ConflictException );
             await expect( service.deleteAccount( 'user-1', 'right' ) ).rejects.toThrow( '"Org group"' );
             expect( db.repo( User ).delete ).not.toHaveBeenCalled();
+        } );
+
+        it( 'names every organization that blocks it', async () => {
+            db.repo( Membership ).find.mockResolvedValue( [ ownerOf( organization( 'a' ) ), ownerOf( organization( 'b' ) ) ] );
+            db.repo( Membership ).existsBy.mockImplementation( ( where: { role?: OrganizationRole } ) =>
+                Promise.resolve( where.role !== OrganizationRole.Owner ) );
+
+            await expect( service.deleteAccount( 'user-1', 'right' ) ).rejects.toThrow(
+                'You\'re the only owner of "Org a", "Org b": make someone else owner, or delete it, first',
+            );
         } );
     } );
 } );

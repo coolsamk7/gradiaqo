@@ -40,13 +40,22 @@ export class AccountService {
         await this.sessionsService.revokeOthers( userId, currentRefreshToken );
     }
 
+    /** The user deleting their own account, after their password. See `removeAccount()`. */
+    async deleteAccount( userId: string, password: string ): Promise<void> {
+        await this.verifyPassword( userId, password );
+        await this.removeAccount(
+            userId,
+            ( organizations ) => `You're the only owner of ${organizations}: make someone else owner, or delete it, first`,
+        );
+    }
+
     /**
      * Deletes the account with the user's personal workspace (their own paths and items) and any organization
      * they're alone in. Refused while they're the only owner of an organization that has other members, so
-     * nobody is left in an organization without an owner.
+     * nobody is left in an organization without an owner; `refusal` words that error for whoever is asking.
+     * Also used by Admin › Users.
      */
-    async deleteAccount( userId: string, password: string ): Promise<void> {
-        await this.verifyPassword( userId, password );
+    async removeAccount( userId: string, refusal: ( organizations: string ) => string ): Promise<void> {
         await this.dataSource.transaction( async ( manager ) => {
             const owned = await manager.find( Membership, {
                 where: { userId, role: OrganizationRole.Owner },
@@ -65,10 +74,7 @@ export class AccountService {
                 }
             }
             if ( blocking.length > 0 ) {
-                throw new ConflictException(
-                    `You're the only owner of ${blocking.map( ( name ) => `"${name}"` ).join( ', ' )}: `
-                    + 'make someone else owner, or delete it, first',
-                );
+                throw new ConflictException( refusal( blocking.map( ( name ) => `"${name}"` ).join( ', ' ) ) );
             }
 
             await manager.remove( toDelete );

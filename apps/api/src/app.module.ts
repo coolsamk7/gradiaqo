@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { createDataSourceOptions } from '@studylog/database';
 import { LoggerModule } from '@studylog/logger';
 
+import { AdminModule } from './admin/admin.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
 import { appConfig } from './config/app.config.js';
@@ -55,6 +56,7 @@ import { UsersModule } from './users/users.module.js';
         CatalogModule,
         StudyModule,
         ModerationModule,
+        AdminModule,
         HealthModule,
     ],
     // Every route is rate limited per client IP (see rate-limits.ts).
