@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 import { CatalogStatus } from '@studylog/database';
 import { Command, CommandRunner, Option } from 'nest-commander';
@@ -17,13 +18,17 @@ class DryRun extends Error {
     }
 }
 
-/** The file's text; `-` reads it from stdin (for `kubectl exec -i ... < file`). */
+/**
+ * The file's text; `-` reads it from stdin (for `kubectl exec -i ... < file`). A relative path is from where the command
+ * was run: `yarn cli` runs it in apps/cli, so it passes the folder you ran it from as CLI_CWD.
+ */
 export async function readInput(
     file: string,
     stdin: AsyncIterable<Buffer | string> = process.stdin,
+    from = process.env.CLI_CWD ?? process.cwd(),
 ): Promise<string> {
     if ( file !== '-' ) {
-        return readFile( file, 'utf8' );
+        return readFile( resolve( from, file ), 'utf8' );
     }
 
     let text = '';
@@ -100,6 +105,9 @@ function print( path: CatalogPath, report: ImportReport ): void {
         + ` · ${report.items.linked} added to topics, ${report.items.unlinked} taken out` );
     for ( const missing of report.notInFile ) {
         output.warn( `Not in the file, kept: ${missing}` );
+    }
+    for ( const hidden of report.unpublishedItems ) {
+        output.warn( `Not published, so learners don't see it: ${hidden} (publish it in Admin › Catalog › Items)` );
     }
     if ( report.path.status === CatalogStatus.Draft ) {
         output.info( output.dim( 'Learners see it once it\'s published: Admin › Catalog, or PATCH /admin/catalog/paths/:id.' ) );
