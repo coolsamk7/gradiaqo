@@ -14,6 +14,7 @@ import { FormField } from '../../forms/FormField.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
 import styles from './Admin.module.css';
+import { AdminNav } from './AdminNav.tsx';
 import { actionError, loadError, outcome, pathLine, REASON_LABELS, reporterLine, resolutionLine } from './reports.ts';
 
 /** How many resolved reports the Open tab shows under the queue. */
@@ -36,14 +37,6 @@ export function ReportsPage() {
 
     return (
         <AppLayout>
-            <Link
-                to="/app/admin/catalog"
-                className={`${shared.button} ${shared.ghost} ${shared.small} ${styles.back}`}
-                aria-label="Back to the global catalog"
-            >
-                <Icon name="chevron-left" />
-                Global catalog
-            </Link>
             <div className={app.header}>
                 <div className={app.titleBlock}>
                     <div className={styles.titleRow}>
@@ -55,15 +48,16 @@ export function ReportsPage() {
                     </p>
                 </div>
             </div>
+            <AdminNav />
 
-            <div className={styles.tabs} role="tablist" aria-label="Reports">
+            <div className={styles.views} role="tablist" aria-label="Reports">
                 {( [ 'open', 'resolved' ] as const ).map( ( name ) => (
                     <button
                         key={name}
                         type="button"
                         role="tab"
                         id={`tab-${name}`}
-                        className={styles.tab}
+                        className={styles.view}
                         aria-selected={tab === name}
                         aria-controls="tab-panel"
                         onClick={() => setParams( name === 'open' ? {} : { tab: name }, { replace: true } )}

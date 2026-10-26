@@ -47,6 +47,7 @@ import {
     MyInvitation,
     MyOrganization,
     OrganizationSummary,
+    PlatformOverview,
     PublishedPath,
     PublishedPathSummary,
     Readiness,
@@ -188,4 +189,5 @@ export const Responses = {
     ReportPage: typebox( ReportPage, { name: 'ReportPage', direction: 'response' } ),
     AdminUserPage: typebox( AdminUserPage, { name: 'AdminUserPage', direction: 'response' } ),
     AdminUser: typebox( AdminUser, { name: 'AdminUser', direction: 'response' } ),
+    PlatformOverview: typebox( PlatformOverview, { name: 'PlatformOverview', direction: 'response' } ),
 } as const;

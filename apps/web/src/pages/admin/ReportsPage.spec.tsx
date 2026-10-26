@@ -76,7 +76,8 @@ describe( 'ReportsPage', () => {
 
         const card = await screen.findByRole( 'region', { name: 'Report on Alice\'s Favourite Problems' } );
 
-        expect( screen.getByRole( 'link', { name: 'Back to the global catalog' } ) ).toHaveAttribute( 'href', '/app/admin/catalog' );
+        expect( within( screen.getByRole( 'navigation', { name: 'Admin' } ) ).getByRole( 'link', { name: 'Reports · 1' } ) )
+            .toHaveAttribute( 'aria-current', 'page' );
         expect( screen.getByRole( 'heading', { level: 1, name: 'Reports' } ) ).toBeInTheDocument();
         expect( screen.getAllByRole( 'tab' ).map( ( tab ) => tab.textContent ) ).toEqual( [ 'Open · 1', 'Resolved' ] );
         expect( card ).toHaveTextContent( 'Alice\'s Favourite ProblemsCommunityPublic path by Alice WalkerReason: Other' );

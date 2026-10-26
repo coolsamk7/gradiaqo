@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
-import { Navigate, Route, Routes } from 'react-router';
+import { Route, Routes } from 'react-router';
 
 import { AuthProvider } from './auth/AuthProvider.tsx';
 import { RequireAuth } from './auth/RequireAuth.tsx';
 import { CatalogPage as AdminCatalogPage } from './pages/admin/CatalogPage.tsx';
+import { OverviewPage } from './pages/admin/OverviewPage.tsx';
 import { ReportsPage } from './pages/admin/ReportsPage.tsx';
 import { RequireSuperadmin } from './pages/admin/RequireSuperadmin.tsx';
 import { UsersPage } from './pages/admin/UsersPage.tsx';
@@ -57,7 +58,7 @@ export function App() {
                 <Route path="/app/organizations/:organizationId" element={<RequireAuth><OrganizationPage /></RequireAuth>} />
                 <Route
                     path="/app/admin"
-                    element={admin( <Navigate to="/app/admin/catalog" replace /> )}
+                    element={admin( <OverviewPage /> )}
                 />
                 <Route
                     path="/app/admin/catalog"

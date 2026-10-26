@@ -46,7 +46,8 @@ describe( 'UsersPage', () => {
         expect( await screen.findByRole( 'row', { name: /sam@/ } ) ).toBeInTheDocument();
         expect( screen.queryByText( 'Loading the users…' ) ).not.toBeInTheDocument();
         expect( screen.getByRole( 'heading', { level: 1, name: 'Users' } ) ).toBeInTheDocument();
-        expect( screen.getByRole( 'link', { name: 'Back to the global catalog' } ) ).toHaveAttribute( 'href', '/app/admin/catalog' );
+        expect( within( screen.getByRole( 'navigation', { name: 'Admin' } ) ).getByRole( 'link', { name: 'Users' } ) )
+            .toHaveAttribute( 'aria-current', 'page' );
         expect( row( 'sam@example.com' ) ).toHaveTextContent( 'Sam Khan (you)sam@example.comSuperadminVerifiedJan 2026Today' );
         expect( row( 'alice@example.com' ) ).toHaveTextContent( 'Alice Walkeralice@example.comUserNot verifiedSep 2026Never' );
         // Nothing to do to yourself.
