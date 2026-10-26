@@ -34,6 +34,16 @@
     grid-area: button;
 }
 
+/* Dark theme: a light band would glare on the dark page, so it takes the accent tint instead. */
+:global( :root[data-theme='dark'] ) .panel {
+    color: var( --color-text );
+    background: var( --color-accent-soft );
+}
+
+:global( :root[data-theme='dark'] ) .text {
+    color: var( --color-text-muted );
+}
+
 @media ( width < 720px ) {
     .panel {
         grid-template-areas: 'title' 'text' 'button';

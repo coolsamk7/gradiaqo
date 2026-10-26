@@ -10,6 +10,19 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" />
         <title>StudyLog</title>
+        <script>
+            // The theme before the first paint, so dark pages don't flash light. Same rule as src/theme/theme.ts.
+            try {
+                var theme = localStorage.getItem( 'studylog-theme' );
+
+                if ( theme !== 'light' && theme !== 'dark' ) {
+                    theme = matchMedia( '(prefers-color-scheme: dark)' ).matches ? 'dark' : 'light';
+                }
+                document.documentElement.dataset.theme = theme;
+            } catch ( error ) {
+                // Light, and src/theme/theme.ts tries again once the app loads.
+            }
+        </script>
     </head>
     <body>
         <div id="root"></div>

@@ -232,6 +232,42 @@ describe( 'SettingsPage', () => {
 
         expect( await screen.findByRole( 'button', { name: 'Deleting…' } ) ).toBeDisabled();
     } );
+
+    describe( 'appearance', () => {
+        afterEach( () => {
+            localStorage.clear();
+            delete document.documentElement.dataset.theme;
+        } );
+
+        it( 'switches the theme, and remembers it', async () => {
+            api();
+            const user = userEvent.setup();
+
+            renderApp( '/app/settings' );
+            const themes = within( await screen.findByRole( 'group', { name: 'Theme' } ) );
+
+            expect( themes.getByRole( 'button', { name: 'System' } ) ).toHaveAttribute( 'aria-pressed', 'true' );
+
+            await user.click( themes.getByRole( 'button', { name: 'Dark' } ) );
+            expect( themes.getByRole( 'button', { name: 'Dark' } ) ).toHaveAttribute( 'aria-pressed', 'true' );
+            expect( themes.getByRole( 'button', { name: 'System' } ) ).toHaveAttribute( 'aria-pressed', 'false' );
+            expect( document.documentElement.dataset.theme ).toBe( 'dark' );
+            expect( localStorage.getItem( 'studylog-theme' ) ).toBe( 'dark' );
+
+            await user.click( themes.getByRole( 'button', { name: 'Light' } ) );
+            expect( document.documentElement.dataset.theme ).toBe( 'light' );
+        } );
+
+        it( 'starts with the saved theme', async () => {
+            localStorage.setItem( 'studylog-theme', 'light' );
+            api();
+            renderApp( '/app/settings' );
+
+            const themes = within( await screen.findByRole( 'group', { name: 'Theme' } ) );
+
+            expect( themes.getByRole( 'button', { name: 'Light' } ) ).toHaveAttribute( 'aria-pressed', 'true' );
+        } );
+    } );
 } );
 
 describe( 'account forms', () => {

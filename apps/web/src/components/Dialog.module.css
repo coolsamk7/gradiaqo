@@ -8,7 +8,7 @@
     place-items: start center;
     padding: clamp( 16px, 12vh, 200px ) var( --space-4 ) var( --space-4 );
     overflow-y: auto;
-    background: rgb( 14 14 12 / 40% );
+    background: var( --color-scrim );
 }
 
 .card {

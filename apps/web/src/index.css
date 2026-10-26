@@ -19,6 +19,7 @@
     --color-success-soft: #ecfdf5;
     --color-warning-soft: #fffbeb;
     --color-danger-soft: #fef2f2;
+    --color-scrim: rgb( 14 14 12 / 40% );
 
     /* Text */
     --color-text: #0e0e0c;
@@ -91,9 +92,8 @@
 }
 
 /*
- * Dark values, from the dark mode of the design tokens. Not switched on by the system setting yet: Figma has only
- * the light design, so the app stays light until a dark design (and a theme switch) exists. To try it:
- * document.documentElement.dataset.theme = 'dark'.
+ * Dark values, from the "Color – Dark" collection in Figma (Screens – Web › Dark · key screens). Switched on by
+ * src/theme/theme.ts: the system setting, or Light / Dark in Settings. Values not listed here are the same in both.
  */
 :root[data-theme='dark'] {
     color-scheme: dark;
@@ -102,12 +102,12 @@
     --color-surface: #1a1a18;
     --color-bg-muted: #252520;
     --color-sidebar: #080808;
-    --color-accent-hover: #8b80ff;
     --color-accent-soft: #221f3d;
     --color-bg-inverse: #f8f8f6;
     --color-success-soft: #0f2e24;
     --color-warning-soft: #33270d;
     --color-danger-soft: #3a1414;
+    --color-scrim: rgb( 0 0 0 / 60% );
 
     --color-text: #f8f8f6;
     --color-text-muted: #9a9a92;
