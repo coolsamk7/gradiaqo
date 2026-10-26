@@ -1,8 +1,9 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
-import { PlatformRole, User } from '@studylog/database';
+import { AuditAction, PlatformRole, User } from '@studylog/database';
 import type { DataSource } from 'typeorm';
 
 import { AdminUsersService } from '../../../../src/admin/services/admin-users.service.js';
+import type { AuditService } from '../../../../src/audit/services/audit.service.js';
 import type { AccountService } from '../../../../src/auth/services/account.service.js';
 import type { FakeDataSource } from '../../fake-data-source.js';
 import { fakeDataSource, fakeQueryBuilder } from '../../fake-data-source.js';
@@ -20,12 +21,18 @@ const user = ( overrides: object = {} ) => ( {
 describe( 'AdminUsersService', () => {
     let db: FakeDataSource;
     let account: { removeAccount: ReturnType<typeof vi.fn> };
+    let audit: { record: ReturnType<typeof vi.fn> };
     let service: AdminUsersService;
 
     beforeEach( () => {
         db = fakeDataSource();
         account = { removeAccount: vi.fn() };
-        service = new AdminUsersService( db as unknown as DataSource, account as unknown as AccountService );
+        audit = { record: vi.fn() };
+        service = new AdminUsersService(
+            db as unknown as DataSource,
+            account as unknown as AccountService,
+            audit as unknown as AuditService,
+        );
     } );
 
     describe( 'list', () => {
@@ -84,6 +91,19 @@ describe( 'AdminUsersService', () => {
             expect( db.repo( User ).update ).toHaveBeenCalledWith( { id: 'user-1' }, { platformRole: PlatformRole.Superadmin } );
             expect( updated ).toMatchObject( { id: 'user-1', platformRole: PlatformRole.Superadmin } );
             expect( updated ).not.toHaveProperty( 'passwordHash' );
+            expect( audit.record ).toHaveBeenCalledWith( {
+                actorId: 'admin', action: AuditAction.UserPromoted, targetId: 'user-1', targetLabel: 'sam@example.com',
+            } );
+        } );
+
+        it( 'demotes a superadmin', async () => {
+            db.repo( User ).findOneBy.mockResolvedValue( user( { platformRole: PlatformRole.Superadmin } ) );
+
+            await service.setRole( 'admin', 'user-1', PlatformRole.ApplicationUser );
+
+            expect( audit.record ).toHaveBeenCalledWith(
+                expect.objectContaining( { action: AuditAction.UserDemoted } ),
+            );
         } );
 
         it( 'changes nothing when the user already has the role', async () => {
@@ -92,6 +112,7 @@ describe( 'AdminUsersService', () => {
             await service.setRole( 'admin', 'user-1', PlatformRole.Superadmin );
 
             expect( db.repo( User ).update ).not.toHaveBeenCalled();
+            expect( audit.record ).not.toHaveBeenCalled();
         } );
 
         it( 'never changes your own role, so a superadmin is always left', async () => {
@@ -118,6 +139,9 @@ describe( 'AdminUsersService', () => {
 
             expect( id ).toBe( 'user-1' );
             expect( refusal( '"Club"' ) ).toBe( 'They\'re the only owner of "Club", which has other members: someone else has to become owner first' );
+            expect( audit.record ).toHaveBeenCalledWith( {
+                actorId: 'admin', action: AuditAction.UserRemoved, targetId: 'user-1', targetLabel: 'sam@example.com',
+            } );
         } );
 
         it( 'never removes yourself or another superadmin', async () => {
@@ -127,6 +151,7 @@ describe( 'AdminUsersService', () => {
             await expect( service.remove( 'admin', 'user-1' ) )
                 .rejects.toThrow( new ConflictException( 'Make them a normal user first: superadmins can\'t be removed' ) );
             expect( account.removeAccount ).not.toHaveBeenCalled();
+            expect( audit.record ).not.toHaveBeenCalled();
         } );
 
         it( 'is "not found" for an unknown user', async () => {

@@ -95,7 +95,7 @@ export class AdminHiddenPathsController {
     @ApiNoContentResponse( { description: 'Its owner can make it public again' } )
     @ApiNotFoundResponse( { description: 'Learning path not found' } )
     @ApiConflictResponse( { description: 'The path isn\'t hidden' } )
-    unhide( @Param( 'pathId', ParseUUIDPipe ) pathId: string ): Promise<void> {
-        return this.reportsService.unhide( pathId );
+    unhide( @CurrentUser() user: AccessTokenPayload, @Param( 'pathId', ParseUUIDPipe ) pathId: string ): Promise<void> {
+        return this.reportsService.unhide( user.sub, pathId );
     }
 }

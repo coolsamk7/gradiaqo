@@ -1,12 +1,13 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { User } from '@studylog/database';
-import { LearningPath, Membership, PathReport, PathVisibility, ReportStatus } from '@studylog/database';
+import { AuditAction, LearningPath, Membership, PathReport, PathVisibility, ReportStatus } from '@studylog/database';
 import type { CreateReportRequest, ListReportsQuery, Report, ReportPage, ResolveReportRequest } from '@studylog/schemas';
 import { ReportAction } from '@studylog/schemas';
 import type { FindOptionsOrder } from 'typeorm';
 import { DataSource, In } from 'typeorm';
 
+import { AuditService } from '../../audit/services/audit.service.js';
 import { saveUnique } from '../../catalog/catalog.helpers.js';
 import { CatalogAccessService } from '../../catalog/services/catalog-access.service.js';
 
@@ -16,6 +17,7 @@ export class ReportsService {
     constructor(
         @InjectDataSource() private readonly dataSource: DataSource,
         private readonly catalogAccess: CatalogAccessService,
+        private readonly audit: AuditService,
     ) {}
 
     /** Only public paths from other users can be reported: official ones are the admins' own. */
@@ -104,14 +106,24 @@ export class ReportsService {
             );
         } );
 
-        return this.findView( id );
+        const resolved = await this.findView( id );
+
+        await this.audit.record( {
+            actorId: moderatorId,
+            action: action === ReportAction.Dismiss ? AuditAction.ReportDismissed : AuditAction.PathHidden,
+            targetId: resolved.learningPath.id,
+            targetLabel: resolved.learningPath.title,
+            note: note ?? null,
+        } );
+
+        return resolved;
     }
 
     /**
      * Lets a path hidden by mistake be public again: clears `publicBlockedAt`. It stays private until its owner makes
      * it public; its reports keep their history.
      */
-    async unhide( pathId: string ): Promise<void> {
+    async unhide( moderatorId: string, pathId: string ): Promise<void> {
         const paths = this.dataSource.getRepository( LearningPath );
         const path = await paths.findOneBy( { id: pathId } );
 
@@ -123,6 +135,12 @@ export class ReportsService {
         }
 
         await paths.update( { id: pathId }, { publicBlockedAt: null } );
+        await this.audit.record( {
+            actorId: moderatorId,
+            action: AuditAction.PathUnhidden,
+            targetId: pathId,
+            targetLabel: path.title,
+        } );
     }
 
     private async findView( id: string ): Promise<Report> {

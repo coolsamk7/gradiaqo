@@ -32,8 +32,8 @@ describe( 'reports controllers', () => {
     } );
 
     it( 'un-hides a path', async () => {
-        await new AdminHiddenPathsController( reports as unknown as ReportsService ).unhide( 'path' );
+        await new AdminHiddenPathsController( reports as unknown as ReportsService ).unhide( user, 'path' );
 
-        expect( reports.unhide ).toHaveBeenCalledWith( 'path' );
+        expect( reports.unhide ).toHaveBeenCalledWith( 'me', 'path' );
     } );
 } );

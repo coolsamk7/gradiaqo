@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router';
 
 import { AuthProvider } from './auth/AuthProvider.tsx';
 import { RequireAuth } from './auth/RequireAuth.tsx';
+import { AuditPage } from './pages/admin/AuditPage.tsx';
 import { CatalogPage as AdminCatalogPage } from './pages/admin/CatalogPage.tsx';
 import { OrganizationsPage as AdminOrganizationsPage } from './pages/admin/OrganizationsPage.tsx';
 import { OverviewPage } from './pages/admin/OverviewPage.tsx';
@@ -80,6 +81,10 @@ export function App() {
                 <Route
                     path="/app/admin/organizations"
                     element={admin( <AdminOrganizationsPage /> )}
+                />
+                <Route
+                    path="/app/admin/audit"
+                    element={admin( <AuditPage /> )}
                 />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

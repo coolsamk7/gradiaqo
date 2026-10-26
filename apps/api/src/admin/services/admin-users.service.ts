@@ -1,9 +1,10 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { PlatformRole, User } from '@studylog/database';
+import { AuditAction, PlatformRole, User } from '@studylog/database';
 import type { AdminUser, AdminUserPage, ListUsersQuery } from '@studylog/schemas';
 import { DataSource } from 'typeorm';
 
+import { AuditService } from '../../audit/services/audit.service.js';
 import { AccountService } from '../../auth/services/account.service.js';
 import { toPublicUser } from '../../users/public-user.js';
 
@@ -13,6 +14,7 @@ export class AdminUsersService {
     constructor(
         @InjectDataSource() private readonly dataSource: DataSource,
         private readonly accountService: AccountService,
+        private readonly audit: AuditService,
     ) {}
 
     /** Newest accounts first. `search` matches part of the email or the full name. */
@@ -54,6 +56,12 @@ export class AdminUsersService {
         if ( user.platformRole !== platformRole ) {
             await this.dataSource.getRepository( User ).update( { id: userId }, { platformRole } );
             user.platformRole = platformRole;
+            await this.audit.record( {
+                actorId: adminId,
+                action: platformRole === PlatformRole.Superadmin ? AuditAction.UserPromoted : AuditAction.UserDemoted,
+                targetId: userId,
+                targetLabel: user.email,
+            } );
         }
 
         return toPublicUser( user );
@@ -78,6 +86,12 @@ export class AdminUsersService {
             userId,
             ( organizations ) => `They're the only owner of ${organizations}, which has other members: someone else has to become owner first`,
         );
+        await this.audit.record( {
+            actorId: adminId,
+            action: AuditAction.UserRemoved,
+            targetId: userId,
+            targetLabel: user.email,
+        } );
     }
 
     private async find( id: string ): Promise<User> {

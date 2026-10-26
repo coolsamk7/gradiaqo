@@ -88,6 +88,18 @@ describe( 'Admin › Organizations', () => {
         expect( listCalls( calls ) ).toEqual( [ '?limit=50', '?limit=50&offset=50', '?limit=50' ] );
     } );
 
+    it( 'stays on the page it moved to after the search box settles', async () => {
+        const { calls } = api( { 'GET /admin/organizations': () => page( [ CLUB ], 51 ) } );
+        const user = userEvent.setup();
+
+        renderApp( '/app/admin/organizations' );
+        await user.click( await screen.findByRole( 'button', { name: 'Next' } ) );
+        // Longer than the search box waits before searching.
+        await new Promise( ( resolve ) => setTimeout( resolve, 400 ) );
+
+        expect( listCalls( calls ) ).toEqual( [ '?limit=50', '?limit=50&offset=50' ] );
+    } );
+
     it( 'says when nothing matches, while loading, and on a load error', async () => {
         let answer: () => Response | Promise<Response> = () => pending();
 

@@ -47,8 +47,8 @@ describe( 'catalog controllers', () => {
         [ 'paths.create', () => controllers.paths.create( OWNER, user, dto ), paths.create, [ OWNER, dto, 'user-1' ] ],
         [ 'paths.reorder', () => controllers.paths.reorder( OWNER, ids ), paths.reorder, [ OWNER, ids.ids ] ],
         [ 'paths.findTree', () => controllers.paths.findTree( OWNER, 'p' ), paths.findTree, [ OWNER, 'p' ] ],
-        [ 'paths.update', () => controllers.paths.update( OWNER, 'p', dto ), paths.update, [ OWNER, 'p', dto ] ],
-        [ 'paths.remove', () => controllers.paths.remove( OWNER, 'p' ), paths.remove, [ OWNER, 'p' ] ],
+        [ 'paths.update', () => controllers.paths.update( OWNER, user, 'p', dto ), paths.update, [ OWNER, 'p', dto, 'user-1' ] ],
+        [ 'paths.remove', () => controllers.paths.remove( OWNER, user, 'p' ), paths.remove, [ OWNER, 'p', 'user-1' ] ],
         [ 'paths.createModule', () => controllers.paths.createModule( OWNER, 'p', dto ), modules.create, [ OWNER, 'p', dto ] ],
         [ 'paths.reorderModules', () => controllers.paths.reorderModules( OWNER, 'p', ids ), modules.reorder, [ OWNER, 'p', ids.ids ] ],
         [ 'modules.update', () => controllers.modules.update( OWNER, 'm', dto ), modules.update, [ OWNER, 'm', dto ] ],
@@ -64,8 +64,8 @@ describe( 'catalog controllers', () => {
         [ 'items.list', () => controllers.items.list( OWNER, { search: 'two' } ), items.list, [ OWNER, { search: 'two' } ] ],
         [ 'items.create', () => controllers.items.create( OWNER, user, dto as never ), items.create, [ OWNER, dto, 'user-1' ] ],
         [ 'items.findOne', () => controllers.items.findOne( OWNER, 'i' ), items.findOrFail, [ OWNER, 'i' ] ],
-        [ 'items.update', () => controllers.items.update( OWNER, 'i', dto ), items.update, [ OWNER, 'i', dto ] ],
-        [ 'items.remove', () => controllers.items.remove( OWNER, 'i' ), items.remove, [ OWNER, 'i' ] ],
+        [ 'items.update', () => controllers.items.update( OWNER, user, 'i', dto ), items.update, [ OWNER, 'i', dto, 'user-1' ] ],
+        [ 'items.remove', () => controllers.items.remove( OWNER, user, 'i' ), items.remove, [ OWNER, 'i', 'user-1' ] ],
     ] )( '%s passes the catalog, ids and user to the service', async ( _, call, method, expected ) => {
         await expect( call() ).resolves.toMatch( /result$/ );
         expect( method ).toHaveBeenLastCalledWith( ...expected );

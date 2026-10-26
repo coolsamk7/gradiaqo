@@ -81,10 +81,11 @@ export class ItemsController {
     @ApiNotFoundResponse( { description: 'Item not found' } )
     update(
         @CatalogOwner() owner: CatalogOwnerId,
+        @CurrentUser() user: AccessTokenPayload,
         @Param( 'itemId', ParseUUIDPipe ) itemId: string,
         @Body( { schema: UpdateItemBody } ) dto: UpdateItemRequest,
     ): Promise<Item> {
-        return this.itemsService.update( owner, itemId, dto );
+        return this.itemsService.update( owner, itemId, dto, user.sub );
     }
 
     @Delete( ':itemId' )
@@ -95,8 +96,9 @@ export class ItemsController {
     @ApiConflictResponse( { description: 'Global catalog only: not a draft, archive it instead' } )
     remove(
         @CatalogOwner() owner: CatalogOwnerId,
+        @CurrentUser() user: AccessTokenPayload,
         @Param( 'itemId', ParseUUIDPipe ) itemId: string,
     ): Promise<void> {
-        return this.itemsService.remove( owner, itemId );
+        return this.itemsService.remove( owner, itemId, user.sub );
     }
 }

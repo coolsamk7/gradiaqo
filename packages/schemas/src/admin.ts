@@ -1,6 +1,7 @@
 import type { StaticDecode, StaticEncode } from 'typebox';
 import Type from 'typebox';
 
+import { AuditAction } from './enums.js';
 import { IsoDate, Uuid } from './primitives.js';
 
 /* Admin › Overview: the platform at a glance, for superadmins. "Last 30 days" counts from now; days are UTC. */
@@ -73,3 +74,57 @@ export type ListOrganizationsQuery = StaticDecode<typeof ListOrganizationsQuery>
 export const AdminOrganizationPage = Type.Object( { items: Type.Array( AdminOrganization ), total: Count() } );
 export type AdminOrganizationPage = StaticDecode<typeof AdminOrganizationPage>;
 export type AdminOrganizationPageJson = StaticEncode<typeof AdminOrganizationPage>;
+
+// ---------- Admin › Audit log ----------
+
+/** The parts of Admin that record to the audit log. */
+export enum AuditArea {
+    Users = 'users',
+    Catalog = 'catalog',
+    Moderation = 'moderation',
+}
+
+/** Which actions belong to each area. */
+export const AUDIT_AREAS: Record<AuditArea, AuditAction[]> = {
+    [AuditArea.Users]: [ AuditAction.UserPromoted, AuditAction.UserDemoted, AuditAction.UserRemoved ],
+    [AuditArea.Catalog]: [
+        AuditAction.PathPublished,
+        AuditAction.PathMovedToDraft,
+        AuditAction.PathArchived,
+        AuditAction.PathDeleted,
+        AuditAction.ItemPublished,
+        AuditAction.ItemMovedToDraft,
+        AuditAction.ItemArchived,
+        AuditAction.ItemDeleted,
+    ],
+    [AuditArea.Moderation]: [ AuditAction.ReportDismissed, AuditAction.PathHidden, AuditAction.PathUnhidden ],
+};
+
+export const AuditEvent = Type.Object( {
+    id: Uuid(),
+    action: Type.Enum( AuditAction ),
+    actor: Type.Object( {
+        id: Type.Union( [ Uuid(), Type.Null() ], { description: 'Null once their account is deleted' } ),
+        name: Type.String( { description: 'Their name at the time' } ),
+    } ),
+    targetId: Uuid(),
+    targetLabel: Type.String( { description: 'The user\'s email or the path\'s or item\'s title at the time' } ),
+    note: Type.Union( [ Type.String(), Type.Null() ] ),
+    createdAt: IsoDate(),
+} );
+export type AuditEvent = StaticDecode<typeof AuditEvent>;
+export type AuditEventJson = StaticEncode<typeof AuditEvent>;
+
+export const ListAuditQuery = Type.Object(
+    {
+        area: Type.Optional( Type.Enum( AuditArea ) ),
+        limit: Type.Optional( Type.Integer( { minimum: 1, maximum: 200, default: 50 } ) ),
+        offset: Type.Optional( Type.Integer( { minimum: 0, default: 0 } ) ),
+    },
+    { additionalProperties: false },
+);
+export type ListAuditQuery = StaticDecode<typeof ListAuditQuery>;
+
+export const AuditPage = Type.Object( { items: Type.Array( AuditEvent ), total: Count() } );
+export type AuditPage = StaticDecode<typeof AuditPage>;
+export type AuditPageJson = StaticEncode<typeof AuditPage>;

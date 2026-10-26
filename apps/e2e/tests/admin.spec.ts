@@ -193,4 +193,23 @@ test.describe( 'Admin', () => {
         await expect( page.getByText( 'Bob Singh' ) ).toBeVisible();
         await expect( page.getByRole( 'button', { name: 'Rename' } ) ).toHaveCount( 0 );
     } );
+
+    test( 'the audit log shows who promoted a user, under Users', async ( { page, api } ) => {
+        const vera = await api.signUp( 'Vera' );
+
+        await logIn( page, ADMIN );
+        await page.goto( '/app/admin/users' );
+        await page.getByRole( 'searchbox', { name: 'Search users' } ).fill( vera.email );
+        const row = page.getByRole( 'row', { name: new RegExp( vera.email ) } );
+
+        await row.getByRole( 'button', { name: `More for ${vera.email}` } ).click();
+        await page.getByRole( 'button', { name: 'Make superadmin' } ).click();
+        await expect( row ).toContainText( 'Superadmin' );
+
+        await page.getByRole( 'navigation', { name: 'Admin', exact: true } ).getByRole( 'link', { name: 'Audit log' } ).click();
+        await page.getByRole( 'combobox', { name: 'Area' } ).selectOption( 'Users' );
+        // Other tests promote users too, at the same time.
+        await expect( page.getByRole( 'region', { name: 'Audit log' } ).getByRole( 'listitem' ).filter( { hasText: vera.email } ) )
+            .toContainText( `Ada Admin made ${vera.email} a superadmin` );
+    } );
 } );

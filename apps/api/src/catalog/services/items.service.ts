@@ -2,18 +2,22 @@ import { TypeboxValidationException } from '@gradiaqo/nestjs-typebox';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { ItemType } from '@studylog/database';
-import { Item } from '@studylog/database';
+import { AuditAction, Item } from '@studylog/database';
 import { ItemDetails } from '@studylog/nestjs';
 import type { CreateItemRequest, ListItemsQuery, ManagedItemPage, UpdateItemRequest } from '@studylog/schemas';
 import { Repository } from 'typeorm';
 
+import { AuditService } from '../../audit/services/audit.service.js';
 import type { CatalogOwner } from '../catalog.helpers.js';
-import { assertDeletable, defaultStatus, ownedBy } from '../catalog.helpers.js';
+import { assertDeletable, defaultStatus, ownedBy, STATUS_AUDIT_ACTIONS } from '../catalog.helpers.js';
 
 /** Study material of one catalog: the global one (owner null) or an organization's own. */
 @Injectable()
 export class ItemsService {
-    constructor( @InjectRepository( Item ) private readonly items: Repository<Item> ) {}
+    constructor(
+        @InjectRepository( Item ) private readonly items: Repository<Item>,
+        private readonly audit: AuditService,
+    ) {}
 
     /** Items matching the filters, by title, one page at a time. */
     async list(
@@ -75,23 +79,40 @@ export class ItemsService {
         } ) );
     }
 
-    async update( owner: CatalogOwner, id: string, dto: UpdateItemRequest ): Promise<Item> {
+    /** In the global catalog, a status change by `actorId` goes in the audit log. */
+    async update( owner: CatalogOwner, id: string, dto: UpdateItemRequest, actorId: string ): Promise<Item> {
         const item = await this.findOrFail( owner, id );
+        const before = item.status;
 
         Object.assign( item, dto );
         if ( dto.details ) {
             item.details = parseDetails( item.type, dto.details );
         }
 
-        return this.items.save( item );
+        const saved = await this.items.save( item );
+
+        if ( owner === null && saved.status !== before ) {
+            await this.audit.record( {
+                actorId,
+                action: STATUS_AUDIT_ACTIONS.item[saved.status],
+                targetId: id,
+                targetLabel: saved.title,
+            } );
+        }
+
+        return saved;
     }
 
-    /** Deletes an item, removing it from every topic it's linked to. */
-    async remove( owner: CatalogOwner, id: string ): Promise<void> {
+    /** Deletes an item, removing it from every topic it's linked to. Deleting a global one goes in the audit log. */
+    async remove( owner: CatalogOwner, id: string, actorId: string ): Promise<void> {
         const item = await this.findOrFail( owner, id );
+        const { title } = item;
 
         assertDeletable( owner, item, 'item' );
         await this.items.remove( item );
+        if ( owner === null ) {
+            await this.audit.record( { actorId, action: AuditAction.ItemDeleted, targetId: id, targetLabel: title } );
+        }
     }
 }
 
