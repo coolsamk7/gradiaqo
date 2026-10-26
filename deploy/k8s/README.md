@@ -168,6 +168,18 @@ workflow, then `kubectl -n studylog rollout restart deployment api web`. To roll
 `deploy/civo/kustomization.yaml` to an earlier `sha-<commit>` and apply again. Backups work as below, run from your
 machine with the Civo kubeconfig.
 
+## Superadmins
+
+Superadmins see the Admin pages (catalog, reports, users). Make the first one with the CLI in the API pod, then
+promote or demote others from Admin › Users:
+
+```bash
+kubectl -n studylog exec deploy/api -c api -- node apps/cli/dist/main.js user:promote you@example.com
+kubectl -n studylog exec deploy/api -c api -- node apps/cli/dist/main.js user:promote you@example.com --demote
+```
+
+The role is in the access token, so it applies within 15 minutes (`JWT_EXPIRES_IN_SECONDS`) or at the next login.
+
 ## Good to know
 
 - **One API pod**: rate limit counters are kept in memory, so more than one would each count separately.
