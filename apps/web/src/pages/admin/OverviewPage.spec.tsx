@@ -65,6 +65,7 @@ describe( 'OverviewPage', () => {
         expect( await tile( 'New sign-ups' ) ).toHaveTextContent( '6In the last 30 days' );
         expect( await tile( 'Studying' ) ).toHaveTextContent( '91 session · 2h 15m' );
         expect( screen.queryByText( 'Loading the overview…' ) ).not.toBeInTheDocument();
+        expect( screen.queryByRole( 'button', { name: 'Try again' } ) ).not.toBeInTheDocument();
     } );
 
     it( 'charts sign-ups per day', async () => {
@@ -80,6 +81,9 @@ describe( 'OverviewPage', () => {
         expect( bars[10].firstElementChild ).toHaveStyle( { height: '100%' } );
         expect( bars[3].firstElementChild ).toHaveStyle( { height: '25%' } );
         expect( bars[0].firstElementChild ).not.toHaveAttribute( 'style' );
+        // Days without sign-ups are a flat line, not a bar.
+        expect( bars[0].firstElementChild?.className ).not.toBe( bars[3].firstElementChild?.className );
+        expect( bars[3].firstElementChild?.className ).toBe( bars[10].firstElementChild?.className );
     } );
 
     it( 'lists the most followed paths', async () => {
