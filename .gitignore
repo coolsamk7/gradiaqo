@@ -19,3 +19,6 @@ reports
 
 # Kubernetes settings and secrets, filled in on the server (deploy/k8s/*.env.example are the templates)
 deploy/k8s/*.env
+# The backup's OneDrive login and encryption password (deploy/k8s/backup/*.example are the templates)
+deploy/k8s/backup/*.env
+deploy/k8s/backup/rclone.conf

@@ -11,6 +11,11 @@ resources:
   - web.yaml
   - ingress.yaml
 
+# Nightly encrypted database backups to OneDrive. Needs backup/rclone.conf and backup/backup.env (see "Backups" in
+# README.md). In this kustomization because it reads the database password from studylog-secrets, generated here.
+components:
+  - backup
+
 # Copied from the *.example files and filled in on the server; both are git-ignored.
 # A change to either gets a new name (hash suffix), so the pods using it restart with the new values.
 configMapGenerator:
