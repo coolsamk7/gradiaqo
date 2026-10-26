@@ -211,6 +211,16 @@ kubectl -n studylog exec deploy/api -c api -- node apps/cli/dist/main.js user:pr
 
 The role is in the access token, so it applies within 15 minutes (`JWT_EXPIRES_IN_SECONDS`) or at the next login.
 
+## Official learning paths
+
+The official paths are YAML files in `content/paths/`. Import one from your machine (the file goes in through stdin),
+check it in Admin › Catalog, then publish it there:
+
+```bash
+kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - --dry-run < content/paths/dsa.yaml
+kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - < content/paths/dsa.yaml
+```
+
 ## Good to know
 
 - **One API pod**: rate limit counters are kept in memory, so more than one would each count separately.
