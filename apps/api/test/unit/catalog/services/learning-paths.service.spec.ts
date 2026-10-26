@@ -1,8 +1,9 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
-import { CatalogStatus, Enrollment, LearningPath, Organization, PathVisibility } from '@studylog/database';
+import { AuditAction, CatalogStatus, Enrollment, LearningPath, Organization, PathVisibility } from '@studylog/database';
 import type { DataSource } from 'typeorm';
 import { IsNull, QueryFailedError } from 'typeorm';
 
+import type { AuditService } from '../../../../src/audit/services/audit.service.js';
 import type { CatalogTreeService } from '../../../../src/catalog/services/catalog-tree.service.js';
 import { LearningPathsService } from '../../../../src/catalog/services/learning-paths.service.js';
 import type { FakeDataSource } from '../../fake-data-source.js';
@@ -14,12 +15,16 @@ const GROUP = 'group-org';
 describe( 'LearningPathsService', () => {
     let db: FakeDataSource;
     let service: LearningPathsService;
+    let audit: { record: ReturnType<typeof vi.fn> };
+    const withTree = ( tree: CatalogTreeService ) =>
+        new LearningPathsService( db as unknown as DataSource, tree, audit as unknown as AuditService );
 
     beforeEach( () => {
         db = fakeDataSource();
+        audit = { record: vi.fn() };
         db.repo( Organization ).findOneByOrFail.mockImplementation( ( { id }: { id: string } ) =>
             Promise.resolve( { id, isPersonal: id === PERSONAL } ) );
-        service = new LearningPathsService( db as unknown as DataSource, {} as CatalogTreeService );
+        service = withTree( {} as CatalogTreeService );
     } );
 
     const saved = () => db.repo( LearningPath ).save.mock.calls[0][0] as LearningPath;
@@ -94,14 +99,14 @@ describe( 'LearningPathsService', () => {
         it( 'refuses to make a path public again after a moderator hid it', async () => {
             db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p', publicBlockedAt: new Date() } );
 
-            await expect( service.update( PERSONAL, 'p', { visibility: PathVisibility.Public } ) ).rejects.toThrow( BadRequestException );
+            await expect( service.update( PERSONAL, 'p', { visibility: PathVisibility.Public }, 'admin' ) ).rejects.toThrow( BadRequestException );
             expect( db.repo( LearningPath ).save ).not.toHaveBeenCalled();
         } );
 
         it( 'keeps the slug when only the title changes', async () => {
             db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p', slug: 'old', title: 'Old' } );
 
-            await service.update( PERSONAL, 'p', { title: 'New' } );
+            await service.update( PERSONAL, 'p', { title: 'New' }, 'admin' );
 
             expect( saved() ).toMatchObject( { slug: 'old', title: 'New' } );
         } );
@@ -111,16 +116,42 @@ describe( 'LearningPathsService', () => {
         it( 'only deletes drafts from the global catalog', async () => {
             db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p', status: CatalogStatus.Published } );
 
-            await expect( service.remove( null, 'p' ) ).rejects.toThrow( ConflictException );
+            await expect( service.remove( null, 'p', 'admin' ) ).rejects.toThrow( ConflictException );
             expect( db.repo( LearningPath ).remove ).not.toHaveBeenCalled();
         } );
 
         it( 'deletes an organization\'s published path', async () => {
             db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p', status: CatalogStatus.Published } );
 
-            await service.remove( PERSONAL, 'p' );
+            await service.remove( PERSONAL, 'p', 'admin' );
 
             expect( db.repo( LearningPath ).remove ).toHaveBeenCalled();
+            expect( audit.record ).not.toHaveBeenCalled();
+        } );
+    } );
+
+    describe( 'audit log', () => {
+        it( 'records a status change or deletion in the global catalog, by whom', async () => {
+            db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p', title: 'Graphs', status: CatalogStatus.Draft } );
+            db.repo( LearningPath ).save.mockImplementation( ( row: LearningPath ) => Promise.resolve( row ) );
+
+            await service.update( null, 'p', { status: CatalogStatus.Archived }, 'admin' );
+            expect( audit.record ).toHaveBeenCalledWith( { actorId: 'admin', action: AuditAction.PathArchived, targetId: 'p', targetLabel: 'Graphs' } );
+
+            db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p', title: 'Graphs', status: CatalogStatus.Draft } );
+            await service.remove( null, 'p', 'admin' );
+            expect( audit.record ).toHaveBeenLastCalledWith( { actorId: 'admin', action: AuditAction.PathDeleted, targetId: 'p', targetLabel: 'Graphs' } );
+        } );
+
+        it( 'records nothing for other changes, or for an organization\'s own paths', async () => {
+            db.repo( LearningPath ).save.mockImplementation( ( row: LearningPath ) => Promise.resolve( row ) );
+            db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p', title: 'Graphs', status: CatalogStatus.Draft } );
+            await service.update( null, 'p', { title: 'Graph Algorithms', status: CatalogStatus.Draft }, 'admin' );
+
+            db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p', title: 'Graphs', status: CatalogStatus.Draft } );
+            await service.update( PERSONAL, 'p', { status: CatalogStatus.Archived }, 'admin' );
+
+            expect( audit.record ).not.toHaveBeenCalled();
         } );
     } );
 
@@ -156,7 +187,7 @@ describe( 'LearningPathsService', () => {
         it( 'loads the whole tree (any status) of a path in the catalog', async () => {
             const load = vi.fn().mockResolvedValue( { id: 'p', modules: [] } );
 
-            service = new LearningPathsService( db as unknown as DataSource, treeService( load ) );
+            service = withTree( treeService( load ) );
             db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p' } );
 
             expect( await service.findTree( GROUP, 'p' ) ).toEqual( { id: 'p', modules: [] } );
@@ -164,7 +195,7 @@ describe( 'LearningPathsService', () => {
         } );
 
         it( 'is "not found" if the path is deleted while loading', async () => {
-            service = new LearningPathsService( db as unknown as DataSource, treeService( vi.fn().mockResolvedValue( null ) ) );
+            service = withTree( treeService( vi.fn().mockResolvedValue( null ) ) );
             db.repo( LearningPath ).findOneBy.mockResolvedValue( { id: 'p' } );
 
             await expect( service.findTree( GROUP, 'p' ) ).rejects.toThrow( NotFoundException );

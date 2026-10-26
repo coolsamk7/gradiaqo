@@ -7,6 +7,7 @@ import {
     AdminUserPage,
     Analytics,
     AnalyticsQuery,
+    AuditPage,
     AuthResponse,
     ChangeEmailRequest,
     ChangePasswordRequest,
@@ -35,6 +36,7 @@ import {
     LearningPath,
     LearningPathTree,
     LinkItemRequest,
+    ListAuditQuery,
     ListItemsQuery,
     ListOrganizationsQuery,
     ListProgressQuery,
@@ -137,6 +139,7 @@ export const ListPublishedPathsQueryParams = typebox( ListPublishedPathsQuery, {
 export const ListReportsQueryParams = typebox( ListReportsQuery, { coerce: true, location: 'query' } );
 export const ListUsersQueryParams = typebox( ListUsersQuery, { coerce: true, location: 'query' } );
 export const ListOrganizationsQueryParams = typebox( ListOrganizationsQuery, { coerce: true, location: 'query' } );
+export const ListAuditQueryParams = typebox( ListAuditQuery, { coerce: true, location: 'query' } );
 export const StatsQueryParams = typebox( StatsQuery, { coerce: true, location: 'query' } );
 export const AnalyticsQueryParams = typebox( AnalyticsQuery, { coerce: true, location: 'query' } );
 export const ReadinessQueryParams = typebox( ReadinessQuery, { coerce: true, location: 'query' } );
@@ -194,4 +197,5 @@ export const Responses = {
     AdminUser: typebox( AdminUser, { name: 'AdminUser', direction: 'response' } ),
     PlatformOverview: typebox( PlatformOverview, { name: 'PlatformOverview', direction: 'response' } ),
     AdminOrganizationPage: typebox( AdminOrganizationPage, { name: 'AdminOrganizationPage', direction: 'response' } ),
+    AuditPage: typebox( AuditPage, { name: 'AuditPage', direction: 'response' } ),
 } as const;

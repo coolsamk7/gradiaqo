@@ -96,10 +96,11 @@ export class LearningPathsController {
     @ApiConflictResponse( { description: 'Slug already used by another path' } )
     update(
         @CatalogOwner() owner: CatalogOwnerId,
+        @CurrentUser() user: AccessTokenPayload,
         @Param( 'pathId', ParseUUIDPipe ) pathId: string,
         @Body( { schema: UpdateLearningPathBody } ) dto: UpdateLearningPathRequest,
     ): Promise<LearningPath> {
-        return this.learningPathsService.update( owner, pathId, dto );
+        return this.learningPathsService.update( owner, pathId, dto, user.sub );
     }
 
     @Delete( ':pathId' )
@@ -110,9 +111,10 @@ export class LearningPathsController {
     @ApiConflictResponse( { description: 'Global catalog only: not a draft, archive it instead' } )
     remove(
         @CatalogOwner() owner: CatalogOwnerId,
+        @CurrentUser() user: AccessTokenPayload,
         @Param( 'pathId', ParseUUIDPipe ) pathId: string,
     ): Promise<void> {
-        return this.learningPathsService.remove( owner, pathId );
+        return this.learningPathsService.remove( owner, pathId, user.sub );
     }
 
     @Post( ':pathId/modules' )

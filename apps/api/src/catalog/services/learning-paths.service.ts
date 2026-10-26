@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { Enrollment, LearningPath, Organization, PathVisibility } from '@studylog/database';
+import { AuditAction, Enrollment, LearningPath, Organization, PathVisibility } from '@studylog/database';
 import type {
     CreateLearningPathRequest,
     LearningPathTree,
@@ -9,6 +9,7 @@ import type {
 } from '@studylog/schemas';
 import { DataSource } from 'typeorm';
 
+import { AuditService } from '../../audit/services/audit.service.js';
 import type { CatalogOwner } from '../catalog.helpers.js';
 import {
     assertDeletable,
@@ -17,6 +18,7 @@ import {
     nextPosition,
     ownedBy,
     saveUnique,
+    STATUS_AUDIT_ACTIONS,
     toSlug,
     writePositions,
 } from '../catalog.helpers.js';
@@ -30,6 +32,7 @@ export class LearningPathsService {
     constructor(
         @InjectDataSource() private readonly dataSource: DataSource,
         private readonly catalogTree: CatalogTreeService,
+        private readonly audit: AuditService,
     ) {}
 
     /** The owner's paths in order, with how many modules and (distinct) items each has, drafts included. */
@@ -104,30 +107,54 @@ export class LearningPathsService {
         );
     }
 
-    /** Changing the title keeps the slug, so URLs stay stable; send `slug` to change it. */
-    async update( owner: CatalogOwner, id: string, dto: UpdateLearningPathRequest ): Promise<LearningPath> {
+    /**
+     * Changing the title keeps the slug, so URLs stay stable; send `slug` to change it. In the global catalog, a
+     * status change by `actorId` goes in the audit log.
+     */
+    async update(
+        owner: CatalogOwner,
+        id: string,
+        dto: UpdateLearningPathRequest,
+        actorId: string,
+    ): Promise<LearningPath> {
         const path = await this.findOrFail( owner, id );
+        const before = path.status;
 
         resolveVisibility( await this.findOrganization( owner ), dto.visibility );
         if ( path.publicBlockedAt && dto.visibility === PathVisibility.Public ) {
             throw new BadRequestException( 'A moderator removed this path from the public catalog; it can\'t be made public again' );
         }
 
-        return saveUnique(
+        const saved = await saveUnique(
             () => this.dataSource.getRepository( LearningPath ).save( Object.assign( path, dto ) ),
             slugTaken( dto.slug ?? path.slug ),
         );
+
+        if ( owner === null && saved.status !== before ) {
+            await this.audit.record( {
+                actorId,
+                action: STATUS_AUDIT_ACTIONS.path[saved.status],
+                targetId: id,
+                targetLabel: saved.title,
+            } );
+        }
+
+        return saved;
     }
 
     /**
      * Deletes the path and everything under it, including enrollments in it. Items stay in the catalog,
-     * only their links go.
+     * only their links go. Deleting from the global catalog goes in the audit log.
      */
-    async remove( owner: CatalogOwner, id: string ): Promise<void> {
+    async remove( owner: CatalogOwner, id: string, actorId: string ): Promise<void> {
         const path = await this.findOrFail( owner, id );
+        const { title } = path;
 
         assertDeletable( owner, path, 'learning path' );
         await this.dataSource.getRepository( LearningPath ).remove( path );
+        if ( owner === null ) {
+            await this.audit.record( { actorId, action: AuditAction.PathDeleted, targetId: id, targetLabel: title } );
+        }
     }
 
     async reorder( owner: CatalogOwner, ids: string[] ): Promise<ManagedLearningPath[]> {

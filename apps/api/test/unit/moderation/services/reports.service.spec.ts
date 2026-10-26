@@ -1,9 +1,10 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
-import { LearningPath, Membership, PathReport, PathVisibility, ReportReason, ReportStatus } from '@studylog/database';
+import { AuditAction, LearningPath, Membership, PathReport, PathVisibility, ReportReason, ReportStatus } from '@studylog/database';
 import { ReportAction } from '@studylog/schemas';
 import type { DataSource } from 'typeorm';
 import { In, QueryFailedError } from 'typeorm';
 
+import type { AuditService } from '../../../../src/audit/services/audit.service.js';
 import type { CatalogAccessService } from '../../../../src/catalog/services/catalog-access.service.js';
 import { ReportsService } from '../../../../src/moderation/services/reports.service.js';
 import type { FakeDataSource } from '../../fake-data-source.js';
@@ -27,6 +28,7 @@ const reportRow = ( overrides: object = {} ) => ( {
 describe( 'ReportsService', () => {
     let db: FakeDataSource;
     let access: { canSeePath: ReturnType<typeof vi.fn> };
+    let audit: { record: ReturnType<typeof vi.fn> };
     let service: ReportsService;
 
     beforeEach( () => {
@@ -34,7 +36,12 @@ describe( 'ReportsService', () => {
         db.repo( LearningPath ).findOneBy.mockResolvedValue( communityPath );
         db.repo( PathReport ).findOneOrFail.mockResolvedValue( reportRow() );
         access = { canSeePath: vi.fn().mockResolvedValue( true ) };
-        service = new ReportsService( db as unknown as DataSource, access as unknown as CatalogAccessService );
+        audit = { record: vi.fn() };
+        service = new ReportsService(
+            db as unknown as DataSource,
+            access as unknown as CatalogAccessService,
+            audit as unknown as AuditService,
+        );
     } );
 
     describe( 'create', () => {
@@ -81,6 +88,9 @@ describe( 'ReportsService', () => {
                 expect.objectContaining( { status: ReportStatus.Dismissed, resolvedById: 'admin', resolutionNote: 'fine' } ),
             );
             expect( db.repo( LearningPath ).update ).not.toHaveBeenCalled();
+            expect( audit.record ).toHaveBeenCalledWith( {
+                actorId: 'admin', action: AuditAction.ReportDismissed, targetId: 'path', targetLabel: 'Graphs', note: 'fine',
+            } );
         } );
 
         it( 'hide_path makes the path private for good and closes every open report on it', async () => {
@@ -94,6 +104,9 @@ describe( 'ReportsService', () => {
                 { learningPathId: 'path', status: ReportStatus.Open },
                 expect.objectContaining( { status: ReportStatus.Actioned, resolvedById: 'admin' } ),
             );
+            expect( audit.record ).toHaveBeenCalledWith( {
+                actorId: 'admin', action: AuditAction.PathHidden, targetId: 'path', targetLabel: 'Graphs', note: null,
+            } );
         } );
 
         it( 'refuses an already resolved or unknown report', async () => {
@@ -163,18 +176,20 @@ describe( 'ReportsService', () => {
 
             db.repo( LearningPath ).findOneBy.mockResolvedValue( hidden );
 
-            await service.unhide( 'path' );
+            await service.unhide( 'admin', 'path' );
 
             expect( db.repo( LearningPath ).update ).toHaveBeenCalledWith( { id: 'path' }, { publicBlockedAt: null } );
+            expect( audit.record ).toHaveBeenCalledWith( { actorId: 'admin', action: AuditAction.PathUnhidden, targetId: 'path', targetLabel: 'Graphs' } );
         } );
 
         it( 'refuses an unknown path, or one that isn\'t hidden', async () => {
             db.repo( LearningPath ).findOneBy.mockResolvedValueOnce( null );
-            await expect( service.unhide( 'path' ) ).rejects.toThrow( NotFoundException );
+            await expect( service.unhide( 'admin', 'path' ) ).rejects.toThrow( NotFoundException );
 
             db.repo( LearningPath ).findOneBy.mockResolvedValueOnce( { ...communityPath, publicBlockedAt: null } );
-            await expect( service.unhide( 'path' ) ).rejects.toThrow( 'This path isn\'t hidden' );
+            await expect( service.unhide( 'admin', 'path' ) ).rejects.toThrow( 'This path isn\'t hidden' );
             expect( db.repo( LearningPath ).update ).not.toHaveBeenCalled();
+            expect( audit.record ).not.toHaveBeenCalled();
         } );
     } );
 } );

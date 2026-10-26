@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { CatalogStatus } from '@studylog/database';
+import { AuditAction, CatalogStatus } from '@studylog/database';
 import type { EntityManager, EntityTarget, FindOptionsWhere, ObjectLiteral } from 'typeorm';
 import { IsNull, QueryFailedError } from 'typeorm';
 
@@ -108,3 +108,17 @@ export async function writePositions(
         parent.value === null ? [ ids ] : [ ids, parent.value ],
     );
 }
+
+/** The audit log action for setting a global path's or item's status. */
+export const STATUS_AUDIT_ACTIONS: Record<'path' | 'item', Record<CatalogStatus, AuditAction>> = {
+    path: {
+        [CatalogStatus.Published]: AuditAction.PathPublished,
+        [CatalogStatus.Draft]: AuditAction.PathMovedToDraft,
+        [CatalogStatus.Archived]: AuditAction.PathArchived,
+    },
+    item: {
+        [CatalogStatus.Published]: AuditAction.ItemPublished,
+        [CatalogStatus.Draft]: AuditAction.ItemMovedToDraft,
+        [CatalogStatus.Archived]: AuditAction.ItemArchived,
+    },
+};

@@ -1,5 +1,6 @@
 export type { DatabaseConnectionOptions } from './data-source.js';
 export { createDataSourceOptions, MIGRATIONS_SOURCE_DIR, MIGRATIONS_TABLE } from './data-source.js';
+export { AuditEvent } from './entities/audit-event.entity.js';
 export { EmailCode } from './entities/email-code.entity.js';
 export { Enrollment } from './entities/enrollment.entity.js';
 export { EnrollmentOrder } from './entities/enrollment-order.entity.js';
@@ -20,6 +21,7 @@ export { Topic } from './entities/topic.entity.js';
 export { TopicItem } from './entities/topic-item.entity.js';
 export { User } from './entities/user.entity.js';
 export {
+    AuditAction,
     CatalogStatus,
     Difficulty,
     EmailCodePurpose,

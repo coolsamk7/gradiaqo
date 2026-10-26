@@ -101,3 +101,22 @@ export enum EmailCodePurpose {
     ResetPassword = 'reset_password',
     ChangeEmail = 'change_email',
 }
+
+/** Something a superadmin did, recorded in the audit log. */
+export enum AuditAction {
+    UserPromoted = 'user_promoted',
+    UserDemoted = 'user_demoted',
+    UserRemoved = 'user_removed',
+    PathPublished = 'path_published',
+    PathMovedToDraft = 'path_moved_to_draft',
+    PathArchived = 'path_archived',
+    PathDeleted = 'path_deleted',
+    ItemPublished = 'item_published',
+    ItemMovedToDraft = 'item_moved_to_draft',
+    ItemArchived = 'item_archived',
+    ItemDeleted = 'item_deleted',
+    ReportDismissed = 'report_dismissed',
+    /** A reported path taken out of the public catalog. */
+    PathHidden = 'path_hidden',
+    PathUnhidden = 'path_unhidden',
+}

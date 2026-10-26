@@ -15,6 +15,7 @@ export function AdminNav() {
         { to: '/app/admin/reports', label: reports.state.status === 'ready' ? `Reports · ${reports.state.value.total}` : 'Reports' },
         { to: '/app/admin/users', label: 'Users' },
         { to: '/app/admin/organizations', label: 'Organizations' },
+        { to: '/app/admin/audit', label: 'Audit log' },
     ];
 
     return (

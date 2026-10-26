@@ -121,6 +121,18 @@ describe( 'UsersPage', () => {
         expect( usersCalls( calls ) ).toEqual( [ '?limit=50', '?limit=50&offset=50', '?limit=50&offset=100', '?limit=50&offset=50' ] );
     } );
 
+    it( 'stays on the page it moved to after the search box settles', async () => {
+        const { calls } = api( { 'GET /admin/users': () => page( [ ALICE ], 120 ) } );
+        const user = userEvent.setup();
+
+        renderApp( '/app/admin/users' );
+        await user.click( await screen.findByRole( 'button', { name: 'Next' } ) );
+        // Longer than the search box waits before searching.
+        await new Promise( ( resolve ) => setTimeout( resolve, 400 ) );
+
+        expect( usersCalls( calls ) ).toEqual( [ '?limit=50', '?limit=50&offset=50' ] );
+    } );
+
     it( 'promotes and demotes superadmins, showing why a change was refused', async () => {
         let answer = () => json( 400, { statusCode: 400, message: 'You can\'t change your own role' } );
         const { calls } = api( {

@@ -1,3 +1,4 @@
+import { AuditEvent } from './audit-event.entity.js';
 import { EmailCode } from './email-code.entity.js';
 import { Enrollment } from './enrollment.entity.js';
 import { EnrollmentOrder } from './enrollment-order.entity.js';
@@ -37,4 +38,5 @@ export const entities = [
     PathReport,
     InterviewGoal,
     EmailCode,
+    AuditEvent,
 ];

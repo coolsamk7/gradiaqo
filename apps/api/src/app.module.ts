@@ -8,6 +8,7 @@ import { createDataSourceOptions } from '@studylog/database';
 import { LoggerModule } from '@studylog/logger';
 
 import { AdminModule } from './admin/admin.module.js';
+import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
 import { appConfig } from './config/app.config.js';
@@ -50,6 +51,7 @@ import { UsersModule } from './users/users.module.js';
                 autoLoadEntities: true,
             } ),
         } ),
+        AuditModule,
         UsersModule,
         AuthModule,
         OrganizationsModule,
