@@ -58,4 +58,31 @@ test.describe( 'Account settings', () => {
         await expect( page.getByRole( 'alert' ) ).toBeVisible();
         await expect( page ).toHaveURL( '/login' );
     } );
+
+    test( 'follows the system theme, and remembers a chosen one', async ( { page, api } ) => {
+        const html = page.locator( 'html' );
+        const user = await api.signUp();
+
+        await page.emulateMedia( { colorScheme: 'dark' } );
+        await logIn( page, user );
+        await expect( html ).toHaveAttribute( 'data-theme', 'dark' );
+        await page.emulateMedia( { colorScheme: 'light' } );
+        await expect( html ).toHaveAttribute( 'data-theme', 'light' );
+
+        await page.goto( '/app/settings' );
+        const themes = page.getByRole( 'group', { name: 'Theme' } );
+
+        await expect( themes.getByRole( 'button', { name: 'System' } ) ).toHaveAttribute( 'aria-pressed', 'true' );
+        await themes.getByRole( 'button', { name: 'Dark' } ).click();
+        await expect( html ).toHaveAttribute( 'data-theme', 'dark' );
+        await expect( html ).toHaveCSS( 'background-color', 'rgb(14, 14, 12)' );
+
+        // Set before the app loads, so the page doesn't flash light.
+        await page.reload();
+        await expect( html ).toHaveAttribute( 'data-theme', 'dark' );
+        await expect( themes.getByRole( 'button', { name: 'Dark' } ) ).toHaveAttribute( 'aria-pressed', 'true' );
+
+        await themes.getByRole( 'button', { name: 'System' } ).click();
+        await expect( html ).toHaveAttribute( 'data-theme', 'light' );
+    } );
 } );

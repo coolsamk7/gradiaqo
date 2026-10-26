@@ -13,6 +13,8 @@ import { FormField } from '../../forms/FormField.tsx';
 import { PasswordInput } from '../../forms/PasswordInput.tsx';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
+import type { ThemeChoice } from '../../theme/theme.ts';
+import { savedTheme, setTheme } from '../../theme/theme.ts';
 import type { PasswordErrors, ProfileErrors } from './account-forms.ts';
 import { isWrongPassword, MIN_PASSWORD, saveError, validatePassword, validateProfile } from './account-forms.ts';
 import { ChangeEmailDialog } from './ChangeEmailDialog.tsx';
@@ -20,7 +22,7 @@ import { DeleteAccountDialog } from './DeleteAccountDialog.tsx';
 import styles from './Settings.module.css';
 
 /**
- * The user's account (Figma: M1 › Account settings): their name, email, password, and deleting the account.
+ * The user's account (Figma: M1 › Account settings): their name, email, password, the theme, and deleting the account.
  * Reminders and data export come with the features behind them. Opened with `{ changeEmail: true }` as router
  * state (from Verify email's "Use a different email"), it starts with the change-email dialog open.
  */
@@ -34,11 +36,12 @@ export function SettingsPage() {
         <AppLayout>
             <div className={app.titleBlock}>
                 <h1 className={app.title}>Settings</h1>
-                <p className={app.muted}>Your profile, password and account.</p>
+                <p className={app.muted}>Your profile, password, appearance and account.</p>
             </div>
             <div className={styles.cards}>
                 <ProfileCard user={user} />
                 <PasswordCard />
+                <AppearanceCard />
                 <section className={`${app.card} ${styles.row} ${styles.danger}`} aria-labelledby="delete-title">
                     <div className={styles.copy}>
                         <h2 id="delete-title" className={app.cardTitle}>Delete account</h2>
@@ -239,6 +242,42 @@ function PasswordCard() {
                     {saved && <p className={styles.saved} role="status">Password changed. You&apos;re signed out on your other devices.</p>}
                 </div>
             </form>
+        </section>
+    );
+}
+
+const THEMES: { choice: ThemeChoice; label: string }[] = [
+    { choice: 'light', label: 'Light' },
+    { choice: 'dark', label: 'Dark' },
+    { choice: 'system', label: 'System' },
+];
+
+/** Light, dark, or the device's setting. Remembered in this browser (see theme/theme.ts), not on the account. */
+function AppearanceCard() {
+    const [ theme, setChoice ] = useState( savedTheme );
+
+    return (
+        <section className={`${app.card} ${styles.row}`} aria-labelledby="appearance-title">
+            <div className={styles.copy}>
+                <h2 id="appearance-title" className={app.cardTitle}>Appearance</h2>
+                <p className={`${app.muted} ${app.small}`}>System follows your device&apos;s light or dark setting.</p>
+            </div>
+            <div className={styles.themes} role="group" aria-label="Theme">
+                {THEMES.map( ( option ) => (
+                    <button
+                        key={option.choice}
+                        type="button"
+                        className={styles.theme}
+                        aria-pressed={option.choice === theme}
+                        onClick={() => {
+                            setTheme( option.choice );
+                            setChoice( option.choice );
+                        }}
+                    >
+                        {option.label}
+                    </button>
+                ) )}
+            </div>
         </section>
     );
 }
