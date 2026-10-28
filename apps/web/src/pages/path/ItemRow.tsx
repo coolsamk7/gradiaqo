@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 
 import type { IconName } from '../../components/Icon.tsx';
 import { Icon } from '../../components/Icon.tsx';
+import { Markdown } from '../../components/Markdown.tsx';
 import form from '../../forms/form.module.css';
 import shared from '../../styles/shared.module.css';
 import { DIFFICULTY_LABELS, itemContent, itemFacts, itemLink, STATUS_LABELS, TYPE_LABELS } from './item-details.ts';
@@ -66,11 +67,11 @@ export function ItemRow( { item, enrollmentId, topicId, onStatus }: ItemRowProps
                 {content && (
                     <details className={styles.content}>
                         <Toggle what={item.type === ItemType.Note ? 'note' : 'instructions'} />
-                        <p className={styles.body}>{content.body}</p>
+                        <Markdown className={styles.body} text={content.body} />
                         {content.answer && (
                             <details className={styles.content}>
                                 <Toggle what="answer" />
-                                <p className={styles.body}>{content.answer}</p>
+                                <Markdown className={styles.body} text={content.answer} />
                             </details>
                         )}
                     </details>

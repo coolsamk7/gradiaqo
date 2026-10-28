@@ -200,7 +200,7 @@
     background: var( --color-bg-muted );
     font-size: 14px;
     line-height: 20px;
-    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .itemActions {
