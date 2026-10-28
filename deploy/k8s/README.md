@@ -165,11 +165,12 @@ everything here.
    kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9.4/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
    ```
 
-   `deploy/civo` adds the `traefik` IngressClass (Civo has none) and uses Traefik 2.9's API group for the redirect;
+   `deploy/civo` adds the `traefik` IngressClass (Civo has none) and uses Traefik 2.9's API group for the redirects;
    with Traefik 2.10 or newer, drop that patch there. `cluster/traefik-config.yaml` doesn't apply (Civo's Traefik is
    bound to the node's ports, so it already sees visitors' IPs).
 3. **Address**: point your domain's `A` record at the node's public IP (`kubectl get nodes -o wide`), or use
-   `<ip-with-dashes>.sslip.io`. It must be the same as `DOMAIN` from step 1.
+   `<ip-with-dashes>.sslip.io`. It must be the same as `DOMAIN` from step 1. Point `www` there too (a `CNAME` to
+   the domain): it redirects to the domain.
 4. **cert-manager and the issuer**: as in step 1 above (the `kubectl apply` lines).
 5. **Registry login** (private images; a read-only token: GitHub → Settings → Developer settings → Personal access
    tokens → classic, scope `read:packages`):
