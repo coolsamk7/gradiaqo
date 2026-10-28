@@ -1,6 +1,10 @@
 # Lint, build and every test, on each pull request to master. Not again after merging: the master ruleset requires
 # both checks to pass on a branch that's up to date with master, so what lands there is what was tested, and what the
 # Images workflow builds. Pull requests also get a comment with the coverage.
+#
+# A pull request that only changes docs, the roadmap or deploy files skips both checks. They're skipped rather than the
+# workflow left out (paths-ignore), because the ruleset requires them: a skipped job counts as passed, a workflow that
+# never ran leaves them pending and the pull request can't be merged.
 name: CI
 
 on:
@@ -16,8 +20,35 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  changes:
+    name: What changed
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      # The pull request's merge commit and its first parent, master: the diff between them is what the pull request
+      # changes.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: diff
+        run: |
+          code=false
+          while IFS= read -r file || [ -n "$file" ]; do
+            case "$file" in
+              # Nothing the checks below build or test.
+              *.md | roadmap.xlsx | branchruleset.json | deploy/*) ;;
+              *) code=true; echo "Needs the checks: $file"; break ;;
+            esac
+          done < <( git diff --name-only HEAD^1 HEAD )
+          [ "$code" = true ] || echo "Only docs, the roadmap or deploy files changed: skipping the checks."
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
   check:
     name: Lint, build, unit tests
+    needs: changes
+    # Runs unless "What changed" positively found nothing to check; if it failed, the checks run anyway.
+    if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -55,6 +86,8 @@ jobs:
 
   ui:
     name: UI tests
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
     runs-on: ubuntu-latest
     # The same database and Mailpit as `yarn db:up` (docker-compose.yml); the tests create studylog_e2e in it.
     services:
