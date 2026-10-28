@@ -2,6 +2,7 @@ import { CatalogStatus, PathVisibility } from '@studylog/schemas/enums';
 import type { EntityManager } from 'typeorm';
 import { IsNull } from 'typeorm';
 
+import { Enrollment } from '../entities/enrollment.entity.js';
 import { Item } from '../entities/item.entity.js';
 import { LearningModule } from '../entities/learning-module.entity.js';
 import { LearningPath } from '../entities/learning-path.entity.js';
@@ -21,6 +22,21 @@ export interface ImportReport {
     /** Items in the path that learners can't see, because they were a draft or archived before the import. */
     unpublishedItems: string[];
 }
+
+/** Whose catalog an import writes to. */
+export interface ImportOwner {
+    /** An organization (such as a personal workspace), or null for the global catalog. */
+    organizationId: string | null;
+    /** Who is importing: the creator of new paths and items. */
+    userId?: string;
+    /** Enroll `userId` in a path the import creates, as a personal workspace does with a path made by hand. */
+    enroll?: boolean;
+}
+
+const GLOBAL: ImportOwner = { organizationId: null };
+
+/** `where` value for an `organizationId` column. */
+const ownedBy = ( organizationId: string | null ) => organizationId ?? IsNull();
 
 /** Columns compared to decide whether a row needs saving. */
 type Comparable = Record<string, unknown>;
@@ -55,16 +71,22 @@ function assignChanged( row: Comparable, wanted: Comparable ): boolean {
 }
 
 /**
- * Makes the global catalog match a path file, inside `manager`'s transaction. Matching is by slug (path, modules,
+ * Makes a catalog (the global one unless `owner` says otherwise) match a path file, inside `manager`'s transaction. Matching is by slug (path, modules,
  * topics) and by item identity (type and URL, or type and title), so running it again updates instead of
  * duplicating, and an item shared by several paths is one item.
  *
- * A new path starts as a draft: learners see it once an admin publishes it. New modules, topics and items are
- * published, so publishing the path shows all of it. Existing statuses are never changed. Items no longer listed
+ * A new global path starts as a draft: learners see it once an admin publishes it. An organization's starts
+ * published and private, like one made by hand. New modules, topics and items are published, so publishing the path
+ * shows all of it. Items are only matched with, and created in, the same catalog. Existing statuses are never changed. Items no longer listed
  * in a topic are unlinked from it (they stay in the catalog); modules and topics no longer in the file are kept and
  * reported, since deleting them would delete learners' choices about them.
  */
-export async function importPath( manager: EntityManager, file: CatalogPath ): Promise<ImportReport> {
+export async function importPath(
+    manager: EntityManager,
+    file: CatalogPath,
+    owner: ImportOwner = GLOBAL,
+): Promise<ImportReport> {
+    const { organizationId } = owner;
     const report: ImportReport = {
         path: { id: '', status: CatalogStatus.Draft, created: false, updated: false },
         modules: { created: 0, updated: 0 },
@@ -74,7 +96,7 @@ export async function importPath( manager: EntityManager, file: CatalogPath ): P
         unpublishedItems: [],
     };
 
-    let path = await manager.findOneBy( LearningPath, { organizationId: IsNull(), slug: file.slug } );
+    let path = await manager.findOneBy( LearningPath, { organizationId: ownedBy( organizationId ), slug: file.slug } );
 
     if ( path ) {
         const wanted = { title: file.title, description: file.description };
@@ -84,18 +106,28 @@ export async function importPath( manager: EntityManager, file: CatalogPath ): P
             await manager.save( path );
         }
     } else {
-        const last = await manager.maximum( LearningPath, 'position', { organizationId: IsNull() } );
+        const last = await manager.maximum( LearningPath, 'position', { organizationId: ownedBy( organizationId ) } );
 
         path = await manager.save( manager.create( LearningPath, {
-            organizationId: null,
+            organizationId,
             slug: file.slug,
             title: file.title,
             description: file.description,
-            status: CatalogStatus.Draft,
-            visibility: PathVisibility.Public,
+            status: organizationId === null ? CatalogStatus.Draft : CatalogStatus.Published,
+            visibility: organizationId === null ? PathVisibility.Public : PathVisibility.Private,
             position: ( last ?? -1 ) + 1,
+            createdById: owner.userId ?? null,
         } ) );
         report.path.created = true;
+        if ( owner.enroll && owner.userId ) {
+            const lastEnrollment = await manager.maximum( Enrollment, 'position', { userId: owner.userId } );
+
+            await manager.insert( Enrollment, {
+                userId: owner.userId,
+                learningPathId: path.id,
+                position: ( lastEnrollment ?? 0 ) + 1,
+            } );
+        }
     }
     report.path.id = path.id;
     report.path.status = path.status;
@@ -146,7 +178,7 @@ export async function importPath( manager: EntityManager, file: CatalogPath ): P
             const itemIds: string[] = [];
 
             for ( const itemSpec of topicSpec.items ) {
-                itemIds.push( ( await upsertItem( manager, itemSpec, items, report ) ).id );
+                itemIds.push( ( await upsertItem( manager, owner, itemSpec, items, report ) ).id );
             }
             await linkItems( manager, topic.id, itemIds, topicSpec.items, report );
         }
@@ -172,9 +204,10 @@ export async function importPath( manager: EntityManager, file: CatalogPath ): P
     return report;
 }
 
-/** The global item for `spec`, created or brought up to date. Each item is handled once per import. */
+/** The owner's item for `spec`, created or brought up to date. Each item is handled once per import. */
 async function upsertItem(
     manager: EntityManager,
+    { organizationId, userId }: ImportOwner,
     spec: CatalogItem,
     seen: Map<string, Item>,
     report: ImportReport,
@@ -187,13 +220,15 @@ async function upsertItem(
     }
 
     const url = spec.details.url;
+    const query = () => manager.createQueryBuilder( Item, 'item' );
     const found = typeof url === 'string'
-        ? await manager.createQueryBuilder( Item, 'item' )
-                .where( 'item.organization_id IS NULL' )
+        ? await ( organizationId === null
+                ? query().where( 'item.organization_id IS NULL' )
+                : query().where( 'item.organization_id = :organizationId', { organizationId } ) )
                 .andWhere( 'item.type = :type', { type: spec.type } )
                 .andWhere( 'item.details ->> \'url\' = :url', { url } )
                 .getOne()
-        : await manager.findOneBy( Item, { organizationId: IsNull(), type: spec.type, title: spec.title } );
+        : await manager.findOneBy( Item, { organizationId: ownedBy( organizationId ), type: spec.type, title: spec.title } );
     const wanted = {
         title: spec.title,
         description: spec.description,
@@ -213,9 +248,10 @@ async function upsertItem(
     } else {
         item = await manager.save( manager.create( Item, {
             ...wanted,
-            organizationId: null,
+            organizationId,
             type: spec.type,
             status: CatalogStatus.Published,
+            createdById: userId ?? null,
         } ) );
         report.items.created++;
     }

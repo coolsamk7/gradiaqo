@@ -1,6 +1,7 @@
 import { CatalogStatus, Difficulty, ItemType, PathVisibility } from '@studylog/schemas/enums';
 import { describe, expect, it } from 'vitest';
 
+import { Enrollment } from '../entities/enrollment.entity.js';
 import { Item } from '../entities/item.entity.js';
 import { LearningModule } from '../entities/learning-module.entity.js';
 import { LearningPath } from '../entities/learning-path.entity.js';
@@ -160,8 +161,9 @@ describe( 'importPath', () => {
         for ( const item of db.rows( Item ) ) {
             const details = item.details as Record<string, unknown>;
 
-            item.details = Object.fromEntries( Object.keys( details ).sort( ( a, b ) => a.length - b.length || a.localeCompare( b ) )
-                .map( ( key ) => [ key, details[key] ] ) );
+            const keys = Object.keys( details ).sort( ( a, b ) => a.length - b.length || a.localeCompare( b ) );
+
+            item.details = Object.fromEntries( keys.map( ( key ) => [ key, details[key] ] ) );
         }
         db.calls.saves = 0;
 
@@ -237,6 +239,54 @@ describe( 'importPath', () => {
 
         expect( reduced.notInFile ).toEqual( [ 'topic "Hash Maps" in "Arrays"', 'module "Two Pointers"' ] );
         expect( db.rows( LearningModule ) ).toHaveLength( 2 );
+    } );
+
+    it( 'imports into an organization: a private path, usable right away, of its own items', async () => {
+        const db = fakeManager();
+        const official = db.add( Item, { organizationId: null, type: ItemType.Problem, title: 'Two Sum', details: { ...TWO_SUM.details } } );
+        const officialNote = db.add( Item, { organizationId: null, type: ItemType.Note, title: note.title, details: { content: 'Official.' } } );
+
+        db.add( Enrollment, { userId: 'user-1', learningPathId: 'other', position: 3 } );
+        const owner = { organizationId: 'org-1', userId: 'user-1', enroll: true };
+        const report = await importPath( db.manager, file(), owner );
+        const [ path ] = db.rows( LearningPath );
+
+        expect( path ).toMatchObject( {
+            organizationId: 'org-1',
+            status: CatalogStatus.Published,
+            visibility: PathVisibility.Private,
+            position: 0,
+            createdById: 'user-1',
+        } );
+        expect( report.path ).toMatchObject( { created: true, status: CatalogStatus.Published } );
+        // Its own copies: the official items are neither used nor changed.
+        expect( report.items.created ).toBe( 4 );
+        expect( db.rows( Item ).filter( ( row ) => row.organizationId === 'org-1' ) ).toHaveLength( 4 );
+        expect( db.rows( Item ).filter( ( row ) => row.organizationId === 'org-1' ).map( ( row ) => row.createdById ) )
+            .toEqual( [ 'user-1', 'user-1', 'user-1', 'user-1' ] );
+        expect( official.title ).toBe( 'Two Sum' );
+        expect( officialNote.details ).toEqual( { content: 'Official.' } );
+        expect( db.rows( Enrollment ).at( -1 ) ).toMatchObject( { userId: 'user-1', learningPathId: path.id, position: 4 } );
+
+        const again = await importPath( db.manager, file(), owner );
+
+        expect( again ).toMatchObject( { path: { created: false }, items: { created: 0, updated: 0, linked: 0 } } );
+        expect( db.rows( Enrollment ) ).toHaveLength( 2 );
+    } );
+
+    it( 'enrolls nobody unless asked, and starts at 1 for someone with no paths yet', async () => {
+        const db = fakeManager();
+
+        await importPath( db.manager, file(), { organizationId: 'org-1', userId: 'user-1' } );
+        expect( db.rows( Enrollment ) ).toHaveLength( 0 );
+
+        await importPath( db.manager, { ...file(), slug: 'other' }, { organizationId: 'org-1', userId: 'user-2', enroll: true } );
+        expect( db.rows( Enrollment ) ).toEqual( [ expect.objectContaining( { userId: 'user-2', position: 1 } ) ] );
+
+        // Without a user: no creator, and nobody to enroll.
+        await importPath( db.manager, { ...file(), slug: 'third' }, { organizationId: 'org-2', enroll: true } );
+        expect( db.rows( LearningPath ).at( -1 ) ).toMatchObject( { organizationId: 'org-2', createdById: null } );
+        expect( db.rows( Enrollment ) ).toHaveLength( 1 );
     } );
 
     it( 'finds items by type and URL, or by type and title without one, and only global ones', async () => {

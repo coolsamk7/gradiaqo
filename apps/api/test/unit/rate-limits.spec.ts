@@ -1,6 +1,7 @@
 import { THROTTLER_LIMIT, THROTTLER_TTL } from '@nestjs/throttler/dist/throttler.constants.js';
 
 import { AuthController } from '../../src/auth/controllers/auth.controller.js';
+import { PathImportController } from '../../src/catalog/controllers/path-import.controller.js';
 import { PathReportsController } from '../../src/moderation/controllers/reports.controller.js';
 import { OrganizationInvitationsController } from '../../src/organizations/controllers/invitations.controller.js';
 import { RATE_LIMITS } from '../../src/rate-limits.js';
@@ -24,6 +25,7 @@ describe( 'rate limits', () => {
         [ AuthController, 'deleteAccount', RATE_LIMITS.sensitive ],
         [ OrganizationInvitationsController, 'create', RATE_LIMITS.invite ],
         [ PathReportsController, 'create', RATE_LIMITS.report ],
+        [ PathImportController, 'import', RATE_LIMITS.import ],
     ] )( '%o.%s has its tighter limit', ( controller, method, expected ) => {
         expect( limitOf( controller, method ) ).toEqual( expected );
     } );

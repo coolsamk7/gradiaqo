@@ -1,6 +1,6 @@
 export type { CatalogItem, CatalogModule, CatalogPath, CatalogTopic } from './catalog/catalog-file.js';
 export { CatalogFileError } from './catalog/catalog-file.js';
-export type { ImportReport } from './catalog/catalog-import.js';
+export type { ImportOwner, ImportReport } from './catalog/catalog-import.js';
 export type { CatalogImport } from './catalog/import-file.js';
 export { importCatalogFile } from './catalog/import-file.js';
 export { toSlug } from './catalog/slug.js';

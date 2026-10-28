@@ -136,3 +136,9 @@
     margin: 0;
     accent-color: var( --color-accent );
 }
+
+.headerActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var( --space-3 );
+}

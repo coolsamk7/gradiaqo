@@ -18,6 +18,8 @@ export const RATE_LIMITS = {
     code: { limit: 20, ttl: 15 * MINUTE },
     invite: { limit: 30, ttl: HOUR },
     report: { limit: 10, ttl: HOUR },
+    // Importing a path file: a check and an import per file, each a large transaction.
+    import: { limit: 60, ttl: HOUR },
 } as const;
 
 /** Replaces the default limit on a route, e.g. `@RateLimit( 'login' )`. */

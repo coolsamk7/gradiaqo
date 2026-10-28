@@ -109,6 +109,46 @@ test.describe( 'My paths', () => {
         await expect( page.getByRole( 'heading', { name: 'No paths here yet' } ) ).toBeVisible();
     } );
 
+    test( 'imports a path file as a private path in the workspace, ready to study', async ( { page, api } ) => {
+        const file = [
+            'slug: my-roadmap',
+            'title: My Roadmap',
+            'modules:',
+            '  - title: Foundations',
+            '    topics:',
+            '      - title: "Week 1: Python"',
+            '        items:',
+            '          - type: exercise',
+            '            title: "Day 1: Environment setup"',
+            '            minutes: 120',
+            '            instructions: Install Python and create a repo.',
+            '          - type: exercise',
+            '            title: "Day 2: Python refresher"',
+            '            minutes: 120',
+            '            instructions: Comprehensions, generators and f-strings.',
+            '',
+        ].join( '\n' );
+
+        await logIn( page, await api.signUp() );
+        await page.goto( '/app/my-paths' );
+        await page.getByRole( 'button', { name: 'Import file' } ).click();
+        const dialog = page.getByRole( 'dialog', { name: 'Import a path' } );
+
+        await dialog.getByLabel( 'Path file' ).setInputFiles( { name: 'roadmap.yaml', mimeType: 'application/yaml', buffer: Buffer.from( file ) } );
+        await expect( dialog.getByRole( 'region', { name: 'What importing changes' } ) ).toContainText( 'My Roadmap (my-roadmap) · New path, published' );
+        await dialog.getByRole( 'button', { name: 'Import' } ).click();
+        await expect( dialog.getByRole( 'status' ) ).toContainText( 'Imported “My Roadmap”. It\'s private, and on your dashboard to study.' );
+        await dialog.getByRole( 'button', { name: 'Done' } ).click();
+
+        const row = page.getByRole( 'listitem' ).filter( { has: page.getByRole( 'heading', { level: 2, name: 'My Roadmap' } ) } );
+
+        await expect( row ).toContainText( 'Private' );
+
+        // On the dashboard, ready to study.
+        await page.getByRole( 'navigation', { name: 'Main' } ).getByRole( 'link', { name: 'Dashboard' } ).click();
+        await expect( page.getByText( 'My Roadmap' ) ).toBeVisible();
+    } );
+
     test( 'Alice also builds paths for the organization she runs', async ( { page } ) => {
         await logIn( page, SEEDED.alice );
         await page.goto( '/app/my-paths' );

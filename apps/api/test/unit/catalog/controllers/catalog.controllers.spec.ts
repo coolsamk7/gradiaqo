@@ -70,7 +70,7 @@ describe( 'catalog controllers', () => {
         [ 'items.findOne', () => controllers.items.findOne( OWNER, 'i' ), items.findOrFail, [ OWNER, 'i' ] ],
         [ 'items.update', () => controllers.items.update( OWNER, user, 'i', dto ), items.update, [ OWNER, 'i', dto, 'user-1' ] ],
         [ 'items.remove', () => controllers.items.remove( OWNER, user, 'i' ), items.remove, [ OWNER, 'i', 'user-1' ] ],
-        [ 'import', () => controllers.import.import( user, { content: 'slug: x' } ), pathImport.import, [ { content: 'slug: x' }, 'user-1' ] ],
+        [ 'import', () => controllers.import.import( OWNER, user, { content: 'slug: x' } ), pathImport.import, [ OWNER, { content: 'slug: x' }, 'user-1' ] ],
     ] )( '%s passes the catalog, ids and user to the service', async ( _, call, method, expected ) => {
         await expect( call() ).resolves.toMatch( /result$/ );
         expect( method ).toHaveBeenLastCalledWith( ...expected );

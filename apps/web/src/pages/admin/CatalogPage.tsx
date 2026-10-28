@@ -110,6 +110,9 @@ function PathsTab( { importing, onImported }: { importing: boolean; onImported: 
 
     const dialog = importing && (
         <ImportPathDialog
+            url="/admin/catalog/import"
+            description="From a path file (.yaml). A new path starts as a draft; importing a file again changes only what's different."
+            pathUrl={( id ) => `/app/admin/catalog/paths/${id}`}
             onClose={( imported ) => {
                 onImported();
                 if ( imported ) {
