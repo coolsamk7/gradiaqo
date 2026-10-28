@@ -311,3 +311,49 @@ export const ReorderRequest = Type.Object(
     { additionalProperties: false },
 );
 export type ReorderRequest = StaticDecode<typeof ReorderRequest>;
+
+// ---------- Importing a path file ----------
+
+/** The longest path file the API takes: well over the biggest one so far (about 35,000), under the JSON body limit. */
+export const MAX_PATH_FILE_LENGTH = 90_000;
+
+/** A learning-path YAML file (content/paths/README.md), for the global catalog. */
+export const ImportPathFileRequest = Type.Object(
+    {
+        content: Type.String( { minLength: 1, maxLength: MAX_PATH_FILE_LENGTH, description: 'The file\'s text' } ),
+        dryRun: Type.Optional( Type.Boolean( { description: 'Check the file and say what would change, saving nothing' } ) ),
+    },
+    { additionalProperties: false },
+);
+export type ImportPathFileRequest = StaticDecode<typeof ImportPathFileRequest>;
+
+const Changes = {
+    total: Type.Integer( { minimum: 0, description: 'How many the file has' } ),
+    created: Type.Integer( { minimum: 0 } ),
+    updated: Type.Integer( { minimum: 0 } ),
+};
+
+/** What an import changed, or on a dry run would change. */
+export const PathImportResult = Type.Object( {
+    dryRun: Type.Boolean(),
+    path: Type.Object( {
+        id: Uuid(),
+        slug: Type.String(),
+        title: Type.String(),
+        status: Type.Enum( CatalogStatus, { description: 'A new path is a draft until it\'s published' } ),
+        created: Type.Boolean(),
+        updated: Type.Boolean( { description: 'An existing path whose title or description changed' } ),
+    }, { description: 'On a dry run of a new path, the id was never saved' } ),
+    modules: Type.Object( Changes ),
+    topics: Type.Object( Changes ),
+    items: Type.Object( {
+        ...Changes,
+        total: Type.Integer( { minimum: 0, description: 'Distinct items: one used in two topics counts once' } ),
+        linked: Type.Integer( { minimum: 0, description: 'Placed in a topic' } ),
+        unlinked: Type.Integer( { minimum: 0, description: 'Taken out of a topic that no longer lists them' } ),
+    } ),
+    notInFile: Type.Array( Type.String(), { description: 'Modules and topics no longer in the file: kept, delete them here if you mean to' } ),
+    unpublishedItems: Type.Array( Type.String(), { description: 'Items in the path learners can\'t see (a draft or archived)' } ),
+} );
+export type PathImportResult = StaticDecode<typeof PathImportResult>;
+export type PathImportResultJson = StaticEncode<typeof PathImportResult>;

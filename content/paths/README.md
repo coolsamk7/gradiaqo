@@ -1,7 +1,11 @@
 # Learning paths
 
-The official learning paths, one YAML file each. `yarn cli catalog:import content/paths/<file>.yaml` creates the path in
-the global catalog, or brings it up to date: run it again after every change. Add `--dry-run` to see what would change.
+The official learning paths, one YAML file each. Importing a file creates the path in the global catalog, or brings it
+up to date: import it again after every change. Either way, you see what would change first:
+
+- **Admin › Catalog › Import file**: choose the file; the dialog shows what importing it changes (or the file's
+  problems), and **Import** makes the change. It's in the audit log.
+- **`yarn cli catalog:import content/paths/<file>.yaml`**, with `--dry-run` to see what would change.
 
 A new path starts as a **draft**: check it in Admin › Catalog, then publish it there. Its modules, topics and items are
 published already, so publishing the path shows all of it. Statuses that already exist are never changed by an import.
@@ -58,7 +62,8 @@ Fields by type, besides `title`, `description`, `difficulty`, `minutes`, `tags` 
 
 ## On production
 
-The file is read from stdin, so it doesn't need to be in the image:
+Use **Import file** in Admin › Catalog. Or with kubectl: the file is read from stdin, so it doesn't need to be in the
+image:
 
 ```bash
 kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - --dry-run < content/paths/dsa.yaml

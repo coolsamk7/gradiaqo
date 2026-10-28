@@ -25,6 +25,7 @@ describe( 'audit', () => {
             'moved the path “Graphs” to draft',
             'archived the path “Graphs”',
             'deleted the path “Graphs”',
+            'imported the path “Graphs” from a file',
             'published the item “Graphs”',
             'moved the item “Graphs” to draft',
             'archived the item “Graphs”',

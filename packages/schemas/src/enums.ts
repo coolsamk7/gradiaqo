@@ -111,6 +111,8 @@ export enum AuditAction {
     PathMovedToDraft = 'path_moved_to_draft',
     PathArchived = 'path_archived',
     PathDeleted = 'path_deleted',
+    /** Created or updated from a path file (Admin › Catalog › Import). */
+    PathImported = 'path_imported',
     ItemPublished = 'item_published',
     ItemMovedToDraft = 'item_moved_to_draft',
     ItemArchived = 'item_archived',

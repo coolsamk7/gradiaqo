@@ -213,8 +213,8 @@ The role is in the access token, so it applies within 15 minutes (`JWT_EXPIRES_I
 
 ## Official learning paths
 
-The official paths are YAML files in `content/paths/`. Import one from your machine (the file goes in through stdin),
-check it in Admin › Catalog, then publish it there:
+The official paths are YAML files in `content/paths/`. Import one with **Import file** in Admin › Catalog, which shows
+what would change before importing, then publish the path there. Or from your machine (the file goes in through stdin):
 
 ```bash
 kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - --dry-run < content/paths/dsa.yaml

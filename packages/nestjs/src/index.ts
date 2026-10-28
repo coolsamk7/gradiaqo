@@ -25,6 +25,7 @@ import {
     EnrollmentDetail,
     ForgotPasswordRequest,
     HealthResponse,
+    ImportPathFileRequest,
     InterviewGoal,
     Invitation,
     Item,
@@ -51,6 +52,7 @@ import {
     MyInvitation,
     MyOrganization,
     OrganizationSummary,
+    PathImportResult,
     PlatformOverview,
     PublishedPath,
     PublishedPathSummary,
@@ -107,6 +109,7 @@ export const CreateItemBody = typebox( CreateItemRequest, { name: 'CreateItemReq
 export const UpdateItemBody = typebox( UpdateItemRequest, { name: 'UpdateItemRequest' } );
 export const LinkItemBody = typebox( LinkItemRequest, { name: 'LinkItemRequest' } );
 export const ReorderBody = typebox( ReorderRequest, { name: 'ReorderRequest' } );
+export const ImportPathFileBody = typebox( ImportPathFileRequest, { name: 'ImportPathFileRequest' } );
 
 export const CreateOrganizationBody = typebox( CreateOrganizationRequest, { name: 'CreateOrganizationRequest' } );
 export const UpdateMemberBody = typebox( UpdateMemberRequest, { name: 'UpdateMemberRequest' } );
@@ -198,4 +201,5 @@ export const Responses = {
     PlatformOverview: typebox( PlatformOverview, { name: 'PlatformOverview', direction: 'response' } ),
     AdminOrganizationPage: typebox( AdminOrganizationPage, { name: 'AdminOrganizationPage', direction: 'response' } ),
     AuditPage: typebox( AuditPage, { name: 'AuditPage', direction: 'response' } ),
+    PathImportResult: typebox( PathImportResult, { name: 'PathImportResult', direction: 'response' } ),
 } as const;

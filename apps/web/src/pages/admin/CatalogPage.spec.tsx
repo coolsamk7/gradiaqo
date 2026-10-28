@@ -202,6 +202,211 @@ describe( 'The global catalog', () => {
         expect( await screen.findByText( 'No official paths yet.' ) ).toBeInTheDocument();
     } );
 
+    describe( 'Importing a path file', () => {
+        const preview = ( overrides: Record<string, unknown> = {} ) => ( {
+            dryRun: true,
+            path: { id: GRAPHS.id, slug: 'graph-algorithms', title: 'Graph Algorithms', status: CatalogStatus.Draft, created: true, updated: false },
+            modules: { total: 2, created: 2, updated: 0 },
+            topics: { total: 5, created: 5, updated: 0 },
+            items: { total: 12, created: 11, updated: 1, linked: 12, unlinked: 0 },
+            notInFile: [],
+            unpublishedItems: [],
+            ...overrides,
+        } );
+        const yaml = ( name: string, text = 'slug: graph-algorithms\n' ) => new File( [ text ], name, { type: 'application/yaml' } );
+        const sent = ( calls: { method: string; path: string; body?: unknown }[] ) =>
+            calls.filter( ( call ) => call.method === 'POST' && call.path === '/admin/catalog/import' ).map( ( call ) => call.body );
+        const pathLoads = ( calls: { method: string; path: string }[] ) =>
+            calls.filter( ( call ) => call.method === 'GET' && call.path === '/admin/catalog/paths' ).length;
+
+        it( 'shows what the file would change, imports it, and reloads the paths', async () => {
+            const { calls } = api( {
+                'POST /admin/catalog/import': ( init ) => {
+                    const { dryRun } = JSON.parse( init?.body as string ) as { dryRun?: boolean };
+
+                    return json( 200, preview( {
+                        dryRun: dryRun ?? false,
+                        notInFile: [ 'module "Old"' ],
+                        unpublishedItems: [ '"Dijkstra" (draft)' ],
+                    } ) );
+                },
+            } );
+            const user = userEvent.setup();
+
+            renderApp( '/app/admin/catalog' );
+            await user.click( await screen.findByRole( 'button', { name: 'Import file' } ) );
+
+            const dialog = within( screen.getByRole( 'dialog', { name: 'Import a path' } ) );
+
+            expect( dialog.getByLabelText( 'Path file' ) ).toHaveFocus();
+            expect( dialog.getByRole( 'button', { name: 'Import' } ) ).toBeDisabled();
+            await user.upload( dialog.getByLabelText( 'Path file' ), yaml( 'graphs.yaml' ) );
+
+            const changes = within( await dialog.findByRole( 'region', { name: 'What importing changes' } ) );
+
+            expect( changes.getByText( 'Graph Algorithms' ).parentElement ).toHaveTextContent( 'Graph Algorithms (graph-algorithms) · New path, a draft' );
+            expect( changes.getAllByRole( 'listitem' ).map( ( line ) => line.textContent ) ).toEqual( [
+                '2 modules: 2 new, 0 changed',
+                '5 topics: 5 new, 0 changed',
+                '12 items: 11 new, 1 changed · 12 added to topics, 0 taken out',
+            ] );
+            expect( changes.getByText( 'Not in the file, kept: module "Old". Delete it in the path if you mean to.' ) ).toBeInTheDocument();
+            expect( changes.getByText( 'Not published, so learners don\'t see it: "Dijkstra" (draft).' ) ).toBeInTheDocument();
+            expect( sent( calls ) ).toEqual( [ { content: 'slug: graph-algorithms\n', dryRun: true } ] );
+            expect( pathLoads( calls ) ).toBe( 1 );
+
+            await user.click( dialog.getByRole( 'button', { name: 'Import' } ) );
+
+            expect( await dialog.findByRole( 'status' ) ).toHaveTextContent(
+                'Imported “Graph Algorithms”. It\'s a draft: publish it when it\'s ready, and learners will see it.',
+            );
+            expect( sent( calls ).at( -1 ) ).toEqual( { content: 'slug: graph-algorithms\n' } );
+            expect( dialog.getByRole( 'link', { name: 'Open path' } ) ).toHaveAttribute( 'href', `/app/admin/catalog/paths/${GRAPHS.id}` );
+
+            await user.click( dialog.getByRole( 'button', { name: 'Done' } ) );
+            expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+            await waitFor( () => expect( pathLoads( calls ) ).toBe( 2 ) );
+        } );
+
+        it( 'lists the file\'s problems, and says when the catalog already matches the file', async () => {
+            let answer = () => json( 400, {
+                statusCode: 400,
+                message: 'The file doesn\'t match the format:\n  /slug: must match pattern\n  /modules: must not have fewer than 1 items',
+            } );
+
+            api( { 'POST /admin/catalog/import': () => answer() } );
+            const user = userEvent.setup();
+
+            renderApp( '/app/admin/catalog' );
+            await user.click( await screen.findByRole( 'button', { name: 'Import file' } ) );
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'broken.yaml' ) );
+
+            const alert = await screen.findByRole( 'alert' );
+
+            expect( alert ).toHaveTextContent( /^The file doesn't match the format:/ );
+            expect( within( alert ).getAllByRole( 'listitem' ).map( ( line ) => line.textContent ) )
+                .toEqual( [ '/slug: must match pattern', '/modules: must not have fewer than 1 items' ] );
+            expect( screen.getByRole( 'button', { name: 'Import' } ) ).toBeDisabled();
+
+            answer = () => json( 200, preview( {
+                path: { ...preview().path, created: false, status: CatalogStatus.Published },
+                modules: { total: 2, created: 0, updated: 0 },
+                topics: { total: 5, created: 0, updated: 0 },
+                items: { total: 12, created: 0, updated: 0, linked: 0, unlinked: 0 },
+            } ) );
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'graphs.yaml' ) );
+
+            expect( await screen.findByText( 'Nothing to import: the catalog already matches this file.' ) ).toBeInTheDocument();
+            expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
+            expect( screen.getByText( /Already there, published/ ) ).toBeInTheDocument();
+            expect( screen.getByRole( 'button', { name: 'Import' } ) ).toBeDisabled();
+        } );
+
+        it( 'refuses an empty file without asking the API, and closes without reloading', async () => {
+            const { calls } = api();
+            const user = userEvent.setup();
+
+            renderApp( '/app/admin/catalog' );
+            await user.click( await screen.findByRole( 'button', { name: 'Import file' } ) );
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'empty.yaml', '\n' ) );
+
+            expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'The file is empty.' );
+            expect( sent( calls ) ).toEqual( [] );
+
+            await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+            expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+            expect( pathLoads( calls ) ).toBe( 1 );
+        } );
+
+        it( 'waits while checking and importing, and says when importing failed', async () => {
+            let answer: () => Response | Promise<Response> = pending;
+
+            api( { 'POST /admin/catalog/import': () => answer() } );
+            const user = userEvent.setup();
+
+            renderApp( '/app/admin/catalog' );
+            await user.click( await screen.findByRole( 'button', { name: 'Import file' } ) );
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'graphs.yaml' ) );
+            expect( await screen.findByRole( 'status' ) ).toHaveTextContent( 'Checking graphs.yaml…' );
+            expect( screen.getByRole( 'button', { name: 'Import' } ) ).toBeDisabled();
+
+            // A second file replaces the first, whose answer no longer matters.
+            answer = () => json( 200, preview() );
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'graphs-2.yaml' ) );
+            await screen.findByRole( 'region', { name: 'What importing changes' } );
+            expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
+
+            answer = pending;
+            await user.click( screen.getByRole( 'button', { name: 'Import' } ) );
+            expect( screen.getByRole( 'button', { name: 'Importing…' } ) ).toBeDisabled();
+
+            await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+            await user.click( screen.getByRole( 'button', { name: 'Import file' } ) );
+            answer = () => json( 200, preview() );
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'graphs.yaml' ) );
+            await screen.findByRole( 'region', { name: 'What importing changes' } );
+            answer = () => json( 500, {} );
+            await user.click( screen.getByRole( 'button', { name: 'Import' } ) );
+            expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Something went wrong, so nothing changed. Please try again.' );
+            expect( screen.getByRole( 'button', { name: 'Import' } ) ).toBeEnabled();
+        } );
+
+        it( 'ignores a check that ends after another file was chosen, and clears when the file is removed', async () => {
+            const answers: ( ( response: Response ) => void )[] = [];
+
+            api( { 'POST /admin/catalog/import': () => new Promise<Response>( ( resolve ) => answers.push( resolve ) ) } );
+            const user = userEvent.setup();
+            const titled = ( title: string ) => preview( { path: { ...preview().path, title } } );
+
+            renderApp( '/app/admin/catalog' );
+            await user.click( await screen.findByRole( 'button', { name: 'Import file' } ) );
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'old.yaml' ) );
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'new.yaml' ) );
+            await waitFor( () => expect( answers ).toHaveLength( 2 ) );
+
+            await act( () => Promise.resolve( answers[1]( json( 200, titled( 'New' ) ) ) ) );
+            await act( () => Promise.resolve( answers[0]( json( 200, titled( 'Old' ) ) ) ) );
+            expect( screen.getByText( 'New' ) ).toBeInTheDocument();
+            expect( screen.queryByText( 'Old' ) ).not.toBeInTheDocument();
+
+            // A failure that comes too late is ignored too.
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'broken.yaml' ) );
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml( 'fixed.yaml' ) );
+            await waitFor( () => expect( answers ).toHaveLength( 4 ) );
+            await act( () => Promise.resolve( answers[3]( json( 200, titled( 'Fixed' ) ) ) ) );
+            await act( () => Promise.resolve( answers[2]( json( 400, { statusCode: 400, message: 'Not valid YAML: oops' } ) ) ) );
+            expect( screen.getByText( 'Fixed' ) ).toBeInTheDocument();
+            expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
+
+            await user.upload( screen.getByLabelText( 'Path file' ), [] );
+            expect( screen.queryByRole( 'region', { name: 'What importing changes' } ) ).not.toBeInTheDocument();
+            expect( screen.getByRole( 'button', { name: 'Import' } ) ).toBeDisabled();
+        } );
+
+        it( 'is only offered for paths, and works while the paths are loading or failed to load', async () => {
+            let answer: () => Response | Promise<Response> = pending;
+
+            api( { 'GET /admin/catalog/paths': () => answer() } );
+            const user = userEvent.setup();
+
+            renderApp( '/app/admin/catalog?tab=items' );
+            await screen.findByRole( 'button', { name: 'New item' } );
+            expect( screen.queryByRole( 'button', { name: 'Import file' } ) ).not.toBeInTheDocument();
+
+            await user.click( screen.getByRole( 'button', { name: 'Paths' } ) );
+            await user.click( screen.getByRole( 'button', { name: 'Import file' } ) );
+            expect( screen.getByRole( 'dialog', { name: 'Import a path' } ) ).toBeInTheDocument();
+            await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+            answer = () => json( 500, {} );
+            await user.click( screen.getByRole( 'button', { name: 'Items' } ) );
+            await user.click( screen.getByRole( 'button', { name: 'Paths' } ) );
+            await screen.findByText( /Something went wrong while loading/ );
+            await user.click( screen.getByRole( 'button', { name: 'Import file' } ) );
+            expect( screen.getByRole( 'dialog', { name: 'Import a path' } ) ).toBeInTheDocument();
+        } );
+    } );
+
     describe( 'Items', () => {
         it( 'lists the official items with their type, status and use', async () => {
             const { calls } = api();
