@@ -1,6 +1,7 @@
-import { Difficulty, ItemType } from '@studylog/database';
+import { Difficulty, ItemType } from '@studylog/schemas/enums';
+import { describe, expect, it } from 'vitest';
 
-import { itemKey, parseCatalogFile } from './catalog-file.js';
+import { CatalogFileError, itemKey, parseCatalogFile } from './catalog-file.js';
 
 const PATH = `
 slug: dsa
@@ -83,6 +84,7 @@ describe( 'parseCatalogFile', () => {
 
     it( 'refuses text that isn\'t YAML', () => {
         expect( () => parseCatalogFile( 'a: [1,' ) ).toThrow( /^Not valid YAML: / );
+        expect( () => parseCatalogFile( 'a: [1,' ) ).toThrow( CatalogFileError );
     } );
 
     it( 'lists every place the file doesn\'t match the format', () => {

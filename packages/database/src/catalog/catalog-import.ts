@@ -1,7 +1,12 @@
-import { CatalogStatus, Item, LearningModule, LearningPath, PathVisibility, Topic, TopicItem } from '@studylog/database';
+import { CatalogStatus, PathVisibility } from '@studylog/schemas/enums';
 import type { EntityManager } from 'typeorm';
 import { IsNull } from 'typeorm';
 
+import { Item } from '../entities/item.entity.js';
+import { LearningModule } from '../entities/learning-module.entity.js';
+import { LearningPath } from '../entities/learning-path.entity.js';
+import { Topic } from '../entities/topic.entity.js';
+import { TopicItem } from '../entities/topic-item.entity.js';
 import type { CatalogItem, CatalogPath } from './catalog-file.js';
 import { itemKey } from './catalog-file.js';
 

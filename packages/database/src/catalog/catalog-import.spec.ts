@@ -1,6 +1,12 @@
-import { CatalogStatus, Difficulty, Item, ItemType, LearningModule, LearningPath, PathVisibility, Topic, TopicItem } from '@studylog/database';
+import { CatalogStatus, Difficulty, ItemType, PathVisibility } from '@studylog/schemas/enums';
+import { describe, expect, it } from 'vitest';
 
-import { fakeManager } from '../test/fake-manager.js';
+import { Item } from '../entities/item.entity.js';
+import { LearningModule } from '../entities/learning-module.entity.js';
+import { LearningPath } from '../entities/learning-path.entity.js';
+import { Topic } from '../entities/topic.entity.js';
+import { TopicItem } from '../entities/topic-item.entity.js';
+import { fakeManager } from '../testing/fake-manager.js';
 import type { CatalogItem, CatalogPath } from './catalog-file.js';
 import { importPath } from './catalog-import.js';
 

@@ -2,7 +2,7 @@
   "name": "@studylog/database",
   "version": "0.0.0",
   "private": true,
-  "description": "TypeORM entities shared by StudyLog backend apps",
+  "description": "TypeORM entities shared by StudyLog backend apps, and the importer for official learning-path files",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/fake-manager.d.ts",
+      "default": "./dist/testing/fake-manager.js"
     },
     "./package.json": "./package.json"
   },
@@ -43,6 +47,7 @@
     "vitest": "^4.1.2"
   },
   "dependencies": {
-    "@studylog/schemas": "workspace:*"
+    "@studylog/schemas": "workspace:*",
+    "yaml": "^2.6.1"
   }
 }

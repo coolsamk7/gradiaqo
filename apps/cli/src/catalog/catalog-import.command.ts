@@ -1,22 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { CatalogStatus } from '@studylog/database';
+import type { CatalogImport } from '@studylog/database';
+import { CatalogStatus, importCatalogFile } from '@studylog/database';
 import { Command, CommandRunner, Option } from 'nest-commander';
 
 import { DatabaseService } from '../database/database.service.js';
 import { output, runSafely } from '../output.js';
-import type { CatalogPath } from './catalog-file.js';
-import { itemKey, parseCatalogFile } from './catalog-file.js';
-import type { ImportReport } from './catalog-import.js';
-import { importPath } from './catalog-import.js';
-
-/** Thrown inside the transaction on a dry run, so everything the import did is rolled back. */
-class DryRun extends Error {
-    constructor( readonly report: ImportReport ) {
-        super( 'dry run' );
-    }
-}
 
 /**
  * The file's text; `-` reads it from stdin (for `kubectl exec -i ... < file`). A relative path is from where the command
@@ -59,27 +49,12 @@ export class CatalogImportCommand extends CommandRunner {
 
     async run( [ file ]: string[], options: { dryRun?: boolean } ): Promise<void> {
         await runSafely( async () => {
-            const path = parseCatalogFile( await readInput( file ) );
-            const report = await this.database.withDataSource( async ( dataSource ) => {
-                try {
-                    return await dataSource.transaction( async ( manager ) => {
-                        const result = await importPath( manager, path );
+            const text = await readInput( file );
+            const result = await this.database.withDataSource(
+                ( dataSource ) => importCatalogFile( dataSource, text, { dryRun: options.dryRun } ),
+            );
 
-                        if ( options.dryRun ) {
-                            throw new DryRun( result );
-                        }
-
-                        return result;
-                    } );
-                } catch ( error ) {
-                    if ( error instanceof DryRun ) {
-                        return error.report;
-                    }
-                    throw error;
-                }
-            } );
-
-            print( path, report );
+            print( result );
             if ( options.dryRun ) {
                 output.warn( 'Dry run: nothing was saved.' );
             }
@@ -87,9 +62,7 @@ export class CatalogImportCommand extends CommandRunner {
     }
 }
 
-function print( path: CatalogPath, report: ImportReport ): void {
-    const topics = path.modules.flatMap( ( module ) => module.topics );
-    const items = new Set( topics.flatMap( ( topic ) => topic.items.map( itemKey ) ) ).size;
+function print( { path, size, report }: CatalogImport ): void {
     let what = 'already there';
 
     if ( report.path.created ) {
@@ -99,9 +72,9 @@ function print( path: CatalogPath, report: ImportReport ): void {
     }
 
     output.success( `${path.title} (${path.slug}): ${what}, ${report.path.status}` );
-    output.info( `  ${plural( path.modules.length, 'module' )}: ${report.modules.created} new, ${report.modules.updated} changed` );
-    output.info( `  ${plural( topics.length, 'topic' )}: ${report.topics.created} new, ${report.topics.updated} changed` );
-    output.info( `  ${plural( items, 'item' )}: ${report.items.created} new, ${report.items.updated} changed`
+    output.info( `  ${plural( size.modules, 'module' )}: ${report.modules.created} new, ${report.modules.updated} changed` );
+    output.info( `  ${plural( size.topics, 'topic' )}: ${report.topics.created} new, ${report.topics.updated} changed` );
+    output.info( `  ${plural( size.items, 'item' )}: ${report.items.created} new, ${report.items.updated} changed`
         + ` · ${report.items.linked} added to topics, ${report.items.unlinked} taken out` );
     for ( const missing of report.notInFile ) {
         output.warn( `Not in the file, kept: ${missing}` );

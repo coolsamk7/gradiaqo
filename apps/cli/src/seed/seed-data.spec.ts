@@ -8,6 +8,7 @@ import {
     ReportStatus,
     RuleMode,
     RuleScope,
+    toSlug,
     User,
 } from '@studylog/database';
 import { ItemDetailsSchemas } from '@studylog/schemas';
@@ -15,7 +16,6 @@ import { Compile } from 'typebox/compile';
 
 import { SEED_PASSWORD } from './seed-content.js';
 import { buildSeedData, seededRandom, seedTables } from './seed-data.js';
-import { toSlug } from './slug.js';
 
 const NOW = new Date( '2026-09-29T15:30:00Z' );
 const DAY = 24 * 60 * 60_000;
