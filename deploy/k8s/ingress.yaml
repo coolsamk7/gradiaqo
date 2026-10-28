@@ -35,3 +35,40 @@ spec:
   redirectScheme:
     scheme: https
     permanent: true
+---
+# www.DOMAIN, with its own certificate, only sends visitors to https://DOMAIN (the Middleware below), so there is one
+# address for search engines and the refresh cookie. Its DNS record must point at the node as DOMAIN's does.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: studylog-www
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.middlewares: studylog-redirect-www@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - www.DOMAIN
+      secretName: studylog-www-tls
+  rules:
+    - host: www.DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  name: http
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-www
+spec:
+  redirectRegex:
+    regex: ^https?://www\.[^/]+/(.*)
+    replacement: https://DOMAIN/${1}
+    permanent: true

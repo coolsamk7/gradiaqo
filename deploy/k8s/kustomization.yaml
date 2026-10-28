@@ -27,7 +27,8 @@ secretGenerator:
     envs:
       - secrets.env
 
-# The address in config.env (DOMAIN) is also the Ingress host and its certificate's name.
+# The address in config.env (DOMAIN) is also the Ingress host and its certificate's name, and www.DOMAIN redirects
+# to it. options.index replaces only that part of www.DOMAIN (split at ".") and https://DOMAIN/${1} (split at "/").
 replacements:
   - source:
       kind: ConfigMap
@@ -40,3 +41,20 @@ replacements:
         fieldPaths:
           - spec.rules.0.host
           - spec.tls.0.hosts.0
+      - select:
+          kind: Ingress
+          name: studylog-www
+        fieldPaths:
+          - spec.rules.0.host
+          - spec.tls.0.hosts.0
+        options:
+          delimiter: .
+          index: 1
+      - select:
+          kind: Middleware
+          name: redirect-www
+        fieldPaths:
+          - spec.redirectRegex.replacement
+        options:
+          delimiter: /
+          index: 2
