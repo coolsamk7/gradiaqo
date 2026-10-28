@@ -129,7 +129,7 @@ describe( 'describeSaveError', () => {
 
     it( 'handles problems every form can hit', () => {
         expect( describeSaveError( new NetworkError(), { editing: false } ) )
-            .toEqual( { form: 'Can\'t reach StudyLog right now. Check your connection and try again.', fields: {} } );
+            .toEqual( { form: 'Can\'t reach Gradiaqo right now. Check your connection and try again.', fields: {} } );
         expect( describeSaveError( new ApiError( 400, 'startedAt can\'t be in the future' ), { editing: false } ).form )
             .toBe( 'Check your details and try again.' );
     } );

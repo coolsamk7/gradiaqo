@@ -40,7 +40,7 @@ export const Env = Type.Object( {
     SMTP_SECURE: Flag( false ),
     SMTP_USER: Type.String( { default: '' } ),
     SMTP_PASSWORD: Type.String( { default: '' } ),
-    MAIL_FROM: Type.String( { minLength: 3, default: 'StudyLog <no-reply@studylog.local>' } ),
+    MAIL_FROM: Type.String( { minLength: 3, default: 'Gradiaqo <no-reply@studylog.local>' } ),
     // The web app's address, for links in emails (e.g. an invitation). No trailing slash needed.
     APP_URL: Type.String( {
         pattern: '^https?://[^\\s]+$',

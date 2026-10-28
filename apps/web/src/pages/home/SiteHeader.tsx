@@ -9,7 +9,7 @@ export function SiteHeader() {
     return (
         <header className={styles.header}>
             <div className={`${shared.container} ${styles.inner}`}>
-                <Link to="/" className={styles.home} aria-label="StudyLog home">
+                <Link to="/" className={styles.home} aria-label="Gradiaqo home">
                     <Logo />
                 </Link>
                 <nav aria-label="Main" className={styles.nav}>

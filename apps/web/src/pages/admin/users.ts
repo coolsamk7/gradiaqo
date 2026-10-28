@@ -60,7 +60,7 @@ export function userActions(
     ];
 }
 
-const OFFLINE = 'Can\'t reach StudyLog right now. Check your connection and try again.';
+const OFFLINE = 'Can\'t reach Gradiaqo right now. Check your connection and try again.';
 
 /** Why a change wasn't made; the API explains refusals such as removing the only owner of an organization. */
 export function actionError( error: unknown ): string {

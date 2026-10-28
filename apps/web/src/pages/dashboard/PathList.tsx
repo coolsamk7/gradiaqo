@@ -51,7 +51,7 @@ export function PathList( { enrollments, onReordered }: PathListProps ) {
             onReordered( await request<EnrollmentJson[]>( '/me/enrollments/order', { method: 'PUT', body: { ids } } ) );
         } catch ( failure ) {
             setError( failure instanceof NetworkError
-                ? 'Can\'t reach StudyLog right now. Check your connection and try again.'
+                ? 'Can\'t reach Gradiaqo right now. Check your connection and try again.'
                 : 'Something went wrong, so the order wasn\'t changed. Please try again.' );
         }
         setSaving( false );

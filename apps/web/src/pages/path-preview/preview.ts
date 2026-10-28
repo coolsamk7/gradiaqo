@@ -36,7 +36,7 @@ export function sourceName( path: PublishedPathJson, userId: string ): string {
 /** Why enrolling failed. */
 export function enrollError( error: unknown ): string {
     if ( error instanceof NetworkError ) {
-        return 'Can\'t reach StudyLog right now. Check your connection and try again.';
+        return 'Can\'t reach Gradiaqo right now. Check your connection and try again.';
     }
     if ( error instanceof ApiError && error.status === 409 ) {
         return 'You already follow this path. Reload the page to continue it.';
@@ -60,7 +60,7 @@ export function isReportable( path: PublishedPathSummaryJson, userId: string ): 
 /** Why the report wasn't sent; the API explains refusals like "You can't report your own path". */
 export function reportError( error: unknown ): string {
     if ( error instanceof NetworkError ) {
-        return 'Can\'t reach StudyLog right now. Check your connection and try again.';
+        return 'Can\'t reach Gradiaqo right now. Check your connection and try again.';
     }
     if ( error instanceof ApiError && error.status === 429 ) {
         return 'You\'ve sent a lot of reports. Wait a while before sending more.';

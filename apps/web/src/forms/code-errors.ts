@@ -5,7 +5,7 @@ import { ApiError, NetworkError } from '../api/client.ts';
  * people ("That code is wrong or has expired…", "Wait a minute…"), so they're shown as they are.
  */
 
-const OFFLINE = 'Can\'t reach StudyLog right now. Check your connection and try again.';
+const OFFLINE = 'Can\'t reach Gradiaqo right now. Check your connection and try again.';
 
 /** Why checking a code, or sending one, failed. */
 export function describeCodeError( error: unknown ): string {

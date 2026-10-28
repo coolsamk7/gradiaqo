@@ -1,7 +1,7 @@
 {
   "name": "@studylog/web",
   "version": "0.0.1",
-  "description": "StudyLog web app (React + Vite)",
+  "description": "Gradiaqo web app (React + Vite)",
   "private": true,
   "type": "module",
   "scripts": {

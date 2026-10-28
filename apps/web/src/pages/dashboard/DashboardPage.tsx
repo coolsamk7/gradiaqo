@@ -73,7 +73,7 @@ function summaryOf( state: DashboardState ): string {
         return 'Here\'s how your studying is going.';
     }
     if ( following( state.data.enrollments ).length === 0 ) {
-        return 'Welcome to StudyLog. Pick a learning path to get started.';
+        return 'Welcome to Gradiaqo. Pick a learning path to get started.';
     }
 
     const week = state.data.stats.weekMinutes;

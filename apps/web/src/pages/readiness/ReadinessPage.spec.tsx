@@ -344,7 +344,7 @@ describe( 'ReadinessPage', () => {
             throw new TypeError( 'Failed to fetch' );
         };
         await user.click( save );
-        await waitFor( () => expect( screen.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' ) );
+        await waitFor( () => expect( screen.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' ) );
 
         answer = () => new Promise<Response>( () => undefined ) as unknown as Response;
         await user.click( save );
@@ -370,7 +370,7 @@ describe( 'ReadinessPage', () => {
         expect( await screen.findByRole( 'img', { name: /Readiness score/ } ) ).toBeInTheDocument();
     } );
 
-    it( 'says when StudyLog can\'t be reached, while loading first', async () => {
+    it( 'says when Gradiaqo can\'t be reached, while loading first', async () => {
         mockApi( { ...loggedIn, 'GET /me/readiness': pending, 'GET /me/enrollments': pending } );
         const loading = renderApp( '/app/interview-ready' );
 
@@ -380,6 +380,6 @@ describe( 'ReadinessPage', () => {
         api( READINESS, { 'GET /me/enrollments': () => Promise.reject( new TypeError( 'Failed to fetch' ) ) } );
         renderApp( '/app/interview-ready' );
 
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
     } );
 } );

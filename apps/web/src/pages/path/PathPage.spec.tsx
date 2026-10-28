@@ -394,7 +394,7 @@ describe( 'PathPage', () => {
         api( { [`GET ${URL}`]: () => ( answers.shift() as () => Response | Promise<Response> )() } );
         renderApp( `/app/paths/${DSA.id}` );
 
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
         await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
         expect( screen.getByText( 'Loading the learning path…' ) ).toBeInTheDocument();
         expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();

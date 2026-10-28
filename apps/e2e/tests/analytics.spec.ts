@@ -60,7 +60,7 @@ test.describe( 'Analytics', () => {
         await expect( page.getByRole( 'button', { name: '90 days' } ) ).toHaveAttribute( 'aria-pressed', 'true' );
     } );
 
-    test( 'says when StudyLog can\'t be reached, and tries again', async ( { page, api } ) => {
+    test( 'says when Gradiaqo can\'t be reached, and tries again', async ( { page, api } ) => {
         await logIn( page, await api.signUp() );
         const restore = await failRequests( page, '/me/analytics*' );
 

@@ -1,7 +1,7 @@
 {
   "name": "@studylog/cli",
   "version": "0.0.1",
-  "description": "StudyLog command-line tools (database migrations, admin tasks)",
+  "description": "Gradiaqo command-line tools (database migrations, admin tasks)",
   "author": "",
   "private": true,
   "license": "UNLICENSED",

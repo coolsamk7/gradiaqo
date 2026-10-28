@@ -133,7 +133,7 @@ function countItems( count: number ): string {
 
 function saveError( error: unknown ): string {
     if ( error instanceof NetworkError ) {
-        return 'Can\'t reach StudyLog right now. Check your connection and try again.';
+        return 'Can\'t reach Gradiaqo right now. Check your connection and try again.';
     }
 
     return error instanceof ApiError && error.status === 400

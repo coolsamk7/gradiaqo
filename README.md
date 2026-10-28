@@ -1,4 +1,4 @@
-# StudyLog
+# Gradiaqo
 
 Study time tracker built around learning paths: follow a path (official, from one of your organizations, shared by
 the community, or one you build yourself), log study sessions, track your progress, and see analytics and how ready

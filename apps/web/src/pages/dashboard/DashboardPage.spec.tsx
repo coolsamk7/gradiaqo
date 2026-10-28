@@ -105,7 +105,7 @@ describe( 'DashboardPage', () => {
         api();
         const first = renderApp( '/app' );
 
-        expect( await screen.findByText( 'Welcome to StudyLog. Pick a learning path to get started.' ) ).toBeInTheDocument();
+        expect( await screen.findByText( 'Welcome to Gradiaqo. Pick a learning path to get started.' ) ).toBeInTheDocument();
         first.unmount();
 
         api( { enrollments: [ active, dropped ] } );
@@ -255,7 +255,7 @@ describe( 'DashboardPage', () => {
         } );
         renderApp( '/app' );
 
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
 
         online = true;
         await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
@@ -334,7 +334,7 @@ describe( 'DashboardPage', () => {
             throw new TypeError( 'Failed to fetch' );
         };
         await user.click( within( paths ).getByRole( 'button', { name: 'Move Arrays up' } ) );
-        await waitFor( () => expect( within( paths ).getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' ) );
+        await waitFor( () => expect( within( paths ).getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' ) );
 
         await user.click( within( paths ).getByRole( 'button', { name: 'Done' } ) );
         expect( within( paths ).queryByRole( 'button', { name: 'Move Arrays up' } ) ).not.toBeInTheDocument();

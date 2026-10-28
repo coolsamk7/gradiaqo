@@ -46,6 +46,6 @@ export function useCatalog( source: Source | undefined, search: string ) {
 
 function describeLoadError( error: unknown ): string {
     return error instanceof NetworkError
-        ? 'Can\'t reach StudyLog right now. Check your connection and try again.'
+        ? 'Can\'t reach Gradiaqo right now. Check your connection and try again.'
         : 'Something went wrong while loading the catalog. Please try again.';
 }

@@ -72,7 +72,7 @@ export function AppLayout( { children }: { children: ReactNode } ) {
         <div className={styles.page}>
             <header className={styles.sidebar} data-open={menuOpen}>
                 <div className={styles.top}>
-                    <Link to="/app" className={styles.home} aria-label="StudyLog dashboard">
+                    <Link to="/app" className={styles.home} aria-label="Gradiaqo dashboard">
                         <Logo />
                     </Link>
                     <button

@@ -30,14 +30,14 @@ describe( 'organization helpers', () => {
     } );
 
     it( 'explain why loading failed', () => {
-        expect( loadError( new NetworkError() ) ).toMatch( /^Can't reach StudyLog/ );
+        expect( loadError( new NetworkError() ) ).toMatch( /^Can't reach Gradiaqo/ );
         expect( loadError( new ApiError( 404, 'Not Found' ) ) ).toBe( 'This organization isn\'t here, or you\'re not a member.' );
         expect( loadError( new ApiError( 403, 'Forbidden' ) ) ).toBe( 'This organization isn\'t here, or you\'re not a member.' );
         expect( loadError( new ApiError( 500, 'Oops' ) ) ).toBe( 'Something went wrong while loading. Please try again.' );
     } );
 
     it( 'pass on the API\'s explanations of refused changes', () => {
-        expect( saveError( new NetworkError() ) ).toMatch( /^Can't reach StudyLog/ );
+        expect( saveError( new NetworkError() ) ).toMatch( /^Can't reach Gradiaqo/ );
         expect( saveError( new ApiError( 403, 'Forbidden' ) ) ).toBe( 'Only the organization\'s owners and admins can do that.' );
         expect( saveError( new ApiError( 409, 'An organization needs an owner: make someone else owner first' ) ) )
             .toBe( 'An organization needs an owner: make someone else owner first.' );

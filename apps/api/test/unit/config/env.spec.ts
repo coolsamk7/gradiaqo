@@ -66,7 +66,7 @@ describe( 'validateEnv', () => {
             SMTP_PORT: 1025,
             SMTP_SECURE: false,
             SMTP_USER: '',
-            MAIL_FROM: 'StudyLog <no-reply@studylog.local>',
+            MAIL_FROM: 'Gradiaqo <no-reply@studylog.local>',
         } );
         expect( () => validateEnv( { ...production, SMTP_HOST: 'localhost' } ) ).toThrow( 'SMTP_HOST: must point at the email provider\'s SMTP relay' );
         expect( () => validateEnv( { ...production, SMTP_USER: '' } ) ).toThrow( 'SMTP_HOST: must point at the email provider\'s SMTP relay' );

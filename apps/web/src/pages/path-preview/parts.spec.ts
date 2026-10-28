@@ -131,7 +131,7 @@ describe( 'preview', () => {
     it( 'explains why enrolling failed', () => {
         const api = ( status: number ) => new ApiError( status, 'failed' );
 
-        expect( enrollError( new NetworkError() ) ).toMatch( /^Can't reach StudyLog/ );
+        expect( enrollError( new NetworkError() ) ).toMatch( /^Can't reach Gradiaqo/ );
         expect( enrollError( api( 409 ) ) ).toBe( 'You already follow this path. Reload the page to continue it.' );
         expect( enrollError( api( 404 ) ) ).toBe( 'This path isn\'t available any more.' );
         expect( enrollError( api( 500 ) ) ).toBe( 'Something went wrong, so you weren\'t enrolled. Please try again.' );

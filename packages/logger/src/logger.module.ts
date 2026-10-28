@@ -9,7 +9,7 @@ import { createLoggerOptions } from './logger-options.js';
 export type LoggerModuleOptions = Pick<LoggerOptions, 'service' | 'ignorePaths'>;
 
 /**
- * Pino logging for a StudyLog NestJS app. Reads `LOG_LEVEL` and `LOG_PRETTY` from config.
+ * Pino logging for a Gradiaqo NestJS app. Reads `LOG_LEVEL` and `LOG_PRETTY` from config.
  *
  * @example
  * imports: [ ConfigModule.forRoot( { isGlobal: true } ), LoggerModule.forRoot( { service: 'studylog-api' } ) ]

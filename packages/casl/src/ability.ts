@@ -38,7 +38,7 @@ export interface AbilityContext {
 }
 
 /**
- * Every permission in StudyLog, in one place.
+ * Every permission in Gradiaqo, in one place.
  *
  * Conditions (e.g. `{ id: orgId }`) are checked against the actual record, so route-level
  * checks answer "can this user ever do X to a Y?" and services check the specific record:

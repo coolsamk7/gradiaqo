@@ -45,4 +45,4 @@ export async function failRequests( page: Page, path: string, method?: string ):
     return () => page.unroute( url );
 }
 
-export const OFFLINE = 'Can\'t reach StudyLog right now. Check your connection and try again.';
+export const OFFLINE = 'Can\'t reach Gradiaqo right now. Check your connection and try again.';

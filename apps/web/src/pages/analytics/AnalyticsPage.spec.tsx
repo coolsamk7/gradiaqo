@@ -326,11 +326,11 @@ describe( 'AnalyticsPage', () => {
         expect( await screen.findByText( 'Time studied' ) ).toBeInTheDocument();
     } );
 
-    it( 'says when StudyLog can\'t be reached', async () => {
+    it( 'says when Gradiaqo can\'t be reached', async () => {
         api( ANALYTICS, { 'GET /me/analytics': () => Promise.reject( new TypeError( 'Failed to fetch' ) ) } );
         renderApp( '/app/analytics' );
 
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
     } );
 
     it( 'ignores an answer that arrives after the filter changed', async () => {

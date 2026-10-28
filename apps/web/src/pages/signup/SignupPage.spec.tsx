@@ -147,7 +147,7 @@ describe( 'SignupPage', () => {
     it.each( [
         [ 'too many signups, in minutes', () => json( 429, { message: 'Too many requests' }, { 'Retry-After': '1800' } ), 'Too many attempts. Try again in 30 minutes.' ],
         [ 'a server error', () => json( 500, { message: 'Internal server error' } ), 'Something went wrong. Please try again.' ],
-        [ 'no connection', () => Promise.reject( new TypeError( 'offline' ) ), 'Can\'t reach StudyLog right now. Check your connection and try again.' ],
+        [ 'no connection', () => Promise.reject( new TypeError( 'offline' ) ), 'Can\'t reach Gradiaqo right now. Check your connection and try again.' ],
     ] )( 'explains %s, and lets the user try again', async ( _, handler, message ) => {
         await openSignupPage( { 'POST /auth/signup': handler } );
 
@@ -190,7 +190,7 @@ describe( 'SignupPage', () => {
         expect( input( 'Password' ) ).toHaveAttribute( 'aria-describedby', 'password-hint' );
     } );
 
-    it( 'shows what StudyLog offers next to the form (on wide screens)', async () => {
+    it( 'shows what Gradiaqo offers next to the form (on wide screens)', async () => {
         await openSignupPage();
 
         expect( screen.getAllByRole( 'listitem', { hidden: true } ).map( ( item ) => item.textContent ) ).toEqual( [
@@ -231,7 +231,7 @@ describe( 'SignupPage', () => {
     it( 'links to logging in and back, keeping where to go next', async () => {
         await openSignupPage( SIGNED_UP, { pathname: '/signup', state: { from: '/somewhere' } } );
 
-        expect( screen.getByRole( 'link', { name: 'StudyLog home' } ) ).toHaveAttribute( 'href', '/' );
+        expect( screen.getByRole( 'link', { name: 'Gradiaqo home' } ) ).toHaveAttribute( 'href', '/' );
         expect( screen.getByText( /^Already have an account\?/ ) ).toHaveTextContent( /^Already have an account\? Log in$/ );
 
         await user().click( screen.getByRole( 'link', { name: 'Log in' } ) );

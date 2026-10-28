@@ -400,7 +400,7 @@ describe( 'PathBuilderPage', () => {
 
             await user.click( items().getByRole( 'switch', { name: 'Two Sum is optional' } ) );
 
-            expect( await items().findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+            expect( await items().findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
             expect( items().getByRole( 'switch', { name: 'Two Sum is optional' } ) ).toBeChecked();
         } );
     } );
@@ -478,7 +478,7 @@ describe( 'PathBuilderPage', () => {
 
             answer = () => Promise.reject( new TypeError( 'offline' ) );
             await user.click( form.getByRole( 'button', { name: 'Add item' } ) );
-            await waitFor( () => expect( form.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' ) );
+            await waitFor( () => expect( form.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' ) );
 
             answer = pending;
             await user.click( form.getByRole( 'button', { name: 'Add item' } ) );
@@ -555,7 +555,7 @@ describe( 'PathBuilderPage', () => {
 
             answer = () => Promise.reject( new TypeError( 'offline' ) );
             await user.type( screen.getByRole( 'searchbox' ), 'a' );
-            expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+            expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
         } );
 
         it( 'ignores an answer that comes back after the search changed', async () => {

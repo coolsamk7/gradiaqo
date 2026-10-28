@@ -72,6 +72,6 @@ test.describe( 'Enrolling and path settings', () => {
         await page.getByRole( 'region', { name: 'Leave this path' } ).getByRole( 'button', { name: 'Leave path' } ).click();
         await page.getByRole( 'dialog', { name: `Leave ${SYSTEM}?` } ).getByRole( 'button', { name: 'Leave path' } ).click();
         await expect( page ).toHaveURL( '/app' );
-        await expect( page.getByText( 'Welcome to StudyLog. Pick a learning path to get started.' ) ).toBeVisible();
+        await expect( page.getByText( 'Welcome to Gradiaqo. Pick a learning path to get started.' ) ).toBeVisible();
     } );
 } );

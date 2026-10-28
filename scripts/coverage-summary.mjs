@@ -62,7 +62,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>StudyLog coverage</title>
+<title>Gradiaqo coverage</title>
 <style>
   :root { color-scheme: light dark; --high: #1a7f37; --medium: #9a6700; --low: #cf222e; }
   body { font: 15px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 60rem; padding: 0 1rem; }

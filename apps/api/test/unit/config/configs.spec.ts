@@ -76,7 +76,7 @@ describe( 'configs', () => {
             secure: false,
             user: 'me@example.com',
             password: 'key',
-            from: 'StudyLog <no-reply@studylog.local>',
+            from: 'Gradiaqo <no-reply@studylog.local>',
         } );
     } );
 

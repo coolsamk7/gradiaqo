@@ -6,7 +6,7 @@ import { HowItWorks } from './HowItWorks.tsx';
 import { SiteFooter } from './SiteFooter.tsx';
 import { SiteHeader } from './SiteHeader.tsx';
 
-/** The public homepage: what StudyLog is, for people who aren't logged in. */
+/** The public homepage: what Gradiaqo is, for people who aren't logged in. */
 export function HomePage() {
     return (
         <>

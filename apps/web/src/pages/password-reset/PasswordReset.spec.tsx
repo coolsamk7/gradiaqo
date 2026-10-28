@@ -113,7 +113,7 @@ describe( 'Forgot and reset password', () => {
             throw new TypeError( 'Failed to fetch' );
         };
         await user.click( screen.getByRole( 'button', { name: 'Send a new one' } ) );
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
     } );
 
     it( 'logs out first when resetting while logged in', async () => {

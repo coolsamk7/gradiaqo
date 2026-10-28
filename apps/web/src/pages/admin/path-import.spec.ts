@@ -55,7 +55,7 @@ describe( 'importing a path file', () => {
         expect( importError( new ApiError( 400, 'The file doesn\'t match the format:\n  /slug: must match pattern\n  /modules: must not have fewer than 1 items' ) ) )
             .toEqual( [ 'The file doesn\'t match the format:', '/slug: must match pattern', '/modules: must not have fewer than 1 items' ] );
         expect( importError( new PathFileError( 'The file is empty.' ) ) ).toEqual( [ 'The file is empty.' ] );
-        expect( importError( new NetworkError() ) ).toEqual( [ 'Can\'t reach StudyLog right now. Check your connection and try again.' ] );
+        expect( importError( new NetworkError() ) ).toEqual( [ 'Can\'t reach Gradiaqo right now. Check your connection and try again.' ] );
         expect( importError( new ApiError( 500, 'Internal server error' ) ) ).toEqual( [ 'Something went wrong, so nothing changed. Please try again.' ] );
     } );
 } );

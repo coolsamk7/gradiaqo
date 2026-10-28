@@ -58,7 +58,7 @@ export function ReadinessPage() {
                     <span className={styles.emptyChip}><Icon name="target" /></span>
                     <h2 id="no-goal-title" className={app.cardTitle}>Set an interview goal</h2>
                     <p className={app.muted}>
-                        Pick a date and the paths that matter. StudyLog then tracks how ready you are and tells you what
+                        Pick a date and the paths that matter. Gradiaqo then tracks how ready you are and tells you what
                         to do next.
                     </p>
                     {data.paths.length > 0

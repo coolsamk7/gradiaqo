@@ -5,7 +5,7 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import tseslint from 'typescript-eslint';
 
 /**
- * Shared rules for every StudyLog app and package: type-aware TypeScript checks,
+ * Shared rules for every Gradiaqo app and package: type-aware TypeScript checks,
  * formatting (4-space indent, spaces inside brackets) and import sorting.
  *
  * @param {object} options

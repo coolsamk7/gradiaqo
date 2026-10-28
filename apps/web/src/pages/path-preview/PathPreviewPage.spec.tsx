@@ -54,7 +54,7 @@ describe( 'PathPreviewPage', () => {
         expect( screen.getByText( 'Official' ) ).toBeInTheDocument();
         expect( screen.queryByText( 'Enrolled' ) ).not.toBeInTheDocument();
         expect( screen.getByText( 'How large systems stay fast and available.' ) ).toBeInTheDocument();
-        expect( screen.getByRole( 'list', { name: 'Contents' } ) ).toHaveTextContent( '2 modules4 items≈ 34hBy StudyLog' );
+        expect( screen.getByRole( 'list', { name: 'Contents' } ) ).toHaveTextContent( '2 modules4 items≈ 34hBy Gradiaqo' );
         expect( screen.getByRole( 'link', { name: 'Back to Browse paths' } ) ).toHaveAttribute( 'href', '/app/catalog' );
         expect( screen.getByRole( 'link', { name: 'Browse paths' } ) ).toHaveAttribute( 'aria-current', 'page' );
 
@@ -225,7 +225,7 @@ describe( 'PathPreviewPage', () => {
         expect( await screen.findByRole( 'heading', { level: 1 } ) ).toBeInTheDocument();
     } );
 
-    it( 'says when StudyLog can\'t be reached, while loading first', async () => {
+    it( 'says when Gradiaqo can\'t be reached, while loading first', async () => {
         mockApi( { ...loggedIn, [`GET ${URL}`]: pending } );
         const loading = renderApp( `/app/catalog/${PATH.id}` );
 
@@ -235,7 +235,7 @@ describe( 'PathPreviewPage', () => {
         api( PATH, { [`GET ${URL}`]: () => Promise.reject( new TypeError( 'Failed to fetch' ) ) } );
         renderApp( `/app/catalog/${PATH.id}` );
 
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
     } );
 } );
 
@@ -323,7 +323,7 @@ describe( 'Reporting a community path', () => {
         await user.click( about().getByRole( 'button', { name: 'Report this path' } ) );
         await user.click( screen.getByRole( 'radio', { name: 'Copies someone else\'s work' } ) );
         await user.click( screen.getByRole( 'button', { name: 'Send report' } ) );
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
         expect( calls.filter( ( call ) => call.path === `${URL}/reports` ) ).toHaveLength( 2 );
     } );
 

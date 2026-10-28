@@ -13,7 +13,7 @@ const config = ( values: Partial<ConfigType<typeof mailConfig>> ): ConfigType<ty
     secure: false,
     user: 'me@example.com',
     password: 'key',
-    from: 'StudyLog <no-reply@example.com>',
+    from: 'Gradiaqo <no-reply@example.com>',
     ...values,
 } );
 
@@ -37,7 +37,7 @@ describe( 'MailService', () => {
             auth: { user: 'me@example.com', pass: 'key' },
         } );
         expect( sendMail ).toHaveBeenCalledWith( {
-            from: 'StudyLog <no-reply@example.com>',
+            from: 'Gradiaqo <no-reply@example.com>',
             to: 'sam@example.com',
             subject: 'Hi',
             text: 'Hello',

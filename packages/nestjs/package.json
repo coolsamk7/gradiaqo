@@ -2,7 +2,7 @@
   "name": "@studylog/nestjs",
   "version": "0.0.0",
   "private": true,
-  "description": "StudyLog API contract wired into NestJS: validated request bodies and documented responses",
+  "description": "Gradiaqo API contract wired into NestJS: validated request bodies and documented responses",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

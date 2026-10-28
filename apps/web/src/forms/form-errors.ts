@@ -38,7 +38,7 @@ export function describeApiError<F extends string>(
     statuses: Partial<Record<number, StatusMessage<F>>> = {},
 ): FormErrors<F> {
     if ( error instanceof NetworkError ) {
-        return { form: 'Can\'t reach StudyLog right now. Check your connection and try again.', fields: {} };
+        return { form: 'Can\'t reach Gradiaqo right now. Check your connection and try again.', fields: {} };
     }
     if ( !( error instanceof ApiError ) ) {
         return { form: 'Something went wrong. Please try again.', fields: {} };

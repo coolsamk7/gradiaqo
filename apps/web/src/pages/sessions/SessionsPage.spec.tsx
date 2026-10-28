@@ -206,7 +206,7 @@ describe( 'SessionsPage', () => {
             api( { 'GET /me/study-sessions': () => ( answers.shift() as () => Promise<Response> )() } );
             renderApp( '/app/sessions' );
 
-            expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+            expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
             await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
             expect( screen.getByText( 'Loading your sessions…' ) ).toBeInTheDocument();
             expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();

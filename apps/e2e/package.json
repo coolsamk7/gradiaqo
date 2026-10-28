@@ -1,7 +1,7 @@
 {
   "name": "@studylog/e2e",
   "version": "0.0.1",
-  "description": "StudyLog UI tests: the web app in a real browser against the real API and a test database (Playwright)",
+  "description": "Gradiaqo UI tests: the web app in a real browser against the real API and a test database (Playwright)",
   "private": true,
   "type": "module",
   "scripts": {

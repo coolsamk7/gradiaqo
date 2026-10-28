@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "StudyLog NestJS / TypeORM (decorators)",
+  "display": "Gradiaqo NestJS / TypeORM (decorators)",
   "extends": "./base.json",
   "compilerOptions": {
     "experimentalDecorators": true,

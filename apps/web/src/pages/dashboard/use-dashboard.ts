@@ -62,6 +62,6 @@ export function useDashboard(): {
 
 function describeError( error: unknown ): string {
     return error instanceof NetworkError
-        ? 'Can\'t reach StudyLog right now. Check your connection and try again.'
+        ? 'Can\'t reach Gradiaqo right now. Check your connection and try again.'
         : 'Something went wrong while loading your dashboard. Please try again.';
 }

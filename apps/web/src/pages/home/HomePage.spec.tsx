@@ -32,7 +32,7 @@ describe( 'HomePage', () => {
         expect( nav.getByRole( 'link', { name: 'How it works' } ) ).toHaveAttribute( 'href', '#how-it-works' );
         expect( nav.getByRole( 'link', { name: 'Log in' } ) ).toHaveAttribute( 'href', '/login' );
         expect( nav.getByRole( 'link', { name: 'Get started' } ) ).toHaveAttribute( 'href', '/signup' );
-        expect( screen.getByRole( 'link', { name: 'StudyLog home' } ) ).toHaveAttribute( 'href', '/' );
+        expect( screen.getByRole( 'link', { name: 'Gradiaqo home' } ) ).toHaveAttribute( 'href', '/' );
     } );
 
     it( 'sends every call to action to sign up, and the secondary one to the steps', () => {
@@ -65,7 +65,7 @@ describe( 'HomePage', () => {
 
         expect( footer.getByRole( 'link', { name: 'Features' } ) ).toHaveAttribute( 'href', '#features' );
         expect( footer.getByRole( 'link', { name: 'Log in' } ) ).toHaveAttribute( 'href', '/login' );
-        expect( footer.getByText( `© ${new Date().getFullYear()} StudyLog` ) ).toBeInTheDocument();
+        expect( footer.getByText( `© ${new Date().getFullYear()} Gradiaqo` ) ).toBeInTheDocument();
     } );
 } );
 
