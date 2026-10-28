@@ -13,6 +13,19 @@ test.describe( 'Homepage', () => {
         await expect( page.getByRole( 'heading', { level: 2, name: 'Ready to make your study time count?' } ) ).toBeVisible();
     } );
 
+    test( 'tells search engines what to crawl, and names each public page', async ( { page, request } ) => {
+        const robots = await request.get( '/robots.txt' );
+
+        expect( await robots.text() ).toContain( 'Disallow: /app\n' );
+        expect( await robots.text() ).toMatch( /\nSitemap: http\S+\/sitemap\.xml\n/ );
+        expect( await ( await request.get( '/sitemap.xml' ) ).text() ).toMatch( /<loc>http\S+\/signup<\/loc>/ );
+        await expect( page.locator( 'meta[property="og:image"]' ) ).toHaveAttribute( 'content', /\/og-image\.png$/ );
+
+        await page.getByRole( 'link', { name: 'Log in' } ).first().click();
+        await expect( page ).toHaveTitle( 'Log in – Gradiaqo' );
+        await expect( page.locator( 'link[rel="canonical"]' ) ).toHaveAttribute( 'href', /\/login$/ );
+    } );
+
     test( 'links to the sections of the page', async ( { page } ) => {
         const nav = page.getByRole( 'navigation', { name: 'Main' } );
 

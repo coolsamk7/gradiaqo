@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
+import { usePageTitle } from '../seo/use-page-title.ts';
 import styles from './AuthLayout.module.css';
 import type { IconName } from './Icon.tsx';
 import { Icon } from './Icon.tsx';
@@ -28,6 +29,8 @@ interface AuthLayoutProps {
  */
 export function AuthLayout( props: AuthLayoutProps ) {
     const { brandTitle, highlights, title, subtitle, alternative, chip, before, children } = props;
+
+    usePageTitle( title );
 
     return (
         <div className={styles.page}>
