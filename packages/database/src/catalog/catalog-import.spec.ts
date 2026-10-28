@@ -139,6 +139,38 @@ describe( 'importPath', () => {
         expect( db.rows( Item ) ).toHaveLength( 4 );
     } );
 
+    it( 'changes nothing when the database stored the details with their keys in another order', async () => {
+        const db = fakeManager();
+        const book: CatalogItem = {
+            ...note,
+            type: ItemType.Book,
+            title: 'Designing Data-Intensive Applications',
+            details: { author: 'Martin Kleppmann', chapters: '5', isbn: '9781449373320' },
+        };
+        const exercise: CatalogItem = {
+            ...note,
+            type: ItemType.Exercise,
+            title: 'Estimate',
+            details: { instructions: 'How many?', answer: 'About 100.' },
+        };
+        const withBoth = file( [ { ...file().modules[0], topics: [ { slug: 'reading', title: 'Reading', description: null, items: [ book, exercise ] } ] } ] );
+
+        await importPath( db.manager, withBoth );
+        // Like Postgres jsonb, which keeps keys shortest first: { isbn, author, chapters }, { answer, instructions }.
+        for ( const item of db.rows( Item ) ) {
+            const details = item.details as Record<string, unknown>;
+
+            item.details = Object.fromEntries( Object.keys( details ).sort( ( a, b ) => a.length - b.length || a.localeCompare( b ) )
+                .map( ( key ) => [ key, details[key] ] ) );
+        }
+        db.calls.saves = 0;
+
+        const report = await importPath( db.manager, withBoth );
+
+        expect( report.items ).toMatchObject( { created: 0, updated: 0 } );
+        expect( db.calls.saves ).toBe( 0 );
+    } );
+
     it( 'brings existing content up to date, keeping statuses, and reports what the file left out', async () => {
         const db = fakeManager();
 
