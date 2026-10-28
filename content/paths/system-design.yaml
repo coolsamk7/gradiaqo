@@ -1,0 +1,615 @@
+# The System Design path. Import with: yarn cli catalog:import content/paths/system-design.yaml
+# Format: content/paths/README.md. Minutes are estimates.
+
+slug: system-design
+title: "System Design"
+description: "Design systems that scale, and explain your design in an interview: estimation, networking, databases, caching, queues and distributed-systems trade-offs, then a dozen classic designs practised end to end. For developers with a year or two of experience preparing for mid-level and senior interviews. Plan on about 2 months at an hour a day."
+modules:
+  - title: "How to Approach a Design"
+    description: "A repeatable way to run a 45-minute design discussion, and the rough numbers you need to size anything."
+    topics:
+      - title: "The Interview Framework"
+        description: "Requirements first, then the API and data model, a high-level design, and only then the deep dives. Interviewers grade the trade-offs you explain more than the boxes you draw."
+        items:
+          - type: article
+            title: "The System Design Primer"
+            url: https://github.com/donnemartin/system-design-primer
+            minutes: 60
+            tags: [interview, overview]
+          - type: note
+            title: "A 45-minute plan"
+            minutes: 10
+            tags: [interview]
+            content: |
+              1. **Requirements (5 min)**: what must it do (functional), and how big, fast and reliable must it be
+                 (non-functional)? Agree on what's out of scope.
+              2. **Estimates (3 min)**: users, requests per second, storage per year. Only as precise as a decision needs.
+              3. **API and data model (7 min)**: the main endpoints and the entities with their keys.
+              4. **High-level design (10 min)**: clients, load balancer, services, databases, caches, queues. Walk one
+                 request through it end to end.
+              5. **Deep dives (15 min)**: the hardest parts: the hot path, the bottleneck, what happens on failure.
+              6. **Wrap-up (5 min)**: what you'd monitor, what breaks first at 10× the load, what you'd do next.
+
+              Think out loud, state assumptions, and when there are two options, name both and say why you pick one.
+      - title: "Back-of-the-Envelope Estimation"
+        description: "Turn \"100 million users\" into requests per second, storage and bandwidth, so you know whether one database is enough or you need fifty."
+        items:
+          - type: article
+            title: "Latency numbers every programmer should know"
+            url: https://gist.github.com/jboner/2841832
+            minutes: 15
+            tags: [estimation, latency]
+          - type: note
+            title: "Numbers to remember"
+            minutes: 10
+            tags: [estimation]
+            content: |
+              - A day is about **86,400 s ≈ 10⁵ s**. 1 million requests a day ≈ 12 per second; peak is often 2–3× average.
+              - Memory read ≈ 100 ns, SSD read ≈ 100 µs, same-datacenter round trip ≈ 0.5 ms, cross-continent ≈ 150 ms.
+              - A single well-indexed Postgres or MySQL server handles thousands of simple queries per second; a
+                Redis node, tens of thousands or more.
+              - Sizes: a tweet-sized row ≈ 1 KB with metadata, a photo ≈ 200 KB–2 MB, a minute of HD video ≈ 50–100 MB.
+          - type: exercise
+            title: "Estimate a photo-sharing app"
+            difficulty: easy
+            minutes: 30
+            tags: [estimation]
+            instructions: |
+              500 million monthly users, 100 million daily; each daily user views 50 photos and 1 in 10 uploads one
+              (average 1 MB) per day. Estimate: uploads per second, views per second (average and peak), new storage
+              per year, and outgoing bandwidth at peak.
+            answer: |
+              Uploads: 10 M/day ÷ 10⁵ ≈ 100/s. Views: 5 B/day ≈ 50,000/s, peak ≈ 100,000–150,000/s, so reads dominate
+              500:1 (think caches and a CDN). Storage: 10 TB/day ≈ 3.6 PB/year before replicas and thumbnails (object
+              storage, not a database). Bandwidth: views mostly hit thumbnails, but even at 200 KB that's ~20–30 GB/s
+              at peak, which only a CDN can serve.
+
+  - title: "Networking & APIs"
+    description: "How a request gets from a phone to your code and back: DNS, HTTP, load balancers, and choosing an API style."
+    topics:
+      - title: "DNS, HTTP & TLS"
+        description: "DNS turns a name into an address, TLS secures the connection, HTTP carries the request. Each step adds latency, which is why connection reuse and CDNs matter."
+        items:
+          - type: article
+            title: "What is DNS? (Cloudflare Learning)"
+            url: https://www.cloudflare.com/learning/dns/what-is-dns/
+            minutes: 15
+            tags: [networking, dns]
+          - type: article
+            title: "An overview of HTTP (MDN)"
+            url: https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview
+            minutes: 20
+            tags: [networking, http]
+          - type: exercise
+            title: "What happens when you type a URL?"
+            difficulty: easy
+            minutes: 20
+            tags: [networking, interview]
+            instructions: |
+              Explain, step by step, everything between typing `https://gradiaqo.com` and seeing the page: DNS lookup
+              and caching, TCP and TLS handshakes, the HTTP request, load balancer and server, the response, and the
+              browser fetching CSS, JS and API data. Then say where you'd add caching to make it faster.
+      - title: "Load Balancing & Scaling Out"
+        description: "Stateless servers behind a load balancer let you add machines instead of buying bigger ones. Keep session state in a shared store, not in server memory."
+        items:
+          - type: article
+            title: "What is load balancing? (Cloudflare Learning)"
+            url: https://www.cloudflare.com/learning/performance/what-is-load-balancing/
+            minutes: 15
+            tags: [load-balancing, scaling]
+          - type: note
+            title: "Vertical vs horizontal, L4 vs L7"
+            minutes: 10
+            tags: [load-balancing, scaling]
+            content: |
+              - **Vertical scaling** (a bigger machine) is simplest and goes surprisingly far, but has a ceiling and a
+                single point of failure. **Horizontal scaling** (more machines) needs stateless servers.
+              - **L4** load balancers route by IP and port: fast, protocol-agnostic. **L7** ones read HTTP, so they can
+                route by path or header, terminate TLS, and retry.
+              - Algorithms: round robin, least connections, or hashing on a key (user ID) when requests should stick
+                to one server.
+              - Health checks take bad servers out of rotation automatically.
+      - title: "API Styles"
+        description: "REST for public, resource-shaped APIs; gRPC for fast service-to-service calls; WebSockets or server-sent events when the server must push updates."
+        items:
+          - type: article
+            title: "Introduction to gRPC"
+            url: https://grpc.io/docs/what-is-grpc/introduction/
+            minutes: 15
+            tags: [api, grpc]
+          - type: article
+            title: "The WebSocket API (MDN)"
+            url: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
+            minutes: 15
+            tags: [api, websockets, real-time]
+          - type: note
+            title: "Polling, long polling, SSE, WebSockets"
+            minutes: 10
+            tags: [api, real-time]
+            content: |
+              - **Polling**: ask every few seconds. Simple, wasteful, and adds delay.
+              - **Long polling**: the server holds the request until there's news. Works everywhere.
+              - **Server-sent events**: one long HTTP response the server keeps writing to. One-way, simple, auto-reconnects.
+              - **WebSockets**: a two-way connection. Right for chat, games and collaboration, but each open connection
+                is state on a server, so you need a way to find which server holds a given user's connection.
+
+  - title: "Storing Data"
+    description: "The choice that's hardest to undo: which database, how it's indexed, and how it's split across machines when one isn't enough."
+    topics:
+      - title: "SQL or NoSQL"
+        description: "Default to a relational database: transactions, joins and a schema catch a lot of bugs. Pick a key-value, document or wide-column store when the access pattern is simple and the scale or write rate is huge."
+        items:
+          - type: book
+            title: "Designing Data-Intensive Applications"
+            author: Martin Kleppmann
+            chapters: "1–3 (reliability, data models, storage engines)"
+            isbn: "9781449373320"
+            minutes: 360
+            tags: [databases, book]
+          - type: note
+            title: "Choosing a store"
+            minutes: 10
+            tags: [databases]
+            content: |
+              | Need | Reach for |
+              |---|---|
+              | Transactions, relations, ad-hoc queries | Postgres / MySQL |
+              | Lookups by key at huge scale, simple values | DynamoDB, Cassandra, Redis |
+              | Flexible documents read as a whole | MongoDB, or Postgres `jsonb` |
+              | Files, images, video | Object storage (S3) plus a CDN; only the URL in the database |
+              | Full-text search | Elasticsearch / OpenSearch, fed from the main database |
+              | Time series, analytics | ClickHouse, a time-series DB, a data warehouse |
+
+              Most real systems use several, each for what it's good at, with one of them as the source of truth.
+      - title: "Indexes"
+        description: "An index is a sorted copy of some columns that turns a full scan into a quick lookup, at the cost of slower writes and more storage."
+        items:
+          - type: article
+            title: "Use The Index, Luke: SQL indexing explained"
+            url: https://use-the-index-luke.com/
+            minutes: 90
+            tags: [databases, indexes, sql]
+          - type: exercise
+            title: "Index a slow query"
+            difficulty: medium
+            minutes: 45
+            tags: [databases, indexes]
+            instructions: |
+              In a local Postgres, create a `sessions` table with a million rows (user_id, started_at, minutes). Run
+              `EXPLAIN ANALYZE` on "a user's sessions in the last 30 days, newest first". Add an index on `user_id`,
+              then on `(user_id, started_at)`, and compare plans and timings. Why does column order matter?
+            answer: |
+              The composite index `(user_id, started_at)` lets Postgres jump to the user and read their recent rows
+              already in order, with no sort. Reversed, `(started_at, user_id)` would scan everyone's recent sessions.
+      - title: "Replication"
+        description: "Copies of the data on several machines, for reading more, surviving failures, and serving users nearer to them. The catch is lag: a replica can be behind the leader."
+        items:
+          - type: book
+            title: "Designing Data-Intensive Applications: Replication"
+            author: Martin Kleppmann
+            chapters: "5"
+            isbn: "9781449373320"
+            minutes: 120
+            tags: [databases, replication, book]
+          - type: note
+            title: "Leader-follower, multi-leader, leaderless"
+            minutes: 10
+            tags: [replication]
+            content: |
+              - **Leader-follower**: writes go to one leader, reads can go to followers. Simple; the usual choice.
+                Watch for *read-your-writes*: a user who just posted reads from a lagging replica and sees nothing.
+              - **Multi-leader**: writes accepted in several places (e.g. one per region). Needs conflict resolution.
+              - **Leaderless** (Dynamo-style): write to W of N replicas, read from R; with R + W > N a read sees the
+                latest write. Highly available, but you reason about conflicts and versions.
+      - title: "Sharding"
+        description: "Split data across machines by a key when one machine can't hold it or keep up with the writes. The shard key decides everything: pick one that spreads load evenly and keeps related data together."
+        items:
+          - type: book
+            title: "Designing Data-Intensive Applications: Partitioning"
+            author: Martin Kleppmann
+            chapters: "6"
+            isbn: "9781449373320"
+            minutes: 90
+            tags: [databases, sharding, book]
+          - type: article
+            title: "Sharding & IDs at Instagram"
+            url: https://instagram-engineering.com/sharding-ids-at-instagram-1cf5a71e5a5c
+            minutes: 15
+            tags: [sharding, ids, case-study]
+          - type: article
+            title: "Dynamo: Amazon's Highly Available Key-value Store (consistent hashing, the paper)"
+            url: https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf
+            minutes: 90
+            optional: true
+            tags: [sharding, consistent-hashing, papers]
+          - type: note
+            title: "Consistent hashing in one page"
+            minutes: 10
+            tags: [sharding, consistent-hashing]
+            content: |
+              With `hash(key) % N`, adding one server moves almost every key. Consistent hashing puts servers and keys
+              on a ring and sends each key to the next server clockwise, so adding or removing a server only moves the
+              keys next to it (about 1/N of them). Each server gets many *virtual nodes* on the ring so the load evens
+              out. Used by Dynamo, Cassandra, and many caches and load balancers.
+
+  - title: "Caching & CDNs"
+    description: "Keep hot data close to where it's needed: the cheapest way to make reads fast and take load off the database."
+    topics:
+      - title: "Caching Strategies"
+        description: "Cache-aside is the default: read the cache, fall back to the database and fill the cache. The hard parts are invalidation, expiry, and many requests missing at once."
+        items:
+          - type: article
+            title: "Caching challenges and strategies (Amazon Builders' Library)"
+            url: https://aws.amazon.com/builders-library/caching-challenges-and-strategies/
+            minutes: 30
+            tags: [caching]
+          - type: article
+            title: "Scaling Memcache at Facebook (paper)"
+            url: https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf
+            minutes: 90
+            optional: true
+            tags: [caching, papers, case-study]
+          - type: note
+            title: "Cache patterns and pitfalls"
+            minutes: 10
+            tags: [caching]
+            content: |
+              - **Cache-aside**: the app reads the cache, then the DB on a miss, and writes the result to the cache.
+              - **Write-through**: write to cache and DB together; reads are always warm, writes are slower.
+              - **Write-back**: write to the cache, flush to the DB later; fast, but data can be lost.
+              - **Expiry (TTL)** bounds how stale data can get; delete the key on update for fresher reads.
+              - **Thundering herd**: a hot key expires and thousands of requests hit the DB at once. Fix with a lock so
+                one request refills it, or refresh hot keys before they expire.
+              - **Eviction**: LRU is the usual default when memory fills up.
+      - title: "CDNs & Edge"
+        description: "A CDN serves static files (and cacheable API responses) from servers near the user, cutting latency and taking most of the traffic off your origin."
+        items:
+          - type: article
+            title: "What is a CDN? (Cloudflare Learning)"
+            url: https://www.cloudflare.com/learning/cdn/what-is-a-cdn/
+            minutes: 15
+            tags: [cdn, caching]
+          - type: article
+            title: "Redis documentation"
+            url: https://redis.io/docs/latest/
+            minutes: 45
+            optional: true
+            tags: [caching, redis]
+
+  - title: "Asynchronous Processing"
+    description: "Not everything has to happen while the user waits: queues and event streams smooth out spikes and decouple services."
+    topics:
+      - title: "Message Queues"
+        description: "Put slow work (emails, video encoding, notifications) on a queue and let workers process it, so the request returns at once and spikes just make the queue longer."
+        items:
+          - type: article
+            title: "RabbitMQ tutorials"
+            url: https://www.rabbitmq.com/tutorials
+            minutes: 60
+            tags: [queues, rabbitmq]
+          - type: note
+            title: "Delivery guarantees"
+            minutes: 10
+            tags: [queues, reliability]
+            content: |
+              - **At most once**: may lose messages, never repeats. Fine for metrics.
+              - **At least once**: never loses, may repeat. The usual guarantee: make consumers *idempotent* so a
+                repeat does no harm (e.g. remember processed message IDs).
+              - **Exactly once** end to end is really at-least-once plus idempotency.
+
+              Also plan for: a **dead-letter queue** for messages that keep failing, retries with backoff, and
+              monitoring queue length (a growing queue means workers can't keep up).
+      - title: "Event Streams"
+        description: "A log like Kafka keeps events in order and lets many consumers read them at their own pace, and replay them: the backbone of event-driven systems and data pipelines."
+        items:
+          - type: article
+            title: "Apache Kafka: introduction"
+            url: https://kafka.apache.org/intro
+            minutes: 30
+            tags: [kafka, streaming]
+          - type: book
+            title: "Designing Data-Intensive Applications: Stream Processing"
+            author: Martin Kleppmann
+            chapters: "11"
+            isbn: "9781449373320"
+            minutes: 120
+            optional: true
+            tags: [streaming, book]
+
+  - title: "Distributed Systems Trade-offs"
+    description: "What changes once data lives on many machines: networks fail, clocks disagree, and you have to choose between consistency and availability."
+    topics:
+      - title: "Consistency & CAP"
+        description: "During a network partition a system either refuses some requests (consistent) or answers with possibly stale data (available). Most of the time the real trade-off is consistency versus latency."
+        items:
+          - type: article
+            title: "Please stop calling databases CP or AP (Martin Kleppmann)"
+            url: https://martin.kleppmann.com/2015/05/11/please-stop-calling-databases-cp-or-ap.html
+            minutes: 25
+            tags: [cap, consistency]
+          - type: article
+            title: "Consistency models (Jepsen)"
+            url: https://jepsen.io/consistency
+            minutes: 30
+            optional: true
+            tags: [consistency]
+          - type: note
+            title: "Strong vs eventual consistency, in practice"
+            minutes: 10
+            tags: [consistency]
+            content: |
+              Ask what goes wrong if a read is a few seconds stale. A like counter, a feed or a view count: nothing,
+              so eventual consistency is fine and much cheaper. A bank balance, stock left in a flash sale, a unique
+              username: real harm, so you need strong consistency (a single leader, transactions, or consensus) for
+              that part only. Good designs mix both.
+      - title: "Consensus & Coordination"
+        description: "Getting machines to agree (who's the leader, what's the next value) despite failures. You'll rarely build it, but you'll use it through etcd, ZooKeeper or your database."
+        items:
+          - type: article
+            title: "The Raft consensus algorithm (visual explanation)"
+            url: https://raft.github.io/
+            minutes: 30
+            tags: [consensus, raft]
+          - type: course
+            title: "MIT 6.5840 Distributed Systems"
+            url: https://pdos.csail.mit.edu/6.824/
+            provider: MIT
+            minutes: 2400
+            optional: true
+            tags: [distributed-systems, course]
+      - title: "Retries, Timeouts & Idempotency"
+        description: "Every network call needs a timeout; retries need backoff with jitter; and anything retried must be safe to run twice."
+        items:
+          - type: article
+            title: "Timeouts, retries and backoff with jitter (Amazon Builders' Library)"
+            url: https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/
+            minutes: 25
+            tags: [reliability, retries]
+          - type: article
+            title: "Designing robust and predictable APIs with idempotency (Stripe)"
+            url: https://stripe.com/blog/idempotency
+            minutes: 15
+            tags: [reliability, idempotency, api]
+
+  - title: "Reliability & Operations"
+    description: "Keeping it up: protecting the system from overload, knowing when it's broken, and defining how up \"up\" needs to be."
+    topics:
+      - title: "Rate Limiting & Overload"
+        description: "Limit how fast each client can call you, and shed load before the whole system falls over. Token bucket is the usual algorithm."
+        items:
+          - type: article
+            title: "Scaling your API with rate limiters (Stripe)"
+            url: https://stripe.com/blog/rate-limiters
+            minutes: 20
+            tags: [rate-limiting]
+          - type: article
+            title: "Using load shedding to avoid overload (Amazon Builders' Library)"
+            url: https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/
+            minutes: 25
+            optional: true
+            tags: [reliability, overload]
+      - title: "Availability & Monitoring"
+        description: "Set targets (SLOs) from what users notice, monitor latency, traffic, errors and saturation, and remove single points of failure where the target demands it."
+        items:
+          - type: article
+            title: "Site Reliability Engineering (Google, free online)"
+            url: https://sre.google/sre-book/table-of-contents/
+            minutes: 240
+            tags: [sre, monitoring]
+          - type: note
+            title: "Nines and what they cost"
+            minutes: 10
+            tags: [availability]
+            content: |
+              | Availability | Downtime a year | Downtime a month |
+              |---|---|---|
+              | 99% | 3.7 days | 7.3 hours |
+              | 99.9% | 8.8 hours | 44 minutes |
+              | 99.99% | 53 minutes | 4.4 minutes |
+
+              Components in series multiply: three 99.9% services that all must work give ≈ 99.7%. Redundancy in
+              parallel adds nines. Each extra nine roughly multiplies cost and effort, so ask what the business needs.
+
+  - title: "Classic Designs"
+    description: "Practise end to end. For each one, time yourself for 45 minutes using the framework, draw it, and only then compare with the notes."
+    topics:
+      - title: "Warm-ups"
+        description: "Small systems with one or two interesting problems: good for practising the framework itself."
+        items:
+          - type: exercise
+            title: "Design a URL shortener"
+            difficulty: easy
+            minutes: 60
+            tags: [design, ids, caching]
+            instructions: |
+              Short links for long URLs, redirects in a few milliseconds, 100 M new links a month, 100:1 reads to
+              writes, optional expiry and click counts.
+            answer: |
+              Key choices: generating short codes (a counter or ID generator in base62, or random codes with a
+              uniqueness check; not hashing the URL unless you handle collisions), a key-value or SQL table keyed by
+              code, a cache in front for hot links, 301 vs 302 (302 if you count clicks), and counting clicks
+              asynchronously through a queue instead of a write on every redirect.
+          - type: exercise
+            title: "Design a rate limiter"
+            difficulty: medium
+            minutes: 60
+            tags: [design, rate-limiting]
+            instructions: |
+              Limit each API key to N requests per minute across 20 API servers, with a clear 429 response and
+              headers telling the client when to retry. It must add under a millisecond and keep working if the
+              shared store is briefly down.
+            answer: |
+              Token bucket or sliding window counter in Redis, updated atomically (a Lua script or INCR with expiry),
+              keyed by API key and window. Decide fail-open vs fail-closed when Redis is down (usually open, with a
+              local fallback limit). Discuss accuracy vs cost of sliding log vs window counter.
+          - type: exercise
+            title: "Design a unique ID generator"
+            difficulty: medium
+            minutes: 45
+            tags: [design, ids]
+            instructions: |
+              64-bit IDs, roughly sortable by time, 10,000 per second per machine across hundreds of machines, with
+              no single coordinator on the hot path.
+            answer: |
+              A Snowflake-style layout: timestamp in milliseconds, machine/worker ID, and a per-millisecond sequence.
+              Discuss assigning worker IDs (config or a coordinator at start-up), clocks going backwards (wait or
+              refuse), and why UUIDv4 is simpler but isn't sortable and indexes worse.
+      - title: "Social & Messaging"
+        description: "Fan-out, real-time delivery and hot users: the problems behind feeds, chat and notifications."
+        items:
+          - type: exercise
+            title: "Design a news feed"
+            difficulty: medium
+            minutes: 60
+            tags: [design, fan-out, caching]
+            instructions: |
+              Users follow others and see a feed of their posts, newest first, loading in under 200 ms. 300 M daily
+              users; some accounts have 50 M followers.
+            answer: |
+              Fan-out on write (push post IDs into each follower's cached feed) makes reads fast but is costly for
+              celebrities; fan-out on read (merge followees' posts at read time) is the opposite. Use a hybrid: push
+              for most authors, pull for celebrities and merge. Store only IDs in feeds, hydrate from a post cache,
+              paginate with a cursor.
+          - type: exercise
+            title: "Design a chat app"
+            difficulty: hard
+            minutes: 75
+            tags: [design, real-time, websockets]
+            instructions: |
+              One-to-one and group chat (up to 500 members), delivery and read receipts, online status, message
+              history on every device, and delivery to users who were offline.
+            answer: |
+              WebSocket gateways hold connections; a registry maps user → gateway. Messages get an ID and are stored
+              first (partitioned by conversation, ordered by ID), then pushed to online members; offline ones get a
+              push notification and sync on reconnect from their last seen ID. Presence via heartbeats with a TTL.
+              Discuss ordering within a conversation and what changes for large groups.
+          - type: article
+            title: "How Discord stores trillions of messages"
+            url: https://discord.com/blog/how-discord-stores-trillions-of-messages
+            minutes: 20
+            tags: [case-study, databases, messaging]
+          - type: exercise
+            title: "Design a notification service"
+            difficulty: medium
+            minutes: 60
+            tags: [design, queues]
+            instructions: |
+              Other services ask it to send push, email or SMS to users, respecting each user's preferences and
+              quiet hours, with retries, no duplicates, and a few million notifications an hour at peak.
+            answer: |
+              An API that validates and enqueues, a preferences store, per-channel queues and workers calling the
+              providers (APNs/FCM, an email service, an SMS gateway), idempotency keys to avoid duplicates, retries
+              with backoff and a dead-letter queue, rate limits per user and per provider, and a log of what was sent.
+      - title: "Search & Content"
+        description: "Large files, crawling and lookups as you type: storage, CDNs and pre-computation."
+        items:
+          - type: exercise
+            title: "Design search autocomplete"
+            difficulty: medium
+            minutes: 60
+            tags: [design, tries, caching]
+            instructions: |
+              Show the top 5 completions within 100 ms as the user types, based on how often queries are searched,
+              updated daily, for 10 billion searches a day.
+            answer: |
+              Precompute top-k completions per prefix offline (from query logs, aggregated daily) and serve them from
+              a trie or a key-value store keyed by prefix, cached heavily and at the edge. Clients debounce and cache.
+              Discuss filtering offensive terms and how to add trending queries faster than daily.
+          - type: exercise
+            title: "Design a video-sharing site"
+            difficulty: hard
+            minutes: 75
+            tags: [design, storage, cdn]
+            instructions: |
+              Users upload videos (up to 1 GB) and others watch them on any device and connection speed; 5 M uploads
+              a day, 1 B views a day.
+            answer: |
+              Upload straight to object storage with pre-signed URLs (resumable), then a queue-driven pipeline
+              transcodes into several resolutions split into chunks (HLS/DASH) for adaptive streaming. Serve chunks
+              through a CDN; metadata in a database; view counts aggregated asynchronously. Discuss cost: popular
+              videos on the CDN, the long tail from cheaper storage.
+          - type: exercise
+            title: "Design a web crawler"
+            difficulty: hard
+            minutes: 75
+            tags: [design, queues, distributed]
+            instructions: |
+              Crawl 1 billion pages a month, politely (respect robots.txt and per-site rate limits), skip duplicates,
+              and keep content fresh.
+            answer: |
+              A URL frontier of queues partitioned by host, so each host gets one polite worker; DNS caching;
+              fetchers storing pages in object storage; a parser extracting links back into the frontier; a seen-URL
+              set (a Bloom filter or a key-value store) and content hashes to skip duplicates; priorities for
+              re-crawling pages that change often. Discuss crawler traps and how to scale the frontier.
+      - title: "Systems with Hard Constraints"
+        description: "Location, money and consistency: designs where getting it wrong is expensive."
+        items:
+          - type: exercise
+            title: "Design a ride-hailing service"
+            difficulty: hard
+            minutes: 75
+            tags: [design, geo, real-time]
+            instructions: |
+              Riders request a ride and get matched to a nearby driver within seconds; drivers send their location
+              every 4 seconds; 1 M drivers online at peak.
+            answer: |
+              Location updates (≈250,000/s) go to an in-memory geo index (geohash or quadtree cells, e.g. Redis geo)
+              rather than the main database. Matching queries nearby cells, offers the trip to one driver at a time
+              with a timeout, and locks the driver so they can't be matched twice. Trips and payments live in a
+              transactional database. Discuss splitting by city and what happens when a region fails.
+          - type: exercise
+            title: "Design a distributed key-value store"
+            difficulty: hard
+            minutes: 75
+            tags: [design, distributed, replication]
+            instructions: |
+              `get(key)` and `put(key, value)` with high availability and low latency, across hundreds of nodes,
+              tunable between consistency and availability, surviving node failures.
+            answer: |
+              Consistent hashing with virtual nodes for partitioning, N replicas per key, quorum reads and writes
+              (R, W), versioning (vector clocks or last-write-wins) for conflicts, hinted handoff and anti-entropy
+              (Merkle trees) to repair replicas, gossip for membership and failure detection, and an LSM-tree storage
+              engine on each node.
+          - type: exercise
+            title: "Design a ticket booking system"
+            difficulty: hard
+            minutes: 75
+            tags: [design, consistency, transactions]
+            instructions: |
+              Users pick seats for a concert and pay; a popular show gets 1 M people trying to book 50,000 seats in
+              the first minute. No seat may be sold twice.
+            answer: |
+              Hold a seat for a few minutes with a reservation that expires (a row with a status and expiry, or a
+              Redis key with a TTL), confirm on payment inside a transaction, and release on timeout. Put a virtual
+              waiting room in front to admit users at a rate the system can take. Discuss optimistic vs pessimistic
+              locking and idempotent payment callbacks.
+
+  - title: "Interview Practice"
+    description: "Turn knowledge into a performance: practise out loud, under time, with someone asking questions."
+    topics:
+      - title: "Mock Interviews"
+        description: "Two or three mocks with a friend or peer teach more than another book. Record yourself once and watch it."
+        items:
+          - type: exercise
+            title: "Three timed mocks"
+            difficulty: hard
+            minutes: 180
+            tags: [interview, practice]
+            instructions: |
+              With a friend or peer as interviewer, do three 45-minute mocks on designs you haven't practised (e.g.
+              a pastebin, a leaderboard for a game, Google Docs-style collaborative editing). The interviewer should
+              push on one deep dive and one failure scenario. After each, write down: where you ran out of time,
+              which trade-off you couldn't explain, and one thing to study.
+          - type: article
+            title: "How Figma's multiplayer technology works"
+            url: https://www.figma.com/blog/how-figmas-multiplayer-technology-works/
+            minutes: 20
+            optional: true
+            tags: [case-study, real-time, collaboration]
+          - type: book
+            title: "System Design Interview – An Insider's Guide"
+            author: Alex Xu
+            isbn: "9798664653403"
+            minutes: 900
+            optional: true
+            tags: [interview, book]
