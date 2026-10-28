@@ -25,7 +25,20 @@ export interface ImportReport {
 /** Columns compared to decide whether a row needs saving. */
 type Comparable = Record<string, unknown>;
 
-const same = ( a: unknown, b: unknown ) => JSON.stringify( a ) === JSON.stringify( b );
+/** The value with every object's keys sorted, since Postgres jsonb doesn't keep them in the order they were written. */
+function canonical( value: unknown ): unknown {
+    if ( Array.isArray( value ) ) {
+        return value.map( canonical );
+    }
+    if ( value !== null && typeof value === 'object' ) {
+        return Object.fromEntries( Object.keys( value ).sort()
+            .map( ( key ) => [ key, canonical( ( value as Record<string, unknown> )[key] ) ] ) );
+    }
+
+    return value;
+}
+
+const same = ( a: unknown, b: unknown ) => JSON.stringify( canonical( a ) ) === JSON.stringify( canonical( b ) );
 
 /** Copies the fields that differ onto `row`; true when any did. */
 function assignChanged( row: Comparable, wanted: Comparable ): boolean {
