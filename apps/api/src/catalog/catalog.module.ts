@@ -27,7 +27,13 @@ import { TopicsService } from './services/topics.service.js';
         OrganizationsModule,
         TypeOrmModule.forFeature( [ LearningPath, LearningModule, Topic, Item, TopicItem ] ),
     ],
-    controllers: [ LearningPathsController, ModulesController, TopicsController, ItemsController, PathImportController ],
+    controllers: [
+        LearningPathsController,
+        ModulesController,
+        TopicsController,
+        ItemsController,
+        PathImportController,
+    ],
     providers: [
         LearningPathsService,
         ModulesService,

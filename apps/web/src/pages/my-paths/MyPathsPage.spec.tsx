@@ -210,4 +210,78 @@ describe( 'MyPathsPage', () => {
             expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
         } );
     } );
+
+    describe( 'Import file', () => {
+        const result = ( dryRun: boolean ) => ( {
+            dryRun,
+            path: { id: uuid( 450 ), slug: 'ai-roadmap', title: 'AI Roadmap', status: 'published', created: true, updated: false },
+            modules: { total: 7, created: 7, updated: 0 },
+            topics: { total: 26, created: 26, updated: 0 },
+            items: { total: 182, created: 182, updated: 0, linked: 182, unlinked: 0 },
+            notInFile: [],
+            unpublishedItems: [],
+        } );
+        const yaml = () => new File( [ 'slug: ai-roadmap\n' ], 'ai-roadmap.yaml', { type: 'application/yaml' } );
+
+        it( 'imports a file into the workspace as a private path on the dashboard, then lists it', async () => {
+            let listedPaths = [ FAVOURITES, NOTES ];
+            const { calls } = api( {
+                [`GET /organizations/${WORKSPACE.id}/catalog/paths`]: () => json( 200, listedPaths ),
+                [`POST /organizations/${WORKSPACE.id}/catalog/import`]: ( init?: RequestInit ) =>
+                    json( 200, result( init!.body === JSON.stringify( { content: 'slug: ai-roadmap\n', dryRun: true } ) ) ),
+            } );
+            const user = userEvent.setup();
+
+            renderApp( '/app/my-paths' );
+            await user.click( await screen.findByRole( 'button', { name: 'Import file' } ) );
+            const dialog = within( screen.getByRole( 'dialog', { name: 'Import a path' } ) );
+
+            expect( dialog.getByText( /as a private path in your workspace/ ) ).toBeInTheDocument();
+            await user.upload( dialog.getByLabelText( 'Path file' ), yaml() );
+            expect( await dialog.findByText( '182 items: 182 new, 0 changed · 182 added to topics, 0 taken out' ) ).toBeInTheDocument();
+            expect( dialog.getByText( /New path, published/ ) ).toBeInTheDocument();
+
+            listedPaths = [ FAVOURITES, NOTES, listed( 'AI Roadmap', { id: uuid( 450 ) } ) ];
+            await user.click( dialog.getByRole( 'button', { name: 'Import' } ) );
+            expect( await dialog.findByRole( 'status' ) ).toHaveTextContent( 'Imported “AI Roadmap”. It\'s private, and on your dashboard to study.' );
+            expect( dialog.getByRole( 'link', { name: 'Open path' } ) ).toHaveAttribute( 'href', `/app/my-paths/${WORKSPACE.id}/${uuid( 450 )}` );
+            expect( calls.filter( ( call ) => call.path.endsWith( '/catalog/import' ) ).map( ( call ) => call.body ) ).toEqual( [
+                { content: 'slug: ai-roadmap\n', dryRun: true },
+                { content: 'slug: ai-roadmap\n' },
+            ] );
+
+            await user.click( dialog.getByRole( 'button', { name: 'Done' } ) );
+            expect( await screen.findByRole( 'heading', { level: 2, name: 'AI Roadmap' } ) ).toBeInTheDocument();
+        } );
+
+        it( 'imports into the organization chosen, for its members', async () => {
+            const { calls } = api( {
+                [`POST /organizations/${ACME.id}/catalog/import`]: () => json( 200, result( false ) ),
+            } );
+            const user = userEvent.setup();
+
+            renderApp( `/app/my-paths?org=${ACME.id}` );
+            await screen.findByRole( 'heading', { level: 2, name: 'Team Drills' } );
+            await user.click( screen.getByRole( 'button', { name: 'Import file' } ) );
+            expect( screen.getByText( /for the members of Acme Study Group\. Importing/ ) ).toBeInTheDocument();
+            await user.upload( screen.getByLabelText( 'Path file' ), yaml() );
+            await user.click( await screen.findByRole( 'button', { name: 'Import' } ) );
+
+            expect( await screen.findByRole( 'status' ) ).toHaveTextContent( 'Members of Acme Study Group can find it in Browse paths.' );
+            expect( calls.filter( ( call ) => call.path.endsWith( '/catalog/import' ) ).map( ( call ) => call.path ) )
+                .toEqual( [ `/organizations/${ACME.id}/catalog/import`, `/organizations/${ACME.id}/catalog/import` ] );
+        } );
+
+        it( 'closes without importing, and doesn\'t reload the list', async () => {
+            const { calls } = api();
+            const user = userEvent.setup();
+
+            renderApp( '/app/my-paths' );
+            await user.click( await screen.findByRole( 'button', { name: 'Import file' } ) );
+            await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+            expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+            expect( calls.filter( ( call ) => call.path === `/organizations/${WORKSPACE.id}/catalog/paths` ) ).toHaveLength( 1 );
+        } );
+    } );
 } );

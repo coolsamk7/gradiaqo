@@ -9,15 +9,20 @@ import { CardSkeleton, LoadError, Loading } from '../../components/LoadStates.ts
 import { relativeDay } from '../../format/format.ts';
 import app from '../../styles/app.module.css';
 import shared from '../../styles/shared.module.css';
+import { ImportPathDialog } from '../admin/CatalogDialogs.tsx';
 import styles from './MyPaths.module.css';
 import { NewPathDialog } from './NewPathDialog.tsx';
 import { useMyPaths } from './use-my-paths.ts';
 
-/** The paths the user builds (Figma: M4 · Build your own › My paths), in their workspace or an organization they run. */
+/**
+ * The paths the user builds (Figma: M4 · Build your own › My paths), in their workspace or an organization they run,
+ * by hand or imported from a path file.
+ */
 export function MyPathsPage() {
     const [ params, setParams ] = useSearchParams();
     const { organizations, reloadOrganizations, editable, current, paths } = useMyPaths( params.get( 'org' ) ?? undefined );
     const [ creating, setCreating ] = useState( false );
+    const [ importing, setImporting ] = useState( false );
 
     return (
         <AppLayout>
@@ -29,10 +34,16 @@ export function MyPathsPage() {
                     </p>
                 </div>
                 {current && (
-                    <button type="button" className={`${shared.button} ${shared.primary}`} onClick={() => setCreating( true )}>
-                        <Icon name="plus" />
-                        New path
-                    </button>
+                    <div className={styles.headerActions}>
+                        <button type="button" className={`${shared.button} ${shared.secondary}`} onClick={() => setImporting( true )}>
+                            <Icon name="file-text" />
+                            Import file
+                        </button>
+                        <button type="button" className={`${shared.button} ${shared.primary}`} onClick={() => setCreating( true )}>
+                            <Icon name="plus" />
+                            New path
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -84,6 +95,22 @@ export function MyPathsPage() {
                     )}
 
                     {creating && <NewPathDialog organization={current} onClose={() => setCreating( false )} />}
+                    {importing && (
+                        <ImportPathDialog
+                            url={`/organizations/${current.id}/catalog/import`}
+                            description={current.isPersonal
+                                ? 'From a path file (.yaml), as a private path in your workspace. Importing a file again changes only what\'s different.'
+                                : `From a path file (.yaml), for the members of ${current.name}. Importing a file again changes only what's different.`}
+                            pathUrl={( id ) => `/app/my-paths/${current.id}/${id}`}
+                            importedNote={current.isPersonal ? 'It\'s private, and on your dashboard to study.' : `Members of ${current.name} can find it in Browse paths.`}
+                            onClose={( imported ) => {
+                                setImporting( false );
+                                if ( imported ) {
+                                    paths.reload();
+                                }
+                            }}
+                        />
+                    )}
                 </>
             )}
         </AppLayout>

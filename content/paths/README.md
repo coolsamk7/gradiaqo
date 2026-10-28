@@ -7,6 +7,10 @@ up to date: import it again after every change. Either way, you see what would c
   problems), and **Import** makes the change. It's in the audit log.
 - **`yarn cli catalog:import content/paths/<file>.yaml`**, with `--dry-run` to see what would change.
 
+The same format works for anyone's own paths: **My paths › Import file** imports a file into your workspace (a private
+path you're enrolled in) or an organization you run, with that catalog's own items. Official items aren't used or
+changed.
+
 A new path starts as a **draft**: check it in Admin › Catalog, then publish it there. Its modules, topics and items are
 published already, so publishing the path shows all of it. Statuses that already exist are never changed by an import.
 

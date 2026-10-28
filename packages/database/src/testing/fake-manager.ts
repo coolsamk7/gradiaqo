@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { EntityManager } from 'typeorm';
 import { FindOperator } from 'typeorm';
 
+import { Enrollment } from '../entities/enrollment.entity.js';
 import { Item } from '../entities/item.entity.js';
 import { LearningModule } from '../entities/learning-module.entity.js';
 import { LearningPath } from '../entities/learning-path.entity.js';
@@ -17,7 +18,7 @@ type Entity = new () => object;
  * the tables afterwards. Only the calls the import makes are supported.
  */
 export function fakeManager() {
-    const entities: Entity[] = [ LearningPath, LearningModule, Topic, Item, TopicItem ];
+    const entities: Entity[] = [ LearningPath, LearningModule, Topic, Item, TopicItem, Enrollment ];
     const tables = new Map<Entity, Row[]>( entities.map( ( entity ) => [ entity, [] ] ) );
     const table = ( entity: Entity ) => tables.get( entity )!;
     const matches = ( row: Row, where: Row ) => Object.entries( where ).every( ( [ key, value ] ) =>
@@ -66,16 +67,16 @@ export function fakeManager() {
 
             return Promise.resolve();
         },
-        // Only the item lookup by type and URL.
+        // Only the item lookup by owner, type and URL.
         createQueryBuilder: () => {
-            const params: Row = {};
+            const params: Row = { organizationId: null };
             const builder = {
-                where: () => builder,
+                where: ( _: string, values: Row = {} ) => Object.assign( params, values ) && builder,
                 andWhere: ( _: string, values: Row ) => Object.assign( params, values ) && builder,
                 getOne: () => {
                     calls.itemLookups++;
 
-                    return Promise.resolve( table( Item ).find( ( row ) => row.organizationId === null
+                    return Promise.resolve( table( Item ).find( ( row ) => row.organizationId === params.organizationId
                         && row.type === params.type && ( row.details as Row ).url === params.url ) ?? null );
                 },
             };

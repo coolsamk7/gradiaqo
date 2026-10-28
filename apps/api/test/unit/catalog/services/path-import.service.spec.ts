@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { AuditAction, CatalogStatus, LearningPath } from '@studylog/database';
+import { AuditAction, CatalogStatus, Enrollment, LearningPath, Organization, PathVisibility } from '@studylog/database';
 import { fakeManager } from '@studylog/database/testing';
 import type { DataSource, EntityManager } from 'typeorm';
 
@@ -30,6 +30,7 @@ describe( 'PathImportService', () => {
     let db: ReturnType<typeof fakeManager>;
     let transaction: ReturnType<typeof vi.fn>;
     let audit: { record: ReturnType<typeof vi.fn> };
+    let organizations: Record<string, { id: string; isPersonal: boolean }>;
     let service: PathImportService;
 
     beforeEach( () => {
@@ -37,11 +38,23 @@ describe( 'PathImportService', () => {
         // Like TypeORM, without the rollback (a dry run's rollback is tested with the importer).
         transaction = vi.fn( ( work: ( manager: EntityManager ) => Promise<unknown> ) => work( db.manager ) );
         audit = { record: vi.fn() };
-        service = new PathImportService( { transaction } as unknown as DataSource, audit as unknown as AuditService );
+        organizations = {
+            'workspace-1': { id: 'workspace-1', isPersonal: true },
+            'club-1': { id: 'club-1', isPersonal: false },
+        };
+        const getRepository = ( entity: unknown ) => {
+            expect( entity ).toBe( Organization );
+
+            return { findOneByOrFail: ( { id }: { id: string } ) => Promise.resolve( organizations[id] ) };
+        };
+
+        const dataSource = { transaction, getRepository } as unknown as DataSource;
+
+        service = new PathImportService( dataSource, audit as unknown as AuditService );
     } );
 
     it( 'imports the file, says what changed, and logs who did it', async () => {
-        const result = await service.import( { content: FILE }, 'admin-1' );
+        const result = await service.import( null, { content: FILE }, 'admin-1' );
         const [ path ] = db.rows( LearningPath );
 
         expect( result ).toEqual( {
@@ -63,12 +76,12 @@ describe( 'PathImportService', () => {
     } );
 
     it( 'logs nothing for a dry run, or for an import that changed nothing', async () => {
-        await expect( service.import( { content: FILE, dryRun: true }, 'admin-1' ) ).resolves.toMatchObject( { dryRun: true } );
+        await expect( service.import( null, { content: FILE, dryRun: true }, 'admin-1' ) ).resolves.toMatchObject( { dryRun: true } );
         expect( audit.record ).not.toHaveBeenCalled();
 
-        await service.import( { content: FILE }, 'admin-1' );
+        await service.import( null, { content: FILE }, 'admin-1' );
         audit.record.mockClear();
-        const again = await service.import( { content: FILE }, 'admin-1' );
+        const again = await service.import( null, { content: FILE }, 'admin-1' );
 
         expect( again.path.created ).toBe( false );
         expect( audit.record ).not.toHaveBeenCalled();
@@ -79,22 +92,45 @@ describe( 'PathImportService', () => {
         [ 'a changed module', ( file: string ) => file.replace( '  - title: Arrays\n', '  - title: Arrays\n    description: Basics.\n' ) ],
         [ 'an item taken out of a topic', ( file: string ) => file.replace( /\n {6}- title: Pairs[\s\S]*$/, '\n' ).replace( '          - type: note\n            title: Hash maps\n            content: Counting.\n', '' ) ],
     ] )( 'logs an import with %s', async ( _, edit ) => {
-        await service.import( { content: FILE }, 'admin-1' );
+        await service.import( null, { content: FILE }, 'admin-1' );
         audit.record.mockClear();
 
-        await service.import( { content: edit( FILE ) }, 'admin-1' );
+        await service.import( null, { content: edit( FILE ) }, 'admin-1' );
 
         expect( audit.record ).toHaveBeenCalledOnce();
     } );
 
+    it( 'imports into a personal workspace as a private path the user is enrolled in, without the audit log', async () => {
+        const result = await service.import( 'workspace-1', { content: FILE }, 'user-1' );
+        const [ path ] = db.rows( LearningPath );
+
+        expect( path ).toMatchObject( {
+            organizationId: 'workspace-1',
+            status: CatalogStatus.Published,
+            visibility: PathVisibility.Private,
+            createdById: 'user-1',
+        } );
+        expect( result.path ).toMatchObject( { created: true, status: CatalogStatus.Published } );
+        expect( db.rows( Enrollment ) ).toEqual( [ expect.objectContaining( { userId: 'user-1', learningPathId: path.id } ) ] );
+        expect( audit.record ).not.toHaveBeenCalled();
+    } );
+
+    it( 'enrolls nobody in a shared organization\'s path', async () => {
+        await service.import( 'club-1', { content: FILE }, 'user-1' );
+
+        expect( db.rows( LearningPath )[0].organizationId ).toBe( 'club-1' );
+        expect( db.rows( Enrollment ) ).toHaveLength( 0 );
+        expect( audit.record ).not.toHaveBeenCalled();
+    } );
+
     it( 'answers 400 with every problem for a bad file, and passes other errors on', async () => {
-        const refused = service.import( { content: 'slug: dsa\n' }, 'admin-1' );
+        const refused = service.import( null, { content: 'slug: dsa\n' }, 'admin-1' );
 
         await expect( refused ).rejects.toBeInstanceOf( BadRequestException );
         await expect( refused ).rejects.toThrow( /^The file doesn't match the format:\n {2}\// );
         expect( transaction ).not.toHaveBeenCalled();
 
         transaction.mockRejectedValue( new Error( 'connection lost' ) );
-        await expect( service.import( { content: FILE }, 'admin-1' ) ).rejects.toThrow( 'connection lost' );
+        await expect( service.import( null, { content: FILE }, 'admin-1' ) ).rejects.toThrow( 'connection lost' );
     } );
 } );

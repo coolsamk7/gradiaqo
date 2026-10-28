@@ -178,12 +178,25 @@ interface Checked {
     preview: PathImportResultJson;
 }
 
+interface ImportPathDialogProps {
+    /** The catalog's import endpoint, e.g. `/admin/catalog/import`. */
+    url: string;
+    /** The line under the title: where the path goes and how it starts. */
+    description: string;
+    /** Where Open path goes once the path is imported. */
+    pathUrl: ( pathId: string ) => string;
+    /** Said after importing a path that isn't a draft (a draft gets a note on publishing it). */
+    importedNote?: string;
+    /** Gets whether something was imported, so the list can be reloaded. */
+    onClose: ( imported: boolean ) => void;
+}
+
 /**
- * Imports an official path from a path file (content/paths/README.md), like `yarn cli catalog:import`: choosing the
- * file shows what importing it would change (a dry run), and Import makes the change. `onClose` gets whether
- * something was imported, so the list can be reloaded.
+ * Imports a path from a path file (content/paths/README.md), like `yarn cli catalog:import`: choosing the file shows
+ * what importing it would change (a dry run), and Import makes the change. Used for the global catalog (Admin) and
+ * for the user's own paths.
  */
-export function ImportPathDialog( { onClose }: { onClose: ( imported: boolean ) => void } ) {
+export function ImportPathDialog( { url, description, pathUrl, importedNote, onClose }: ImportPathDialogProps ) {
     const { request } = useAuth();
     const [ checking, setChecking ] = useState<string>();
     const [ checked, setChecked ] = useState<Checked>();
@@ -207,7 +220,7 @@ export function ImportPathDialog( { onClose }: { onClose: ( imported: boolean ) 
         setChecking( file.name );
         try {
             const content = await readPathFile( file );
-            const preview = await request<PathImportResultJson>( '/admin/catalog/import', {
+            const preview = await request<PathImportResultJson>( url, {
                 method: 'POST',
                 body: { content, dryRun: true },
             } );
@@ -229,7 +242,7 @@ export function ImportPathDialog( { onClose }: { onClose: ( imported: boolean ) 
         setImporting( true );
         setProblems( undefined );
         try {
-            setImported( await request<PathImportResultJson>( '/admin/catalog/import', {
+            setImported( await request<PathImportResultJson>( url, {
                 method: 'POST',
                 body: { content: checked!.content },
             } ) );
@@ -245,11 +258,13 @@ export function ImportPathDialog( { onClose }: { onClose: ( imported: boolean ) 
                 <div className={styles.dialogForm}>
                     <p className={`${form.notice} ${styles.flush}`} role="status">
                         {`Imported “${imported.path.title}”.`}
-                        {imported.path.status === CatalogStatus.Draft && ' It\'s a draft: publish it when it\'s ready, and learners will see it.'}
+                        {imported.path.status === CatalogStatus.Draft
+                            ? ' It\'s a draft: publish it when it\'s ready, and learners will see it.'
+                            : importedNote && ` ${importedNote}`}
                     </p>
                     <ImportSummary result={imported} />
                     <div className={dialog.actions}>
-                        <Link to={`/app/admin/catalog/paths/${imported.path.id}`} className={`${shared.button} ${shared.secondary}`}>
+                        <Link to={pathUrl( imported.path.id )} className={`${shared.button} ${shared.secondary}`}>
                             Open path
                         </Link>
                         <button type="button" className={`${shared.button} ${shared.primary}`} onClick={close}>Done</button>
@@ -264,7 +279,7 @@ export function ImportPathDialog( { onClose }: { onClose: ( imported: boolean ) 
     return (
         <Dialog
             title="Import a path"
-            description="From a path file (.yaml). A new path starts as a draft; importing a file again changes only what's different."
+            description={description}
             wide
             onClose={close}
         >
