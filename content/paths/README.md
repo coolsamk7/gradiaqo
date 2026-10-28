@@ -1,11 +1,14 @@
-# Learning paths
+# Learning path files
 
-The official learning paths, one YAML file each. Importing a file creates the path in the global catalog, or brings it
-up to date: import it again after every change. Either way, you see what would change first:
+The format of a learning path written as a YAML file, one path per file. The files themselves aren't kept in this
+repository: they're in OneDrive, under `gradiaqo-paths/` (`official/` for the global catalog, `personal/` for your own).
+
+Importing a file creates the path in the global catalog, or brings it up to date: import it again after every change.
+Either way, you see what would change first:
 
 - **Admin › Catalog › Import file**: choose the file; the dialog shows what importing it changes (or the file's
   problems), and **Import** makes the change. It's in the audit log.
-- **`yarn cli catalog:import content/paths/<file>.yaml`**, with `--dry-run` to see what would change.
+- **`yarn cli catalog:import <file>.yaml`**, with `--dry-run` to see what would change.
 
 The same format works for anyone's own paths: **My paths › Import file** imports a file into your workspace (a private
 path you're enrolled in) or an organization you run, with that catalog's own items. Official items aren't used or
@@ -70,6 +73,6 @@ Use **Import file** in Admin › Catalog. Or with kubectl: the file is read from
 image:
 
 ```bash
-kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - --dry-run < content/paths/dsa.yaml
-kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - < content/paths/dsa.yaml
+kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - --dry-run < dsa.yaml
+kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - < dsa.yaml
 ```

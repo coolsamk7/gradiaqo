@@ -26,7 +26,7 @@ const SEARCH_DELAY_MS = 300;
 /**
  * The global catalog (Figma: M4 › Admin · Catalog, States › Admin · Items), for superadmins: official paths and
  * items (`?tab=items`), with their status. New content starts as a draft; only drafts can be deleted. Paths can also
- * be imported from a path file (content/paths/*.yaml).
+ * be imported from a path file (format: content/paths/README.md).
  */
 export function CatalogPage() {
     const [ params, setParams ] = useSearchParams();

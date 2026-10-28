@@ -8,7 +8,7 @@ import { parse } from 'yaml';
 import { toSlug } from './slug.js';
 
 /*
- * A learning path written as a YAML file (content/paths/*.yaml), for `catalog:import`: the path, its modules, their
+ * A learning path written as a YAML file (format: content/paths/README.md), for `catalog:import`: the path, its modules, their
  * topics and the items in each. Unknown keys are refused, so a typo can't be silently ignored.
  */
 
