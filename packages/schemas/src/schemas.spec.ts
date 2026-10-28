@@ -8,11 +8,13 @@ import {
     CreateLearningPathRequest,
     Email,
     ForgotPasswordRequest,
+    ImportPathFileRequest,
     IsoDate,
     ItemDetailsSchemas,
     ItemProgress,
     ItemType,
     LoginRequest,
+    MAX_PATH_FILE_LENGTH,
     NullableIsoDate,
     ReorderRequest,
     ResetPasswordRequest,
@@ -140,6 +142,17 @@ describe( 'catalog schemas', () => {
         expect( reorder( { ids: [ id ] } ) ).toEqual( { ids: [ id ] } );
         expect( reorder( { ids: [ id, id ] } ) ).toBeUndefined();
         expect( reorder( { ids: [ 'not-a-uuid' ] } ) ).toBeUndefined();
+    } );
+
+    it( 'takes a path file up to the limit, and nothing else', () => {
+        const importFile = parse( Compile( ImportPathFileRequest ) );
+
+        expect( importFile( { content: 'slug: dsa' } ) ).toEqual( { content: 'slug: dsa' } );
+        expect( importFile( { content: 'slug: dsa', dryRun: true } ) ).toEqual( { content: 'slug: dsa', dryRun: true } );
+        expect( importFile( { content: 'x'.repeat( MAX_PATH_FILE_LENGTH ) } ) ).toBeDefined();
+        expect( importFile( { content: 'x'.repeat( MAX_PATH_FILE_LENGTH + 1 ) } ) ).toBeUndefined();
+        expect( importFile( { content: '' } ) ).toBeUndefined();
+        expect( importFile( { content: 'slug: dsa', publish: true } ) ).toBeUndefined();
     } );
 } );
 

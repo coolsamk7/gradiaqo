@@ -24,6 +24,7 @@ export function auditSentence( event: AuditEventJson ): string {
         [AuditAction.PathMovedToDraft]: `moved the path ${target} to draft`,
         [AuditAction.PathArchived]: `archived the path ${target}`,
         [AuditAction.PathDeleted]: `deleted the path ${target}`,
+        [AuditAction.PathImported]: `imported the path ${target} from a file`,
         [AuditAction.ItemPublished]: `published the item ${target}`,
         [AuditAction.ItemMovedToDraft]: `moved the item ${target} to draft`,
         [AuditAction.ItemArchived]: `archived the item ${target}`,

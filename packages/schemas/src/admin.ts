@@ -92,6 +92,7 @@ export const AUDIT_AREAS: Record<AuditArea, AuditAction[]> = {
         AuditAction.PathMovedToDraft,
         AuditAction.PathArchived,
         AuditAction.PathDeleted,
+        AuditAction.PathImported,
         AuditAction.ItemPublished,
         AuditAction.ItemMovedToDraft,
         AuditAction.ItemArchived,

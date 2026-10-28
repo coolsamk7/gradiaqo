@@ -113,6 +113,68 @@ test.describe( 'Admin', () => {
         await expect( row ).toHaveCount( 0 );
     } );
 
+    // A path and items of its own (shared items would be changed by the file), the path deleted at the end.
+    test( 'a superadmin imports a path from a file, checking what it changes first', async ( { page } ) => {
+        const tag = randomUUID().slice( 0, 8 );
+        const title = `Imported Path ${tag}`;
+        const file = [
+            `slug: imported-${tag}`,
+            `title: ${title}`,
+            'modules:',
+            '  - title: Basics',
+            '    topics:',
+            '      - title: Hashing',
+            '        items:',
+            '          - type: article',
+            `            title: Hashing explained ${tag}`,
+            `            url: https://example.com/hashing-${tag}`,
+            '          - type: note',
+            `            title: Hash maps ${tag}`,
+            '            content: Count things in one pass.',
+            '',
+        ].join( '\n' );
+        const choose = ( name: string, text: string ) => page.getByLabel( 'Path file' )
+            .setInputFiles( { name, mimeType: 'application/yaml', buffer: Buffer.from( text ) } );
+
+        await logIn( page, ADMIN );
+        await page.goto( '/app/admin/catalog' );
+        await page.getByRole( 'button', { name: 'Import file' } ).click();
+        const dialog = page.getByRole( 'dialog', { name: 'Import a path' } );
+
+        await choose( 'broken.yaml', 'slug: Not A Slug\n' );
+        await expect( dialog.getByRole( 'alert' ) ).toContainText( 'The file doesn\'t match the format:' );
+        await expect( dialog.getByRole( 'alert' ) ).toContainText( '/slug: must match pattern' );
+
+        await choose( 'imported.yaml', file );
+        const changes = dialog.getByRole( 'region', { name: 'What importing changes' } );
+
+        await expect( changes ).toContainText( `${title} (imported-${tag}) · New path, a draft` );
+        await expect( changes ).toContainText( '2 items: 2 new, 0 changed · 2 added to topics, 0 taken out' );
+        await dialog.getByRole( 'button', { name: 'Import' } ).click();
+        await expect( dialog.getByRole( 'status' ) ).toContainText( `Imported “${title}”. It's a draft` );
+        await dialog.getByRole( 'button', { name: 'Done' } ).click();
+
+        const row = page.getByRole( 'region', { name: 'Paths' } ).getByRole( 'row' ).filter( { hasText: title } );
+
+        await expect( row ).toContainText( `${title}Draft12Today` );
+
+        // The same file again: nothing to do.
+        await page.getByRole( 'button', { name: 'Import file' } ).click();
+        await choose( 'imported.yaml', file );
+        await expect( dialog ).toContainText( 'Nothing to import: the catalog already matches this file.' );
+        await expect( dialog.getByRole( 'button', { name: 'Import' } ) ).toBeDisabled();
+        await dialog.getByRole( 'button', { name: 'Cancel' } ).click();
+
+        await page.goto( '/app/admin/audit' );
+        await expect( page.getByRole( 'region', { name: 'Audit log' } ).getByRole( 'listitem' ).filter( { hasText: title } ) )
+            .toContainText( `Ada Admin imported the path “${title}” from a file` );
+
+        await page.goto( '/app/admin/catalog' );
+        await row.getByRole( 'button', { name: `More for ${title}` } ).click();
+        await page.getByRole( 'button', { name: 'Delete' } ).click();
+        await expect( row ).toHaveCount( 0 );
+    } );
+
     test( 'the admin pages don\'t exist for other users', async ( { page, api } ) => {
         await logIn( page, await api.signUp() );
         await expect( page.getByRole( 'link', { name: 'Admin' } ) ).toHaveCount( 0 );

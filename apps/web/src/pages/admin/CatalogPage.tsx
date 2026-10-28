@@ -18,19 +18,21 @@ import { TYPE_LABELS } from '../path/item-details.ts';
 import styles from './Admin.module.css';
 import { AdminNav } from './AdminNav.tsx';
 import { changeError, formatUpdated, loadError, statusActions } from './catalog.ts';
-import { ItemDialog, NewPathDialog } from './CatalogDialogs.tsx';
+import { ImportPathDialog, ItemDialog, NewPathDialog } from './CatalogDialogs.tsx';
 
 /** How long to wait after typing in the items search before asking the API. */
 const SEARCH_DELAY_MS = 300;
 
 /**
  * The global catalog (Figma: M4 › Admin · Catalog, States › Admin · Items), for superadmins: official paths and
- * items (`?tab=items`), with their status. New content starts as a draft; only drafts can be deleted.
+ * items (`?tab=items`), with their status. New content starts as a draft; only drafts can be deleted. Paths can also
+ * be imported from a path file (content/paths/*.yaml).
  */
 export function CatalogPage() {
     const [ params, setParams ] = useSearchParams();
     const tab = params.get( 'tab' ) === 'items' ? 'items' : 'paths';
     const [ creating, setCreating ] = useState( false );
+    const [ importing, setImporting ] = useState( false );
 
     return (
         <AppLayout>
@@ -45,10 +47,18 @@ export function CatalogPage() {
                         deleted.
                     </p>
                 </div>
-                <button type="button" className={`${shared.button} ${shared.primary}`} onClick={() => setCreating( true )}>
-                    <Icon name="plus" />
-                    {tab === 'paths' ? 'New path' : 'New item'}
-                </button>
+                <div className={styles.headerActions}>
+                    {tab === 'paths' && (
+                        <button type="button" className={`${shared.button} ${shared.secondary}`} onClick={() => setImporting( true )}>
+                            <Icon name="file-text" />
+                            Import file
+                        </button>
+                    )}
+                    <button type="button" className={`${shared.button} ${shared.primary}`} onClick={() => setCreating( true )}>
+                        <Icon name="plus" />
+                        {tab === 'paths' ? 'New path' : 'New item'}
+                    </button>
+                </div>
             </div>
 
             <AdminNav />
@@ -71,13 +81,16 @@ export function CatalogPage() {
                 </button>
             </div>
 
-            {tab === 'paths' ? <PathsTab /> : <ItemsTab creating={creating} onCreated={() => setCreating( false )} />}
+            {tab === 'paths'
+                ? <PathsTab importing={importing} onImported={() => setImporting( false )} />
+                : <ItemsTab creating={creating} onCreated={() => setCreating( false )} />}
             {tab === 'paths' && creating && <NewPathDialog onClose={() => setCreating( false )} />}
         </AppLayout>
     );
 }
 
-function PathsTab() {
+/** `importing` shows the import dialog; `onImported` is called when it closes. */
+function PathsTab( { importing, onImported }: { importing: boolean; onImported: () => void } ) {
     const { request } = useAuth();
     const paths = useLoaded<ManagedLearningPathJson[]>( '/admin/catalog/paths', loadError );
     const [ search, setSearch ] = useState( '' );
@@ -95,11 +108,32 @@ function PathsTab() {
         }
     };
 
+    const dialog = importing && (
+        <ImportPathDialog
+            onClose={( imported ) => {
+                onImported();
+                if ( imported ) {
+                    paths.reload();
+                }
+            }}
+        />
+    );
+
     if ( paths.state.status === 'loading' ) {
-        return <Loading text="Loading the paths…"><CardSkeleton lines={4} /></Loading>;
+        return (
+            <>
+                <Loading text="Loading the paths…"><CardSkeleton lines={4} /></Loading>
+                {dialog}
+            </>
+        );
     }
     if ( paths.state.status === 'error' ) {
-        return <LoadError message={paths.state.message} retry={paths.reload} />;
+        return (
+            <>
+                <LoadError message={paths.state.message} retry={paths.reload} />
+                {dialog}
+            </>
+        );
     }
 
     const words = search.trim().toLowerCase();
@@ -166,6 +200,7 @@ function PathsTab() {
                             </table>
                         )}
             </section>
+            {dialog}
         </>
     );
 }

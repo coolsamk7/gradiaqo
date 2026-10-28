@@ -3,11 +3,13 @@ import type { AccessTokenPayload } from '@studylog/casl';
 import { ItemsController } from '../../../../src/catalog/controllers/items.controller.js';
 import { LearningPathsController } from '../../../../src/catalog/controllers/learning-paths.controller.js';
 import { ModulesController } from '../../../../src/catalog/controllers/modules.controller.js';
+import { PathImportController } from '../../../../src/catalog/controllers/path-import.controller.js';
 import { TopicsController } from '../../../../src/catalog/controllers/topics.controller.js';
 import { CatalogOwner } from '../../../../src/catalog/decorators/catalog-auth.decorator.js';
 import type { ItemsService } from '../../../../src/catalog/services/items.service.js';
 import type { LearningPathsService } from '../../../../src/catalog/services/learning-paths.service.js';
 import type { ModulesService } from '../../../../src/catalog/services/modules.service.js';
+import type { PathImportService } from '../../../../src/catalog/services/path-import.service.js';
 import type { TopicsService } from '../../../../src/catalog/services/topics.service.js';
 import { httpContext, paramDecoratorFactory } from '../../param-decorator.js';
 
@@ -28,6 +30,7 @@ const paths = mocks( 'list', 'create', 'reorder', 'findTree', 'update', 'remove'
 const modules = mocks( 'create', 'reorder', 'update', 'remove' );
 const topics = mocks( 'create', 'reorder', 'update', 'remove', 'listItems', 'reorderItems', 'linkItem', 'unlinkItem' );
 const items = mocks( 'list', 'create', 'findOrFail', 'update', 'remove' );
+const pathImport = mocks( 'import' );
 
 const controllers = {
     paths: new LearningPathsController(
@@ -37,6 +40,7 @@ const controllers = {
     modules: new ModulesController( modules as unknown as ModulesService, topics as unknown as TopicsService ),
     topics: new TopicsController( topics as unknown as TopicsService ),
     items: new ItemsController( items as unknown as ItemsService ),
+    import: new PathImportController( pathImport as unknown as PathImportService ),
 };
 
 type Case = [ string, () => Promise<unknown>, ReturnType<typeof vi.fn>, unknown[] ];
@@ -66,6 +70,7 @@ describe( 'catalog controllers', () => {
         [ 'items.findOne', () => controllers.items.findOne( OWNER, 'i' ), items.findOrFail, [ OWNER, 'i' ] ],
         [ 'items.update', () => controllers.items.update( OWNER, user, 'i', dto ), items.update, [ OWNER, 'i', dto, 'user-1' ] ],
         [ 'items.remove', () => controllers.items.remove( OWNER, user, 'i' ), items.remove, [ OWNER, 'i', 'user-1' ] ],
+        [ 'import', () => controllers.import.import( user, { content: 'slug: x' } ), pathImport.import, [ { content: 'slug: x' }, 'user-1' ] ],
     ] )( '%s passes the catalog, ids and user to the service', async ( _, call, method, expected ) => {
         await expect( call() ).resolves.toMatch( /result$/ );
         expect( method ).toHaveBeenLastCalledWith( ...expected );
