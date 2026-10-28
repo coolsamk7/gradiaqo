@@ -58,7 +58,7 @@ export function sentAgo( createdAt: string, now: Date ): string {
     return days === 1 ? 'sent yesterday' : `sent ${days} days ago`;
 }
 
-const OFFLINE = 'Can\'t reach StudyLog right now. Check your connection and try again.';
+const OFFLINE = 'Can\'t reach Gradiaqo right now. Check your connection and try again.';
 
 /** Why an organization (or its lists) couldn't be loaded. */
 export function loadError( error: unknown ): string {

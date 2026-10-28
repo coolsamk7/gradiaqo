@@ -67,7 +67,7 @@ export function LoginPage() {
             subtitle="Welcome back. Enter your details to continue."
             alternative={(
                 <>
-                    New to StudyLog?
+                    New to Gradiaqo?
                     {' '}
                     <Link to="/signup" state={{ from }}>Create an account</Link>
                 </>

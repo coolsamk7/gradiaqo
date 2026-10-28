@@ -154,7 +154,7 @@ describe( 'ReportsPage', () => {
 
         answer = () => Promise.reject( new TypeError( 'Failed to fetch' ) );
         await user.click( again.getByRole( 'button', { name: 'Dismiss' } ) );
-        await waitFor( () => expect( again.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' ) );
+        await waitFor( () => expect( again.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' ) );
     } );
 
     it( 'lists every resolved report, and un-hides a path hidden by mistake', async () => {
@@ -210,7 +210,7 @@ describe( 'ReportsPage', () => {
 
         answer = () => Promise.reject( new TypeError( 'Failed to fetch' ) );
         renderApp( '/app/admin/reports' );
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
 
         answer = () => json( 500, {} );
         await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );

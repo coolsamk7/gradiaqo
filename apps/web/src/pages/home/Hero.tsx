@@ -17,7 +17,7 @@ export function Hero() {
                         <span className={styles.highlight}>See your progress every day.</span>
                     </h1>
                     <p className={styles.lead}>
-                        StudyLog turns any subject into a learning path: modules, topics and the problems, videos,
+                        Gradiaqo turns any subject into a learning path: modules, topics and the problems, videos,
                         articles and notes that go with them. Log your study time, track what you&apos;ve finished,
                         and keep your streak going.
                     </p>

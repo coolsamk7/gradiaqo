@@ -59,7 +59,7 @@ describe( 'users', () => {
     } );
 
     it( 'explains why a change failed', () => {
-        expect( actionError( new NetworkError() ) ).toBe( 'Can\'t reach StudyLog right now. Check your connection and try again.' );
+        expect( actionError( new NetworkError() ) ).toBe( 'Can\'t reach Gradiaqo right now. Check your connection and try again.' );
         expect( actionError( new ApiError( 409, 'Make them a normal user first.' ) ) ).toBe( 'Make them a normal user first.' );
         expect( actionError( new ApiError( 400, 'You can\'t change your own role' ) ) ).toBe( 'You can\'t change your own role.' );
         expect( actionError( new ApiError( 404, 'User not found' ) ) ).toBe( 'User not found.' );

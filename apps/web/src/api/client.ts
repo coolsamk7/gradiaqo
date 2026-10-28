@@ -32,7 +32,7 @@ export class ApiError extends Error {
 /** The API couldn't be reached at all (offline, server down, blocked by CORS). */
 export class NetworkError extends Error {
     constructor() {
-        super( 'The StudyLog API could not be reached' );
+        super( 'The Gradiaqo API could not be reached' );
         this.name = 'NetworkError';
     }
 }

@@ -31,7 +31,7 @@ export function statusActions(
     ];
 }
 
-const OFFLINE = 'Can\'t reach StudyLog right now. Check your connection and try again.';
+const OFFLINE = 'Can\'t reach Gradiaqo right now. Check your connection and try again.';
 
 export function loadError( error: unknown ): string {
     return error instanceof NetworkError ? OFFLINE : 'Something went wrong while loading. Please try again.';

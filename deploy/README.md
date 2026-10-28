@@ -1,4 +1,4 @@
-# Deploying StudyLog (Oracle Cloud Always Free)
+# Deploying Gradiaqo (Oracle Cloud Always Free)
 
 Everything runs on one server with Docker Compose (`docker-compose.prod.yml`):
 

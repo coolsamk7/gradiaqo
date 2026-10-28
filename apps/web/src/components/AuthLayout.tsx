@@ -44,12 +44,12 @@ export function AuthLayout( props: AuthLayoutProps ) {
                         ) )}
                     </ul>
                 </div>
-                <p className={styles.copyright}>© 2026 StudyLog</p>
+                <p className={styles.copyright}>© 2026 Gradiaqo</p>
             </aside>
 
             <main className={styles.main}>
                 <div className={styles.card}>
-                    <Link to="/" className={styles.logoLink} aria-label="StudyLog home">
+                    <Link to="/" className={styles.logoLink} aria-label="Gradiaqo home">
                         <Logo />
                     </Link>
                     {before}

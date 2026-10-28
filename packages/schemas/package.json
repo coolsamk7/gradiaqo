@@ -2,7 +2,7 @@
   "name": "@studylog/schemas",
   "version": "0.0.0",
   "private": true,
-  "description": "StudyLog API contract as TypeBox schemas: request/response shapes, their TypeScript types, and role enums. No framework dependencies, so web and mobile apps can share it.",
+  "description": "Gradiaqo API contract as TypeBox schemas: request/response shapes, their TypeScript types, and role enums. No framework dependencies, so web and mobile apps can share it.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

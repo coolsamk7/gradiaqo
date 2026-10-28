@@ -15,7 +15,7 @@ import styles from './VerifyEmail.module.css';
 /** How long to wait before another code can be sent (the API refuses sooner). */
 export const RESEND_SECONDS = 60;
 
-const HIGHLIGHTS = [ 'Codes expire after 15 minutes', 'We never share your email', 'You can keep using StudyLog meanwhile' ];
+const HIGHLIGHTS = [ 'Codes expire after 15 minutes', 'We never share your email', 'You can keep using Gradiaqo meanwhile' ];
 
 /**
  * Entering the code emailed after signup (Figma: M3 › Verify email). Until then the app shows a banner that links

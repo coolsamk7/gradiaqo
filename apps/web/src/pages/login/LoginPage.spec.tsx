@@ -102,7 +102,7 @@ describe( 'LoginPage', () => {
         [ 'too many attempts, without a wait', () => json( 429, { message: 'Too many requests' } ), 'Too many attempts. Wait a minute and try again.' ],
         [ 'a validation error on no known field', () => json( 400, { message: 'Validation failed (body)', errors: [ { path: '/other', message: 'is odd' } ] } ), 'Check your details and try again.' ],
         [ 'a server error', () => json( 500, { message: 'Internal server error' } ), 'Something went wrong. Please try again.' ],
-        [ 'no connection', () => Promise.reject( new TypeError( 'offline' ) ), 'Can\'t reach StudyLog right now. Check your connection and try again.' ],
+        [ 'no connection', () => Promise.reject( new TypeError( 'offline' ) ), 'Can\'t reach Gradiaqo right now. Check your connection and try again.' ],
     ] )( 'explains %s, and lets the user try again', async ( _, handler, message ) => {
         await openLoginPage( { 'POST /auth/login': handler } );
 
@@ -160,13 +160,13 @@ describe( 'LoginPage', () => {
         expect( passwordInput() ).not.toHaveAttribute( 'aria-describedby' );
     } );
 
-    it( 'shows what StudyLog offers next to the form (on wide screens)', async () => {
+    it( 'shows what Gradiaqo offers next to the form (on wide screens)', async () => {
         await openLoginPage();
 
         expect( screen.getAllByRole( 'listitem', { hidden: true } ).map( ( item ) => item.textContent ) ).toEqual( [
             'Your learning paths, in your order', 'Progress on every topic and module', 'Study sessions, streaks and weekly totals',
         ] );
-        expect( screen.getByText( /^New to StudyLog\?/ ) ).toHaveTextContent( /^New to StudyLog\? Create an account$/ );
+        expect( screen.getByText( /^New to Gradiaqo\?/ ) ).toHaveTextContent( /^New to Gradiaqo\? Create an account$/ );
     } );
 
     it( 'says when the session ended, until there\'s a new problem to show', async () => {
@@ -196,6 +196,6 @@ describe( 'LoginPage', () => {
         await openLoginPage();
 
         expect( screen.getByRole( 'link', { name: 'Create an account' } ) ).toHaveAttribute( 'href', '/signup' );
-        expect( screen.getByRole( 'link', { name: 'StudyLog home' } ) ).toHaveAttribute( 'href', '/' );
+        expect( screen.getByRole( 'link', { name: 'Gradiaqo home' } ) ).toHaveAttribute( 'href', '/' );
     } );
 } );

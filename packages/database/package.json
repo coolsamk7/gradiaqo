@@ -2,7 +2,7 @@
   "name": "@studylog/database",
   "version": "0.0.0",
   "private": true,
-  "description": "TypeORM entities shared by StudyLog backend apps, and the importer for official learning-path files",
+  "description": "TypeORM entities shared by Gradiaqo backend apps, and the importer for official learning-path files",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -7,11 +7,11 @@ const team = { id: uuid( 3 ), name: 'Acme Study Group', isPersonal: false };
 const workspace = { id: uuid( 4 ), name: 'Workspace', isPersonal: true };
 
 describe( 'sourceOf and authorOf', () => {
-    it( 'official paths come from StudyLog', () => {
+    it( 'official paths come from Gradiaqo', () => {
         const path = catalogPath( 'DSA' );
 
         expect( sourceOf( path, ME ) ).toEqual( { label: 'Official', tone: 'accent' } );
-        expect( authorOf( path, ME ) ).toBe( 'By StudyLog' );
+        expect( authorOf( path, ME ) ).toBe( 'By Gradiaqo' );
     } );
 
     it( 'organization paths show the organization, and who made them if known', () => {

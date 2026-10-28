@@ -86,7 +86,7 @@ describe( 'SettingsPage', () => {
             throw new TypeError( 'Failed to fetch' );
         };
         await user.click( screen.getByRole( 'button', { name: 'Save changes' } ) );
-        await waitFor( () => expect( screen.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' ) );
+        await waitFor( () => expect( screen.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' ) );
 
         answer = () => new Promise<Response>( () => undefined ) as unknown as Response;
         await user.click( screen.getByRole( 'button', { name: 'Save changes' } ) );
@@ -144,7 +144,7 @@ describe( 'SettingsPage', () => {
             throw new TypeError( 'Failed to fetch' );
         };
         await user.click( submit );
-        expect( await within( password ).findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await within( password ).findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
 
         answer = () => new Promise<Response>( () => undefined ) as unknown as Response;
         await user.click( submit );
@@ -287,6 +287,6 @@ describe( 'account forms', () => {
         expect( isWrongPassword( new ApiError( 401, 'Wrong password' ) ) ).toBe( true );
         expect( isWrongPassword( new ApiError( 401, 'Unauthorized', { invalidToken: true } ) ) ).toBe( false );
         expect( isWrongPassword( new ApiError( 400, 'Bad' ) ) ).toBe( false );
-        expect( saveError( new NetworkError() ) ).toMatch( /^Can't reach StudyLog/ );
+        expect( saveError( new NetworkError() ) ).toMatch( /^Can't reach Gradiaqo/ );
     } );
 } );

@@ -100,7 +100,7 @@ describe( 'CodeInput', () => {
 
 describe( 'code errors', () => {
     it( 'shows the API\'s messages about codes, and plain ones otherwise', () => {
-        expect( describeCodeError( new NetworkError() ) ).toMatch( /^Can't reach StudyLog/ );
+        expect( describeCodeError( new NetworkError() ) ).toMatch( /^Can't reach Gradiaqo/ );
         expect( describeCodeError( new ApiError( 400, 'That code is wrong or has expired.' ) ) ).toBe( 'That code is wrong or has expired.' );
         expect( describeCodeError( new ApiError( 429, 'Wait a minute.' ) ) ).toBe( 'Wait a minute.' );
         expect( describeCodeError( new ApiError( 400, 'Bad Request', { fieldErrors: { code: 'must be the 6-digit code' } } ) ) )

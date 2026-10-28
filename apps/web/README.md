@@ -1,6 +1,6 @@
 # @studylog/web
 
-The StudyLog web app: React 19 + Vite + TypeScript + React Router, styled to the Figma file with CSS modules.
+The Gradiaqo web app: React 19 + Vite + TypeScript + React Router, styled to the Figma file with CSS modules.
 
 ```sh
 yarn workspace @studylog/web dev     # http://localhost:5173 (also started by `yarn dev` at the root)

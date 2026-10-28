@@ -42,7 +42,7 @@ export function validatePassword( currentPassword: string, newPassword: string )
 /** Why saving failed, for the form as a whole (field errors are shown on their fields). */
 export function saveError( error: unknown ): string {
     return error instanceof NetworkError
-        ? 'Can\'t reach StudyLog right now. Check your connection and try again.'
+        ? 'Can\'t reach Gradiaqo right now. Check your connection and try again.'
         : 'Something went wrong, so nothing was saved. Please try again.';
 }
 

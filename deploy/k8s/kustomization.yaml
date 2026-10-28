@@ -1,4 +1,4 @@
-# StudyLog on k3s (see deploy/k8s/README.md). Apply with: kubectl apply -k deploy/k8s
+# Gradiaqo on k3s (see deploy/k8s/README.md). Apply with: kubectl apply -k deploy/k8s
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 

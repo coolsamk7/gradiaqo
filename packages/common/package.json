@@ -2,7 +2,7 @@
   "name": "@studylog/common",
   "version": "0.0.0",
   "private": true,
-  "description": "Shared configs for every StudyLog app and package: ESLint rules, tsconfigs, test coverage and mutation testing settings",
+  "description": "Shared configs for every Gradiaqo app and package: ESLint rules, tsconfigs, test coverage and mutation testing settings",
   "type": "module",
   "exports": {
     "./eslint/base": "./eslint/base.js",

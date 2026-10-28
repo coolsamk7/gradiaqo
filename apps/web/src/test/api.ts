@@ -1,5 +1,5 @@
 /*
- * A fake StudyLog API for tests: answers fetch() by "METHOD /path" (without the query string) and records every
+ * A fake Gradiaqo API for tests: answers fetch() by "METHOD /path" (without the query string) and records every
  * call, so tests can check what the app sent. Any call without a handler fails the test.
  */
 

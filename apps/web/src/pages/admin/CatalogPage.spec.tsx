@@ -195,7 +195,7 @@ describe( 'The global catalog', () => {
 
         answer = () => Promise.reject( new TypeError( 'Failed to fetch' ) );
         await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
-        await waitFor( () => expect( screen.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' ) );
+        await waitFor( () => expect( screen.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' ) );
 
         answer = () => json( 200, [] );
         await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
@@ -470,7 +470,7 @@ describe( 'The global catalog', () => {
 
             answer = () => Promise.reject( new TypeError( 'Failed to fetch' ) ) as never;
             await user.click( dialog.getByRole( 'button', { name: 'Create item' } ) );
-            await waitFor( () => expect( dialog.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' ) );
+            await waitFor( () => expect( dialog.getByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' ) );
 
             answer = () => json( 201, ISLANDS );
             await user.click( dialog.getByRole( 'button', { name: 'Create item' } ) );

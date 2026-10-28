@@ -57,7 +57,7 @@ async function bootstrap() {
 
 function setupSwagger( app: INestApplication ) {
     const config = new DocumentBuilder()
-        .setTitle( 'StudyLog API' )
+        .setTitle( 'Gradiaqo API' )
         .setDescription(
             'Log in with /auth/login, then click Authorize and paste the accessToken. '
             + 'The refresh cookie is set automatically, so /auth/refresh works from this page too.',

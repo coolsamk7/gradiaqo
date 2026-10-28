@@ -170,7 +170,7 @@ describe( 'PathSettingsPage', () => {
         await user.click( await screen.findByRole( 'button', { name: 'Edit parts' } ) );
         await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-        expect( await within( screen.getByRole( 'dialog' ) ).findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await within( screen.getByRole( 'dialog' ) ).findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
     } );
 
     it( 'can\'t change parts of a path that was unpublished', async () => {
@@ -327,7 +327,7 @@ describe( 'PathSettingsPage', () => {
         } );
         renderApp( `/app/paths/${DETAIL.id}/settings` );
 
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
         await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
         expect( await screen.findByRole( 'heading', { level: 1, name: 'Path settings' } ) ).toBeInTheDocument();
     } );

@@ -51,6 +51,6 @@ export function formatSince( iso: string, now: Date ): string {
 /** Why a change on this page wasn't saved. */
 export function saveError( error: unknown, what: string ): string {
     return error instanceof NetworkError
-        ? 'Can\'t reach StudyLog right now. Check your connection and try again.'
+        ? 'Can\'t reach Gradiaqo right now. Check your connection and try again.'
         : `Something went wrong, so ${what}. Please try again.`;
 }

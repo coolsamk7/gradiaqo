@@ -2,7 +2,7 @@
   "name": "@studylog/casl",
   "version": "0.0.0",
   "private": true,
-  "description": "StudyLog authorization: CASL permission rules per role, plus NestJS guards and decorators",
+  "description": "Gradiaqo authorization: CASL permission rules per role, plus NestJS guards and decorators",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

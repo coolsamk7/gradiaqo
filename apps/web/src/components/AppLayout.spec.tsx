@@ -24,7 +24,7 @@ describe( 'AppLayout', () => {
 
         expect( nav.getByRole( 'link', { name: 'Dashboard' } ) ).toHaveAttribute( 'aria-current', 'page' );
         expect( nav.getByRole( 'link', { name: 'Sessions' } ) ).not.toHaveAttribute( 'aria-current' );
-        expect( screen.getByRole( 'link', { name: 'StudyLog dashboard' } ) ).toHaveAttribute( 'href', '/app' );
+        expect( screen.getByRole( 'link', { name: 'Gradiaqo dashboard' } ) ).toHaveAttribute( 'href', '/app' );
     } );
 
     it( 'opens and closes the menu on small screens, and closes it after choosing a page', async () => {

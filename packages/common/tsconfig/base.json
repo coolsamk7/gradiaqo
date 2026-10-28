@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "StudyLog base",
+  "display": "Gradiaqo base",
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2023"],

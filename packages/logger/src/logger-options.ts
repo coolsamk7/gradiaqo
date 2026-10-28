@@ -28,7 +28,7 @@ type Request = IncomingMessage & RequestContext & { id?: unknown; originalUrl?: 
 const SAFE_REQUEST_ID = /^[\w.-]{1,128}$/;
 
 /**
- * Shared nestjs-pino setup for every StudyLog NestJS app.
+ * Shared nestjs-pino setup for every Gradiaqo NestJS app.
  *
  * - One log line per request, with a request id (also returned as `X-Request-Id`),
  *   status, duration, and the user/organization when known.

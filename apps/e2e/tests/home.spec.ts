@@ -5,8 +5,8 @@ test.describe( 'Homepage', () => {
         await page.goto( '/' );
     } );
 
-    test( 'introduces StudyLog', async ( { page } ) => {
-        await expect( page ).toHaveTitle( /StudyLog/ );
+    test( 'introduces Gradiaqo', async ( { page } ) => {
+        await expect( page ).toHaveTitle( /Gradiaqo/ );
         await expect( page.getByRole( 'heading', { level: 1 } ) ).toHaveText( 'Study with a plan. See your progress every day.' );
         await expect( page.getByRole( 'heading', { level: 2, name: 'Everything your study plan needs' } ) ).toBeVisible();
         await expect( page.getByRole( 'heading', { level: 2, name: 'Three steps to a study habit' } ) ).toBeVisible();
@@ -52,7 +52,7 @@ test.describe( 'Homepage', () => {
         await expect( page ).toHaveURL( '/login' );
 
         await page.goto( '/#features' );
-        await page.getByRole( 'link', { name: 'StudyLog home' } ).click();
+        await page.getByRole( 'link', { name: 'Gradiaqo home' } ).click();
         await expect( page ).toHaveURL( '/' );
     } );
 } );

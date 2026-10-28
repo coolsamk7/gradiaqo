@@ -1,6 +1,6 @@
 import { ApiError, NetworkError } from '../../api/client.ts';
 
-const OFFLINE = 'Can\'t reach StudyLog right now. Check your connection and try again.';
+const OFFLINE = 'Can\'t reach Gradiaqo right now. Check your connection and try again.';
 
 /** Why something couldn't be loaded. */
 export function loadErrorMessage( error: unknown ): string {

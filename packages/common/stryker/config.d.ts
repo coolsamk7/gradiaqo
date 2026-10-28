@@ -15,5 +15,5 @@ export interface StrykerOptions {
     concurrency?: number;
 }
 
-/** Stryker settings shared by every StudyLog app and package. See config.js. */
+/** Stryker settings shared by every Gradiaqo app and package. See config.js. */
 export function strykerConfig( options?: StrykerOptions ): Record<string, unknown>;

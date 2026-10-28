@@ -22,7 +22,7 @@ export function SiteFooter() {
                         </li>
                     </ul>
                 </nav>
-                <p className={styles.copyright}>{`© ${new Date().getFullYear()} StudyLog`}</p>
+                <p className={styles.copyright}>{`© ${new Date().getFullYear()} Gradiaqo`}</p>
             </div>
         </footer>
     );

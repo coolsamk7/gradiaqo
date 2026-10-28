@@ -12,7 +12,7 @@ export interface CoverageOptions {
     exclude?: string[];
 }
 
-/** Vitest `test.coverage` settings shared by every StudyLog app and package. See coverage.js. */
+/** Vitest `test.coverage` settings shared by every Gradiaqo app and package. See coverage.js. */
 export function coverageConfig( options?: CoverageOptions ): {
     provider: 'v8';
     include: string[];

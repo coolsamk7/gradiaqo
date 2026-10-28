@@ -65,7 +65,7 @@ test.describe( 'Login page', () => {
         await expect( page.getByRole( 'alert' ) ).toHaveText( 'That email and password don\'t match. Check them and try again.' );
     } );
 
-    test( 'says when StudyLog can\'t be reached', async ( { page } ) => {
+    test( 'says when Gradiaqo can\'t be reached', async ( { page } ) => {
         await failRequests( page, '/auth/login' );
         await page.getByLabel( 'Email' ).fill( SEEDED.alice );
         await page.getByLabel( 'Password', { exact: true } ).fill( 'password123' );

@@ -53,7 +53,7 @@ describe( 'CatalogPage', () => {
         expect( dsa.getByText( 'Enrolled' ) ).toBeInTheDocument();
         expect( dsa.getByText( 'The classic interview patterns.' ) ).toBeInTheDocument();
         expect( dsa.getByRole( 'list', { name: 'Contents' } ) ).toHaveTextContent( '4 modules25 items≈ 12h' );
-        expect( dsa.getByText( 'By StudyLog' ) ).toBeInTheDocument();
+        expect( dsa.getByText( 'By Gradiaqo' ) ).toBeInTheDocument();
         // Enrolled: straight to the path.
         expect( dsa.getByRole( 'link', { name: 'Continue Data Structures & Algorithms' } ) ).toHaveAttribute( 'href', `/app/paths/${uuid( 901 )}` );
 
@@ -121,7 +121,7 @@ describe( 'CatalogPage', () => {
         api( () => ( fail ? Promise.reject( new TypeError( 'offline' ) ) : [ DSA ] ) );
         renderApp( '/app/catalog' );
 
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
         fail = false;
         await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
         expect( await screen.findByRole( 'heading', { level: 2, name: 'Data Structures & Algorithms' } ) ).toBeInTheDocument();

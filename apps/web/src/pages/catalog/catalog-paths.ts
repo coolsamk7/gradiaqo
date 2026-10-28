@@ -39,7 +39,7 @@ export function authorOf( path: PublishedPathSummaryJson, userId: string ): stri
     const by = createdBy ? `by ${createdBy.firstName} ${createdBy.lastName}` : undefined;
 
     if ( !organization ) {
-        return 'By StudyLog';
+        return 'By Gradiaqo';
     }
     if ( !organization.isPersonal ) {
         return by ? `${organization.name} · ${by}` : organization.name;

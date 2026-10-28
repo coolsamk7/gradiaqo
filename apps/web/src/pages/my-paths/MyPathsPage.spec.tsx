@@ -109,7 +109,7 @@ describe( 'MyPathsPage', () => {
 
         organizations = () => Promise.reject( new TypeError( 'offline' ) );
         renderApp( '/app/my-paths' );
-        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach StudyLog right now.' );
+        expect( await screen.findByRole( 'alert' ) ).toHaveTextContent( 'Can\'t reach Gradiaqo right now.' );
 
         organizations = () => json( 200, [ WORKSPACE ] );
         await userEvent.setup().click( screen.getByRole( 'button', { name: 'Try again' } ) );
