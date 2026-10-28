@@ -35,7 +35,7 @@ const plural = ( count: number, one: string, many = `${one}s` ) => `${count} ${c
 @Command( {
     name: 'catalog:import',
     arguments: '<file>',
-    description: 'Create or update an official learning path from a YAML file (content/paths/*.yaml; - reads stdin)',
+    description: 'Create or update an official learning path from a YAML file (format: content/paths/README.md; - reads stdin)',
 } )
 export class CatalogImportCommand extends CommandRunner {
     constructor( private readonly database: DatabaseService ) {

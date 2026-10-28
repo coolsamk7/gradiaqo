@@ -213,12 +213,13 @@ The role is in the access token, so it applies within 15 minutes (`JWT_EXPIRES_I
 
 ## Official learning paths
 
-The official paths are YAML files in `content/paths/`. Import one with **Import file** in Admin › Catalog, which shows
+The official paths are YAML files (format: `content/paths/README.md`) kept in OneDrive under
+`gradiaqo-paths/official/`, not in this repository. Import one with **Import file** in Admin › Catalog, which shows
 what would change before importing, then publish the path there. Or from your machine (the file goes in through stdin):
 
 ```bash
-kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - --dry-run < content/paths/dsa.yaml
-kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - < content/paths/dsa.yaml
+kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - --dry-run < dsa.yaml
+kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - < dsa.yaml
 ```
 
 ## Good to know
