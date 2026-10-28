@@ -1,0 +1,7 @@
+# Imports the learning paths dropped in OneDrive (see "Official learning paths" in deploy/k8s/README.md). Needs the
+# backup component: it uses the backup's OneDrive login (studylog-backup) and its volume (backup-rclone).
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - catalog-sync.yaml

@@ -42,6 +42,16 @@ patches:
       - op: add
         path: /spec/template/spec/imagePullSecrets
         value: [ { name: ghcr-pull } ]
+  - target:
+      kind: CronJob
+      name: catalog-sync
+    patch: |-
+      - op: replace
+        path: /spec/jobTemplate/spec/template/spec/initContainers/1/imagePullPolicy
+        value: Always
+      - op: add
+        path: /spec/jobTemplate/spec/template/spec/imagePullSecrets
+        value: [ { name: ghcr-pull } ]
   # Civo's Traefik is 2.9, older than the traefik.io API group (2.10): its Middleware is traefik.containo.us. Its
   # CRDs aren't installed either; see "Civo" in deploy/k8s/README.md.
   - target:

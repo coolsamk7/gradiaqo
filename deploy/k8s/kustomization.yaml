@@ -15,6 +15,8 @@ resources:
 # README.md). In this kustomization because it reads the database password from studylog-secrets, generated here.
 components:
   - backup
+  # Imports the learning paths dropped in OneDrive, using the backup's OneDrive login.
+  - catalog-sync
 
 # Copied from the *.example files and filled in on the server; both are git-ignored.
 # A change to either gets a new name (hash suffix), so the pods using it restart with the new values.

@@ -58,7 +58,9 @@ Fields by type, besides `title`, `description`, `difficulty`, `minutes`, `tags` 
 
 ## On production
 
-The file is read from stdin, so it doesn't need to be in the image:
+Drop the file in the OneDrive folder `gradiaqo-content/paths/` and it's imported within 15 minutes, with the result in
+`gradiaqo-content/import-report.txt` (see "Official learning paths" in `deploy/k8s/README.md`). Or, from your machine,
+read from stdin, so it doesn't need to be in the image:
 
 ```bash
 kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - --dry-run < content/paths/dsa.yaml

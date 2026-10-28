@@ -213,8 +213,18 @@ The role is in the access token, so it applies within 15 minutes (`JWT_EXPIRES_I
 
 ## Official learning paths
 
-The official paths are YAML files in `content/paths/`. Import one from your machine (the file goes in through stdin),
-check it in Admin › Catalog, then publish it there:
+The official paths are YAML files in `content/paths/`.
+
+**From OneDrive** (no kubectl): put the file in the OneDrive folder `gradiaqo-content/paths/`. Within 15 minutes the
+`catalog-sync` CronJob imports every new or changed `.yaml` file there and writes what happened to
+`gradiaqo-content/import-report.txt`; then check the path in Admin › Catalog and publish it there. A file that fails
+(e.g. a typo the format refuses) is listed in the report and tried again on every run until it imports, and the job
+shows as Failed in `kubectl -n studylog get jobs`. Deleting a file from OneDrive doesn't delete the path. It uses the
+backup's OneDrive login (see Backups), so it needs that set up; the folder is created on its first run. To import
+right away: `kubectl -n studylog create job --from=cronjob/catalog-sync catalog-sync-now`, and
+`kubectl -n studylog logs job/catalog-sync-now -c import` for the output.
+
+**From your machine** (the file goes in through stdin), then check it in Admin › Catalog and publish it there:
 
 ```bash
 kubectl -n studylog exec -i deploy/api -c api -- node apps/cli/dist/main.js catalog:import - --dry-run < content/paths/dsa.yaml

@@ -1,0 +1,166 @@
+# Every 15 minutes: import the learning paths dropped in OneDrive (gradiaqo-content/paths/*.yaml), so a new or edited
+# path reaches the catalog without kubectl. Only files that are new or changed since their last import are imported;
+# a file that fails is tried again on the next run. What happened is written back to
+# gradiaqo-content/import-report.txt. Run one now with:
+#   kubectl -n studylog create job --from=cronjob/catalog-sync catalog-sync-now
+#
+# It uses the backup's OneDrive login and the copy of it kept on the backup-rclone volume (see backup/backup.yaml):
+# the login is renewed on use, so both jobs must share one copy. That volume also keeps the list of imported files.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: catalog-sync
+spec:
+  schedule: "*/15 * * * *"
+  timeZone: Asia/Kolkata
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      # A failed file is retried by the next run, not by a retry of this one.
+      backoffLimit: 0
+      activeDeadlineSeconds: 600
+      template:
+        spec:
+          restartPolicy: Never
+          volumes:
+            - name: work
+              emptyDir: {}
+            - name: rclone
+              persistentVolumeClaim:
+                claimName: backup-rclone
+            - name: login
+              secret:
+                secretName: studylog-backup
+                items:
+                  - key: rclone.conf
+                    path: rclone.conf
+          initContainers:
+            # Downloads the files and lists the ones not imported yet (changed.sha256).
+            - name: fetch
+              image: rclone/rclone:1.68.2
+              command: [ "sh", "-ec" ]
+              args:
+                - |
+                  # The same refresh from the secret as the backup job.
+                  if [ ! -f /rclone/rclone.conf ] || ! cmp -s /login/rclone.conf /rclone/seed.conf; then
+                    cp /login/rclone.conf /rclone/rclone.conf
+                    cp /login/rclone.conf /rclone/seed.conf
+                    echo "Using the OneDrive login from the secret"
+                  fi
+                  # Created on the first run, so there's a folder to drop files in.
+                  rclone mkdir "onedrive:$CONTENT_FOLDER/paths"
+                  mkdir -p /work/paths /rclone/catalog-sync
+                  rclone copy "onedrive:$CONTENT_FOLDER/paths" /work/paths --max-depth 1 \
+                    --include "*.yaml" --include "*.yml"
+                  # One line per file, its hash and name: a line that isn't in the imported list is a new or changed file.
+                  # (Not grep -v -f: busybox's matches nothing with an empty list, so the first run would import nothing.)
+                  cd /work/paths
+                  find . -maxdepth 1 -type f | sed 's|^\./||' | sort | while IFS= read -r file; do
+                    sha256sum "$file"
+                  done > /work/current.sha256
+                  awk 'BEGIN { while ( ( getline line < "/rclone/catalog-sync/imported.sha256" ) > 0 ) imported[line] = 1 }
+                    !( $0 in imported )' /work/current.sha256 > /work/changed.sha256
+                  echo "$(wc -l < /work/current.sha256) files in OneDrive, $(wc -l < /work/changed.sha256) new or changed"
+              env:
+                - name: RCLONE_CONFIG
+                  value: /rclone/rclone.conf
+                - name: CONTENT_FOLDER
+                  value: gradiaqo-content
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+                - name: rclone
+                  mountPath: /rclone
+                - name: login
+                  mountPath: /login
+                  readOnly: true
+              resources:
+                requests: { cpu: 50m, memory: 64Mi }
+                limits: { memory: 256Mi }
+            # Imports each new or changed file, writing its output to report.txt and its name to failed.txt on failure.
+            - name: import
+              image: studylog-api:latest
+              # Built and imported on the node (see the README); switch to IfNotPresent/Always with a registry.
+              imagePullPolicy: Never
+              command: [ "sh", "-ec" ]
+              args:
+                - |
+                  : > /work/report.txt
+                  : > /work/failed.txt
+                  while IFS= read -r line; do
+                    file="${line#*  }"
+                    echo "== $file" >> /work/report.txt
+                    node apps/cli/dist/main.js catalog:import "/work/paths/$file" < /dev/null >> /work/report.txt 2>&1 \
+                      || echo "$file" >> /work/failed.txt
+                    echo >> /work/report.txt
+                  done < /work/changed.sha256
+                  cat /work/report.txt
+              envFrom:
+                - secretRef:
+                    name: studylog-secrets
+              env:
+                - name: DATABASE_URL
+                  value: postgresql://studylog:$(POSTGRES_PASSWORD)@postgres:5432/studylog
+                # Plain text: the report is read in OneDrive, not a terminal.
+                - name: NO_COLOR
+                  value: "1"
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+                runAsGroup: 1000
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ "ALL" ]
+              resources:
+                requests: { cpu: 50m, memory: 128Mi }
+                limits: { memory: 512Mi }
+          containers:
+            # Remembers what was imported, uploads the report, and fails the job if a file failed.
+            - name: report
+              image: rclone/rclone:1.68.2
+              command: [ "sh", "-ec" ]
+              args:
+                - |
+                  if [ ! -s /work/changed.sha256 ]; then
+                    echo "Nothing new to import"
+                    exit 0
+                  fi
+                  # Every file now in OneDrive except the failed ones, which are left out so they're tried again.
+                  awk 'BEGIN { while ( ( getline name < "/work/failed.txt" ) > 0 ) failed[name] = 1 }
+                    { name = $0; sub( /^[^ ]+  /, "", name ); if ( !( name in failed ) ) print }' \
+                    /work/current.sha256 > /rclone/catalog-sync/imported.sha256.new
+                  mv /rclone/catalog-sync/imported.sha256.new /rclone/catalog-sync/imported.sha256
+
+                  changed=$(wc -l < /work/changed.sha256)
+                  failed=$(wc -l < /work/failed.txt)
+                  {
+                    echo "Import of $(date -u '+%Y-%m-%d %H:%M') UTC: $changed new or changed, $((changed - failed)) imported, $failed failed."
+                    if [ "$failed" -gt 0 ]; then
+                      echo "A failed file is tried again every 15 minutes, so the run after you fix it imports it."
+                    fi
+                    echo "A new path starts as a draft: publish it in Admin › Catalog."
+                    echo
+                    cat /work/report.txt
+                  } > /work/import-report.txt
+                  rclone copyto /work/import-report.txt "onedrive:$CONTENT_FOLDER/import-report.txt"
+                  cat /work/import-report.txt
+                  [ "$failed" -eq 0 ]
+              env:
+                - name: RCLONE_CONFIG
+                  value: /rclone/rclone.conf
+                - name: CONTENT_FOLDER
+                  value: gradiaqo-content
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+                - name: rclone
+                  mountPath: /rclone
+              resources:
+                requests: { cpu: 50m, memory: 64Mi }
+                limits: { memory: 256Mi }
