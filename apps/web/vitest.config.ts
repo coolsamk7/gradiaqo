@@ -5,7 +5,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig( {
     plugins: [ react() ],
     // Tests never talk to a real API; see src/test/api.ts.
-    define: { __API_URL__: JSON.stringify( 'http://api.test' ) },
+    define: { __API_URL__: JSON.stringify( 'http://api.test' ), __SITE_URL__: JSON.stringify( 'https://site.test' ) },
     test: {
         globals: true,
         environment: 'jsdom',
