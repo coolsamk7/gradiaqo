@@ -1,11 +1,11 @@
-import { Difficulty, ItemType } from '@studylog/database';
 import { ItemDetailsSchemas } from '@studylog/schemas';
+import { Difficulty, ItemType } from '@studylog/schemas/enums';
 import type { StaticDecode } from 'typebox';
 import Type from 'typebox';
 import { Compile } from 'typebox/compile';
 import { parse } from 'yaml';
 
-import { toSlug } from '../seed/slug.js';
+import { toSlug } from './slug.js';
 
 /*
  * A learning path written as a YAML file (content/paths/*.yaml), for `catalog:import`: the path, its modules, their
@@ -124,13 +124,21 @@ export function itemKey( item: Pick<CatalogItem, 'type' | 'title' | 'details'> )
     return typeof url === 'string' ? `${item.type} ${url}` : `${item.type} "${item.title}"`;
 }
 
+/** The file isn't a valid path file; the message lists every problem. Anything else thrown is a bug or the database. */
+export class CatalogFileError extends Error {
+    constructor( message: string, options?: ErrorOptions ) {
+        super( message, options );
+        this.name = 'CatalogFileError';
+    }
+}
+
 const pathFile = Compile( PathFile );
 const detailValidators = Object.fromEntries(
     Object.values( ItemType ).map( ( type ) => [ type, Compile( ItemDetailsSchemas[type] ) ] ),
 ) as Record<ItemType, ReturnType<typeof Compile>>;
 
 /**
- * Reads a path file. Throws one error listing every problem found, each with where it is
+ * Reads a path file. Throws one CatalogFileError listing every problem found, each with where it is
  * (e.g. `modules[2].topics[0].items[3]`).
  */
 export function parseCatalogFile( text: string ): CatalogPath {
@@ -139,12 +147,12 @@ export function parseCatalogFile( text: string ): CatalogPath {
     try {
         raw = parse( text );
     } catch ( error ) {
-        throw new Error( `Not valid YAML: ${( error as Error ).message}`, { cause: error } );
+        throw new CatalogFileError( `Not valid YAML: ${( error as Error ).message}`, { cause: error } );
     }
     if ( !pathFile.Check( raw ) ) {
         const problems = [ ...pathFile.Errors( raw ) ].map( ( error ) => `${error.instancePath || '/'}: ${error.message}` );
 
-        throw new Error( `The file doesn't match the format:\n  ${problems.join( '\n  ' )}` );
+        throw new CatalogFileError( `The file doesn't match the format:\n  ${problems.join( '\n  ' )}` );
     }
 
     const spec = raw;
@@ -187,7 +195,7 @@ export function parseCatalogFile( text: string ): CatalogPath {
 
     unique( 'module slugs', modules.map( ( module ) => module.slug ) );
     if ( problems.length > 0 ) {
-        throw new Error( `The file has problems:\n  ${problems.join( '\n  ' )}` );
+        throw new CatalogFileError( `The file has problems:\n  ${problems.join( '\n  ' )}` );
     }
 
     return { slug: spec.slug, title: spec.title, description: spec.description ?? null, modules };

@@ -22,13 +22,13 @@ import {
     StudySession,
     Topic,
     TopicItem,
+    toSlug,
     User,
 } from '@studylog/database';
 import type { EntityTarget, ObjectLiteral, QueryDeepPartialEntity } from 'typeorm';
 
 import type { CatalogOwner, ItemKey, ItemSpec, PathKey, PathSpec, UserKey } from './seed-content.js';
 import { ACTIVITY, ENROLLMENTS, ITEMS, PATHS, REPORTS, TEAM, USERS } from './seed-content.js';
-import { toSlug } from './slug.js';
 
 type Rows<T> = Partial<T>[];
 

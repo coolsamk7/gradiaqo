@@ -5,10 +5,10 @@ import { Readable } from 'node:stream';
 import { stripVTControlCharacters } from 'node:util';
 
 import { CatalogStatus, Item, LearningModule, LearningPath } from '@studylog/database';
+import { fakeManager } from '@studylog/database/testing';
 import type { DataSource, EntityManager } from 'typeorm';
 
 import type { DatabaseService } from '../database/database.service.js';
-import { fakeManager } from '../test/fake-manager.js';
 import { CatalogImportCommand, readInput } from './catalog-import.command.js';
 
 const FILE = `

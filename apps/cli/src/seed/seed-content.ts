@@ -8,9 +8,8 @@ import {
     PlatformRole,
     ReportReason,
     ReportStatus,
+    toSlug,
 } from '@studylog/database';
-
-import { toSlug } from './slug.js';
 
 /*
  * What `db:seed` puts in the database, written as plain data. `seed-data.ts` turns it into rows with ids,
